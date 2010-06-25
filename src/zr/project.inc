@@ -57,8 +57,10 @@ stock ForwardOnPluginStart()
     
     // Forward the OnPluginStart event to all modules here.
     Core_OnPluginStart();
+    GameData_OnPluginStart();
     Weapons_OnPluginStart();
     StripObj_OnPluginStart();
+    GPBridge_OnPluginStart();
 }
 
 // **********************************************
@@ -214,6 +216,14 @@ enum ModuleToggleQuery
 // **********************************************
 //            Translations Manager
 // **********************************************
+
+/**
+ * Exvel's chat color include is supported by the translations manager.
+ * Include the color.inc file below and TransMgr_PrintText* will support the color tags.
+ * 
+ * Link to colors on SM forums: http://forums.alliedmods.net/showthread.php?t=96831
+ */
+#include <colors>
 
 /**
  * The directory where the project's translation files will be in.

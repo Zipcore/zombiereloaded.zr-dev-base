@@ -63,23 +63,29 @@ enum WepConfigs
     String:WepConfig_Name[WEPCONFIG_NAME] = 0,      /** Name to reference the weapon by. */
     String:WepConfig_Entity[WEPCONFIG_ENTITY],      /** The entity classname of the weapon. */
     String:WepConfig_Type[WEPCONFIG_TYPE],          /** Custom weapon categorization, delimited by "," */
-    WepConfig_Slot,                                 /** The slot the weapon resides in. */
+    WepLib_Slots:WepConfig_Slot,                    /** The slot the weapon resides in. */
+    String:WepConfig_AmmoCvar[WEPCONFIG_AMMOTYPE],  /** Cvar that contains the weapon's max reserve count.  See ammo_* cvars. */
+    WepConfig_AmmoPrice,                            /** How much to charge for ammo. */
     bool:WepConfig_RestrictDefault,                 /** Whether to have the weapon restricted by default or not. */
     bool:WepConfig_Toggleable,                      /** Allow the restriction status to be changed mid-game. */
-    String:WepConfig_AmmoType[WEPCONFIG_AMMOTYPE],  /** The ammo entity used by the weapon. */
-    WepConfig_AmmoPrice,                            /** How much to charge for ammo. */
     Float:WepConfig_Knockback,                      /** Knockback multipler for the weapon. */
     WepConfig_Price,                                /** The price of the weapon. */
     WepConfig_BuyLimit,                             /** The limit on how many times the weapon can be bought by a client for the round. */
     
     // Per-weapon restriction.
     bool:WepConfig_Restricted,                      /** Used internally.  True if the weapon is restricted, false if not. */
+    WepConfig_BuyCount,                             /** Used internally per-client.  The number of times a client has bought a weapon in their current life. */
 }
 
 /**
  * Dummy array used to see how many cells are required to store all weapon data.
  */
 stock g_WeaponsDummyArray[WepConfigs];
+
+/**
+ * Use this to refer to the global weapon data in the array above.
+ */
+#define WEAPONS_GLOBAL 0
 
 /**
  * The number of weapons/weapon types configured in the weapons config file.
@@ -94,9 +100,9 @@ new g_iWeaponTypeCount;
 new Handle:g_hWeapons[MAXPLAYERS + 1];
 
 /**
- * Use this to refer to the global weapon data in the array above.
+ * Small function to check if the weapon configs have been cached.
  */
-#define WEAPONS_GLOBAL 0
+stock bool:Weapons_AreConfigsCached() { return bool:GetArraySize(g_hWeapons[WEAPONS_GLOBAL]); }
 
 /**
  * Stores weapon type data.
@@ -105,6 +111,9 @@ new Handle:g_hWeaponTypes;
 
 // Include sub-modules.
 #include "zr/weapons/weprestrict"
+#include "zr/weapons/zmarket"
+#include "zr/weapons/wepalpha"
+#include "zr/weapons/wepmenus"
 
 /**
  * Register this module.
@@ -144,7 +153,7 @@ Weapons_OnPluginStart()
     
     // Create cvars.
     g_hCvarWeapons =            Project_CreateConVar("weapons",             "1",                        "Enable weapons module, disabling this will disable any weapons-related features. (weapon restrictions, weapon knockback multipliers, etc)");
-    g_hCvarWeaponsConfigFile =  Project_CreateConVar("weapons_configfile",  "configs/zr/weapons.txt",   "Path to weapons config file. Path is relative to the SourceMod directory.");
+    g_hCvarWeaponsConfigFile =  Project_CreateConVar("weapons_configfile",  "configs/zr/weapons.txt",   "Path to weapons config file.  Path is relative to the SourceMod directory.");
     
     // Create dynamic arrays to store weapon data.
     g_hWeapons[WEAPONS_GLOBAL] = CreateArray(sizeof(g_WeaponsDummyArray));
@@ -152,6 +161,8 @@ Weapons_OnPluginStart()
     
     // Forward event to sub-modules.
     WepRestrict_OnPluginStart();
+    ZMarket_OnPluginStart();
+    WepAlpha_OnPluginStart();
 }
 
 /**
@@ -191,10 +202,9 @@ public Weapons_OnConfigReload(configindex)
  */
 public Weapons_OnClientPutInServer(client)
 {
-    // Hook "Weapon_*" functions on client.
-    //SDKHook(client, SDKHook_WeaponCanUse, WeaponsCanUse);
-    //SDKHook(client, SDKHook_WeaponDrop, WeaponsDrop);
-    //SDKHook(client, SDKHook_WeaponEquip, WeaponsEquip);
+    // Client is joining before OnConfigsExecuted, they need to rejoin.
+    if (!Weapons_AreConfigsCached())
+        KickClient(client);
 }
 
 /**
@@ -204,10 +214,6 @@ public Weapons_OnClientPutInServer(client)
  */
 public Weapons_OnClientDisconnect(client)
 {
-    // Unhook "Weapon_*" functions on client.
-    //SDKUnhook(client, SDKHook_WeaponCanUse, WeaponsCanUse);
-    //SDKUnhook(client, SDKHook_WeaponDrop, WeaponsDrop);
-    //SDKUnhook(client, SDKHook_WeaponEquip, WeaponsEquip);
 }
 
 
@@ -231,14 +237,15 @@ public KvCache:Weapons_Cache(Handle:kv, sectionindex, const String:sectionname[]
     // General weapon information.
     KvGetString(kv, "entity", weapondata[WepConfig_Entity], sizeof(weapondata[WepConfig_Entity]));
     KvGetString(kv, "type", weapondata[WepConfig_Type], sizeof(weapondata[WepConfig_Type]));
-    weapondata[WepConfig_Slot] = KvGetNum(kv, "slot");
+    weapondata[WepConfig_Slot] = WepLib_Slots:KvGetNum(kv, "slot");
     
     // Restriction.
     weapondata[WepConfig_RestrictDefault] = Util_KvGetPhraseAsBool(kv, "restrictdefault", BoolPhrase_YesNo, "no");
+    weapondata[WepConfig_Restricted] = weapondata[WepConfig_RestrictDefault];
     weapondata[WepConfig_Toggleable] = Util_KvGetPhraseAsBool(kv, "toggleable", BoolPhrase_YesNo, "yes");
     
     // Weapon Ammo.
-    KvGetString(kv, "ammotype", weapondata[WepConfig_AmmoType], sizeof(weapondata[WepConfig_AmmoType]));
+    KvGetString(kv, "ammocvar", weapondata[WepConfig_AmmoCvar], sizeof(weapondata[WepConfig_AmmoCvar]));
     weapondata[WepConfig_AmmoPrice] = KvGetNum(kv, "ammoprice", -1);
     
     // Knockback.
@@ -328,18 +335,20 @@ Weapons_BuildWTList()
  * @param client    The client index.
  * @param overwrite True to overwrite existing per-client data if it exists.
  * 
- * @return          True if the data was copied, false if not.
+ * @return          True if there were no problems, false if the data hasn't been cached yet.
  */
 stock bool:Weapons_PerClientInit(client, bool:overwrite = false)
 {
+    if (!Weapons_AreConfigsCached())
+        return false;
+    
     if (g_hWeapons[client] != INVALID_HANDLE)
     {
         // If we're going to overwrite the data, destroy it first.
         if (overwrite)
             CloseHandle(g_hWeapons[client]);
-        
         else
-            return false;
+            return true;
     }
     
     g_hWeapons[client] = CloneArray(g_hWeapons[WEAPONS_GLOBAL]);
@@ -348,13 +357,20 @@ stock bool:Weapons_PerClientInit(client, bool:overwrite = false)
 
 /**
  * Destroys the per-client weapon data on a client.
+ * Be careful with this, other modules might depend on this data! 
  * 
  * @param client    The client index.
+ * 
+ * @return          True if the data was destroyed, false if there is no data.
  */
 stock Weapons_PerClientDestroy(client)
 {
+    if (g_hWeapons[client] == INVALID_HANDLE)
+        return false;
+    
     CloseHandle(g_hWeapons[client]);
     g_hWeapons[client] = INVALID_HANDLE;
+    return true;
 }
 
 /**
@@ -366,7 +382,7 @@ stock Weapons_PerClientDestroy(client)
  */
 stock bool:Weapons_PerClientExists(client)
 {
-    return (g_hWeapons[client] != INVALID_HANDLE)
+    return (g_hWeapons[client] != INVALID_HANDLE);
 }
 
 /**
@@ -378,7 +394,7 @@ stock bool:Weapons_PerClientExists(client)
  */
 stock Weapons_NameToIndex(const String:weapon[])
 {
-    decl String:weaponname[64];
+    decl String:weaponname[WEPCONFIG_NAME];
     
     for (new windex = 0; windex < g_iWeaponCount; windex++)
     {
@@ -551,6 +567,8 @@ stock Weapons_ReadWTypeName(index, String:wtypename[], maxlen)
  * @param index             The weapon type index.
  * @param hWeapons          A handle to store array containing matching weapons.
  *                          Don't forget to close this!
+ * 
+ * @return                  The number of weapons in the array.
  */
 stock Weapons_GetWeaponsOfType(index, &Handle:hWeapons)
 {
@@ -560,7 +578,7 @@ stock Weapons_GetWeaponsOfType(index, &Handle:hWeapons)
     decl String:typename[32];
     Weapons_ReadWTypeName(index, typename, sizeof(typename));
     
-    new count;
+    new count = 0;
     decl String:weapontypes[64];
     new String:weapontype[16][sizeof(weapontypes)];
     
@@ -577,7 +595,10 @@ stock Weapons_GetWeaponsOfType(index, &Handle:hWeapons)
             
             // If types match, then add weapon to array.
             if (StrEqual(typename, weapontype[wtindex], false))
-                count = PushArrayCell(hWeapons, windex);
+            {
+                PushArrayCell(hWeapons, windex);
+                count++;
+            }
         }
     }
     

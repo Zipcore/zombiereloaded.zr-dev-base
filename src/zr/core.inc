@@ -28,7 +28,12 @@
 /**
  * This module's identifier.
  */
-//new Module:g_moduleCore;
+new Module:g_moduleCore;
+
+/**
+ * Function for outside files to use to return the module's identifier.
+ */
+stock Module:Core_GetIdentifier() { return g_moduleCore; }
 
 /**
  * Register this module.
@@ -46,8 +51,7 @@ Core_Register()
     moduledata[ModuleData_Dependencies][0] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
-    //g_moduleCore = ModuleMgr_Register(moduledata);
-    ModuleMgr_Register(moduledata);
+    g_moduleCore = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
     //EventMgr_RegisterEvent(g_moduleCore, Event_OnAllPluginsLoaded,      "Core_OnAllPluginsLoaded");
@@ -115,4 +119,16 @@ stock bool:Util_KvGetPhraseAsBool(Handle:kv, const String:key[], BoolPhrases:boo
     }
     
     return false;
+}
+
+/**
+ * Converts a boolean value into a menu draw define.
+ * true =   ITEMDRAW_DEFAULT
+ * false =  ITEMDRAW_DISABLED
+ * 
+ * @param condition The boolean to convert. 
+ */
+stock Util_GetMenuItemDraw(bool:condition)
+{
+    return condition ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
 }

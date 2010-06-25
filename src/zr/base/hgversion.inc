@@ -1,2 +1,2 @@
-#define PROJECT_MERCURIAL_REVISION         "-1:000000000000"
-#define PROJECT_MERCURIAL_DATE             "Tue, 02 Mar 2010 18:12:01 -0800"
+#define PROJECT_MERCURIAL_REVISION         "0+:f61f6f20aa7a+"
+#define PROJECT_MERCURIAL_DATE             "Fri, 25 Jun 2010 12:39:41 -0700"

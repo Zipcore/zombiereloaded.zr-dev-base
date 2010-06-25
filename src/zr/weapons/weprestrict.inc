@@ -2,6 +2,7 @@
  * ============================================================================
  *
  *  Zombie:Reloaded
+ *  Dependencies: weapons.inc
  *
  *  File:          restrict.inc
  *  Type:          Core
@@ -249,7 +250,7 @@ public Action:Listener_Buy(client, const String:command[], argc)
     decl String:weapon[64];
     GetCmdArg(1, weapon, sizeof(weapon));
     
-    decl String:weapondisp[64];
+    decl String:weapondisp[WEPCONFIG_NAME];
     new windex = Weapons_ClsNameToDisplay(weapon, weapondisp, sizeof(weapondisp), true);
     
     // The weapon has no data.
@@ -411,6 +412,10 @@ stock WepRestrict_SetRestriction(index, bool:restrict)
  */
 stock bool:WepRestrict_IsRestricted(index)
 {
+    // If the module is disabled, nothing is restricted.
+    if (ModuleMgr_IsDisabled(g_moduleWepRestrict))
+        return false;
+    
     return bool:Weapons_ReadCell(index, WepConfig_Restricted);
 }
 
@@ -476,7 +481,7 @@ public Action:WepRestrict_CanUse(client, weapon)
     if (!GetConVarBool(g_hCvarWeapons) || !GetConVarBool(g_hCvarRestrict))
         return Plugin_Continue;
     
-    decl String:weapondisp[64];
+    decl String:weapondisp[WEPCONFIG_NAME];
     new windex = Weapons_ClsNameToDisplay(weaponentity, weapondisp, sizeof(weapondisp));
     
     // If the weapon isn't configured then we shouldn't interfere.
@@ -524,7 +529,7 @@ public Action:Command_Restrict(client, argc)
         return Plugin_Handled;
     }
     
-    decl String:target[64], String:returntarget[64];
+    decl String:target[64], String:returntarget[WEPCONFIG_NAME];
     new bool:single;
     new RestrictQuery:query;
     
@@ -538,7 +543,8 @@ public Action:Command_Restrict(client, argc)
         query = WepRestrict_Restrict(true, target, single, returntarget, sizeof(returntarget));
         
         // Print response to client(s).
-        WepRestrict_PrintQueryResponse(client, query, single, true, returntarget);
+        WepRestrict_PrintQueryResponse((query != Query_Successful) ? client : 0, query, single, true, returntarget);
+ 
     }
     
     return Plugin_Handled;
@@ -574,7 +580,7 @@ public Action:Command_Unrestrict(client, argc)
         return Plugin_Handled;
     }
     
-    decl String:target[64], String:returntarget[64];
+    decl String:target[64], String:returntarget[WEPCONFIG_NAME];
     new bool:single;
     new RestrictQuery:query;
     
@@ -588,7 +594,7 @@ public Action:Command_Unrestrict(client, argc)
         query = WepRestrict_Restrict(false, target, single, returntarget, sizeof(returntarget));
         
         // Print response to client(s).
-        WepRestrict_PrintQueryResponse(client, query, single, false, returntarget);
+        WepRestrict_PrintQueryResponse((query != Query_Successful) ? client : 0, query, single, false, returntarget);
     }
     
     return Plugin_Handled;

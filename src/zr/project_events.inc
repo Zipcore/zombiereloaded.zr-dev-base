@@ -32,6 +32,7 @@
  */
 enum ProjectEvents
 {
+    // Cross-game events.
     Event_OnAllPluginsLoaded,       /** All plugins have loaded. */
     Event_OnPluginEnd,              /** Plugin is ending. */
     Event_OnAllModulesLoaded,       /** All modules have been registered. */
@@ -45,6 +46,10 @@ enum ProjectEvents
     Event_OnConfigsExecuted,        /** All convars are set, cvar-dependent code should use this. */
     Event_OnClientPutInServer,      /** Client has joined the server. */
     Event_OnClientDisconnect,       /** Client is disconnecting from the server. */
+    Event_OnClientCookiesCached,    /** A client's cookies have been cached from the database. */
+    
+    // Custom events.
+    Event_OnClientAlphaChanged,
     
     // CS:S events.
     #if defined PROJECT_GAME_CSS
@@ -86,10 +91,11 @@ stock String:g_ProjectEventNames[ProjectEvents][] = {
     "OnAutoConfigsBuffered",
     "OnConfigsExecuted",
     "OnClientPutInServer",
-    "OnClientDisconnect"
+    "OnClientDisconnect",
+    "OnClientCookiesCached",
     
     // Custom events.
-    
+    "OnClientAlphaChanged"
     
     // CS:S events.
     #if defined PROJECT_GAME_CSS
@@ -187,6 +193,38 @@ public OnConfigsExecuted()
 }
 
 /**
+ * Fires every game frame.
+ * Events inside:
+ * - OnClientAlphaChanged  
+ */
+public OnGameFrame()
+{
+    // Create an array of clients that's remembered.
+    static lastalpha[MAXPLAYERS + 1];
+    new color[4];
+    
+    for (new client = 1; client <= MaxClients; client++)
+    {
+        if (!IsClientInGame(client))
+            continue;
+        
+        OffsLib_GetEntityColor(client, color);
+        if (lastalpha[client] != color[3])
+        {
+            // Forward event to all modules.
+            static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell};
+            new any:eventdata[2][1];
+            eventdata[0][0] = client;
+            eventdata[1][0] = color[3];
+            
+            EventMgr_Forward(Event_OnClientAlphaChanged, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+        }
+        
+        lastalpha[client] = color[3];
+    }
+}
+
+/**
  * Client has joined the server.
  * 
  * @param client    The client index.
@@ -212,6 +250,24 @@ public OnClientDisconnect(client)
     eventdata[0][0] = client;
     
     EventMgr_Forward(Event_OnClientDisconnect, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+}
+
+/**
+ * A client's cookies have been cached from the database.
+ * 
+ * @param client    The client index.
+ */
+public OnClientCookiesCached(client)
+{
+    // This forward is called when clients connect and disconnect, so filter the bad calls out here.
+    if (!IsClientConnected(client))
+        return;
+    
+    // Forward event to all modules.
+    new any:eventdata[1][1];
+    eventdata[0][0] = client;
+    
+    EventMgr_Forward(Event_OnClientCookiesCached, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
 }
 
 // **********************************************

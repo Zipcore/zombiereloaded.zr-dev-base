@@ -90,7 +90,7 @@ StripObj_OnPluginStart()
  */
 public StripObj_OnMyModuleDisable()
 {
-    Project_PrintToServer("%T", "ObjStrip disable", LANG_SERVER);
+    TransMgr_PrintText(SERVER_INDEX, MsgFormat_Both, MsgType_Server, g_moduleStripObj, false, "ObjStrip disable");
 }
 
 /**

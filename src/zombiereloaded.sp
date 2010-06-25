@@ -46,12 +46,17 @@
 #include "zr/base/modulemanager"
 
 // Library includes.
+#include "zr/libraries/cookielib"
+#include "zr/libraries/offsetlib"
 #include "zr/libraries/weaponlib"
+#include "zr/libraries/shoppinglistlib"
 
 // Module includes.
 #include "zr/core"
+#include "zr/gamedata"
 #include "zr/weapons/weapons"
 #include "zr/stripobjectives"
+#include "zr/gpbridge"
 
 /**
  * Record plugin info.

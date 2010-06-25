@@ -23,10 +23,14 @@ ZR
 			..\src\zr\base\wrappers.inc
 		+Libraries
 			..\src\zr\libraries\cookielib.inc
+			..\src\zr\libraries\offsetlib.inc
 			..\src\zr\libraries\overlaylib.inc
+			..\src\zr\libraries\shoppinglistlib.inc
 			..\src\zr\libraries\weaponlib.inc
 		+Modules
 			..\src\zr\core.inc
+			..\src\zr\gamedata.inc
+			..\src\zr\gpbridge.inc
 			..\src\zr\moduletemplate.inc
 			..\src\zr\stripobjectives.inc
 	..\src\zr\project.inc
@@ -46,11 +50,10 @@ ZR
 		+Weapons
 			..\src\zr\weapons\ammomanager.inc
 			..\src\zr\weapons\ammoprofiles.inc
-			..\src\zr\weapons\menu_weapons.inc
-			..\src\zr\weapons\weaponalpha.inc
-			..\src\zr\weapons\weaponammo.inc
 			..\src\zr\weapons\weaponprofiles.inc
 			..\src\zr\weapons\weapons.inc
+			..\src\zr\weapons\wepalpha.inc
+			..\src\zr\weapons\wepmenus.inc
 			..\src\zr\weapons\weprestrict.inc
 			..\src\zr\weapons\zmarket.inc
 	-External API Includes
@@ -77,6 +80,7 @@ ZR
 		..\env\include\bitbuffer.inc
 		..\env\include\clientprefs.inc
 		..\env\include\clients.inc
+		..\env\include\colors.inc
 		..\env\include\commandfilters.inc
 		..\env\include\console.inc
 		..\env\include\core.inc
@@ -128,25 +132,45 @@ ZR
 		..\env\include\version.inc
 	-Gamedata
 		..\cstrike\addons\sourcemod\gamedata\plugin.zombiereloaded.txt
-	-Translations
+	+Translations
 		..\cstrike\addons\sourcemod\translations\zombiereloaded.phrases.txt
 [Open project files]
 0=..\src\zombiereloaded.sp
 1=..\src\zr\project.inc
 2=..\src\zr\weapons\weapons.inc
 3=..\src\zr\weapons\weprestrict.inc
+4=..\src\zr\weapons\zmarket.inc
+5=..\src\zr\weapons\wepmenus.inc
+6=..\src\zr\libraries\offsetlib.inc
+7=..\src\zr\libraries\weaponlib.inc
+8=..\src\zr\libraries\cookielib.inc
 [Selected Project Files]
 Main=
-Selected=..\src\zr\weapons\weapons.inc
+Selected=..\src\zr\weapons\weprestrict.inc
 [..\src\zombiereloaded.sp]
-TopLine=17
-Caret=29,53
+TopLine=26
+Caret=22,56
 [..\src\zr\project.inc]
-TopLine=87
-Caret=29,110
+TopLine=199
+Caret=1,226
 [..\src\zr\weapons\weapons.inc]
-TopLine=83
-Caret=25,107
+TopLine=577
+Caret=1,106
 [..\src\zr\weapons\weprestrict.inc]
-TopLine=147
-Caret=2,177
+TopLine=353
+Caret=4,174
+[..\src\zr\weapons\zmarket.inc]
+TopLine=305
+Caret=22,92
+[..\src\zr\weapons\wepmenus.inc]
+TopLine=244
+Caret=1,268
+[..\src\zr\libraries\offsetlib.inc]
+TopLine=1
+Caret=20,4
+[..\src\zr\libraries\weaponlib.inc]
+TopLine=312
+Caret=7,342
+[..\src\zr\libraries\cookielib.inc]
+TopLine=137
+Caret=7,160

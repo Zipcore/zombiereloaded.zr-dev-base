@@ -1,0 +1,2 @@
+#define PROJECT_MERCURIAL_REVISION         "4+:f189732e9b33+"
+#define PROJECT_MERCURIAL_DATE             "Sat, 26 Jun 2010 15:46:25 -0700"

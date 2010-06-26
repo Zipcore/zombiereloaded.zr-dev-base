@@ -114,6 +114,7 @@ new Handle:g_hWeaponTypes;
 #include "zr/weapons/zmarket"
 #include "zr/weapons/wepalpha"
 #include "zr/weapons/wepmenus"
+#include "zr/weapons/gpbridge"
 
 /**
  * Register this module.

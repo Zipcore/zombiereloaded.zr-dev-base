@@ -164,6 +164,7 @@ Weapons_OnPluginStart()
     WepRestrict_OnPluginStart();
     ZMarket_OnPluginStart();
     WepAlpha_OnPluginStart();
+    GPBridge_OnPluginStart();
 }
 
 /**

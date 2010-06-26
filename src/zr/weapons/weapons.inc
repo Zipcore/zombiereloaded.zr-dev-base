@@ -234,7 +234,7 @@ public KvCache:Weapons_Cache(Handle:kv, sectionindex, const String:sectionname[]
     new weapondata[WepConfigs];
     
     // Section name.
-    KvGetSectionName(kv, weapondata[WepConfig_Name], sizeof(weapondata[WepConfig_Name]));
+    strcopy(weapondata[WepConfig_Name], sizeof(weapondata[WepConfig_Name]), sectionname);
     
     // General weapon information.
     KvGetString(kv, "entity", weapondata[WepConfig_Entity], sizeof(weapondata[WepConfig_Entity]));

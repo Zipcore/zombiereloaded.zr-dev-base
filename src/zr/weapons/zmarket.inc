@@ -284,7 +284,7 @@ stock bool:ZMarket_MenuMain(client)
     
     // Get auto-rebuy setting.
     decl String:autorebuysetting[64];
-    TransMgr_TranslateBoolToPhrase(client, CookieLib_GetBool(client, g_hZMarketAutoRebuyCookie), BoolPhrase_OnOff, autorebuysetting, sizeof(autorebuysetting));
+    TransMgr_BoolToPhrase(client, CookieLib_GetBool(client, g_hZMarketAutoRebuyCookie), BoolPhrase_OnOff, autorebuysetting, sizeof(autorebuysetting));
     
     // Format menu options.
     Format(title, sizeof(title), "%T\n ", "Weapons menu zmarket main title", client);

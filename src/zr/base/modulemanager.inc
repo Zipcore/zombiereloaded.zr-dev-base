@@ -347,7 +347,7 @@ stock Module:ModuleMgr_Find(ModuleData:data, any:value, Module:modules[] = {INVA
 /**
  * Finds any modules matching the given information.
  * 
- * @param data          The data to match the string with.
+ * @param data          The data to match the string with. (See enum ModuleData)
  * @param value         The string value of the data that must match.
  * @param casesensitive True if the strings must also match case.
  * @param modules       Output array containing a list of module identifiers that match. (optional)
@@ -783,7 +783,7 @@ stock Handle:ModuleMgr_GetList()
 #if defined PROJECT_BASE_CMD
 
 /**
- * Defines for the first element of the array above.
+ * Defines used to refer to the server sub-commands or client sub-commands.
  */
 #define BASECMD_SERVER 0
 #define BASECMD_CLIENT 1
@@ -1229,7 +1229,7 @@ public BaseCmd_Info(client, Handle:hParams, argc)
     bModuleDisabled = bool:ModuleMgr_ReadCell(module, ModuleData_Disabled);
     
     #if defined TRANSLATIONS_MANAGER
-        TransMgr_TranslateBoolToPhrase(client, !bModuleDisabled, BoolPhrase_YesNo, strModuleEnabled, sizeof(strModuleEnabled));
+        TransMgr_BoolToPhrase(client, !bModuleDisabled, BoolPhrase_YesNo, strModuleEnabled, sizeof(strModuleEnabled));
     #else
         IntToString(_:!bModuleDisabled, strModuleEnabled, sizeof(strModuleEnabled));
     #endif
@@ -1286,7 +1286,7 @@ public BaseCmd_List(client)
         bModuleDisabled = bool:ModuleMgr_ReadCell(module, ModuleData_Disabled);
         
         #if defined TRANSLATIONS_MANAGER
-            TransMgr_TranslateBoolToPhrase(client, !bModuleDisabled, BoolPhrase_EnabledDisabled, strModuleEnabled, sizeof(strModuleEnabled), true);
+            TransMgr_BoolToPhrase(client, !bModuleDisabled, BoolPhrase_EnabledDisabled, strModuleEnabled, sizeof(strModuleEnabled), true);
         #else
             IntToString(_:!bModuleDisabled, strModuleEnabled, sizeof(strModuleEnabled));
         #endif

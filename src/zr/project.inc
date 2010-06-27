@@ -60,6 +60,7 @@ stock ForwardOnPluginStart()
     GameData_OnPluginStart();
     Weapons_OnPluginStart();
     StripObj_OnPluginStart();
+    GameRules_OnPluginStart();
 }
 
 // **********************************************

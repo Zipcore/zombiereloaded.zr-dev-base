@@ -98,7 +98,7 @@ stock bool:Util_IsClientOnTeam(client)
 }
 
 /**
- * Retrieve a keyvalue as a string and convert it to a boolean  value.
+ * Retrieve a keyvalue as a string and convert it to a boolean value.
  * 
  * @param kv            The kv handle.
  * @param key           The keyvalue key to get value from.
@@ -110,7 +110,7 @@ stock bool:Util_KvGetPhraseAsBool(Handle:kv, const String:key[], BoolPhrases:boo
     decl String:phrase[16];
     KvGetString(kv, key, phrase, sizeof(phrase), defvalue);
     
-    new PhraseToBool:result = TransMgr_TranslatePhraseToBool(LANG_SERVER, boolphrase, phrase);
+    new PhraseToBool:result = TransMgr_PhraseToBoolEx(boolphrase, phrase);
     switch(result)
     {
         case PhraseToBool_False:    return false;

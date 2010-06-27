@@ -56,6 +56,7 @@
 #include "zr/gamedata"
 #include "zr/weapons/weapons"
 #include "zr/stripobjectives"
+#include "zr/gamerules"
 
 /**
  * Record plugin info.

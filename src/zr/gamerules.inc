@@ -35,13 +35,18 @@ new Module:g_moduleGameRules;
  */
 stock Module:GameRules_GetIdentifier() { return g_moduleGameRules; }
 
+/**
+ * Cvar handles.
+ */
+new Handle:g_hCvarGameRulesConfigFile;
+
 #define GAMERULES_NAME_LEN 64
 #define GAMERULES_MAX_MODULES 64
 
 /**
  * Available game rule actions.
  */
-enum GameRulesAction
+enum GameRuleAction
 {
     GameRuleAction_Invalid = -1,
     GameRuleAction_Enable,
@@ -55,7 +60,7 @@ enum GameRule
 {
     String:GameRule_Name[GAMERULES_NAME_LEN],               /** Name of rule */
     Module:GameRule_Modules[GAMERULES_MAX_MODULES],         /** Modules that's listed in the rule set */
-    GameRulesAction:GameRule_Actions[GAMERULES_MAX_MODULES] /** Modules' action */
+    GameRuleAction:GameRule_Actions[GAMERULES_MAX_MODULES] /** Modules' action */
 }
 
 /**
@@ -68,6 +73,10 @@ stock GameRulesDummyArray[GameRule];
  */
 new Handle:g_hGameRules;
 
+/**
+ * The number of game rule sets that are configured in the game rules config file.
+ */
+new g_iGameRuleCount;
 
 /**
  * Register this module.
@@ -93,7 +102,7 @@ GameRules_Register()
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnConfigsExecuted",        "GameRules_OnConfigsExecuted");
     
     // Register config file(s) that this module will use.
-    ConfigMgr_Register(g_moduleGameRules, "GameRules_OnConfigReload", "configs/zr/gamerules.txt");
+    ConfigMgr_Register(g_moduleGameRules, "GameRules_OnConfigReload", "");
 }
 
 /**
@@ -103,6 +112,9 @@ GameRules_OnPluginStart()
 {
     // Register the module.
     GameRules_Register();
+    
+    // Create cvars.
+    g_hCvarGameRulesConfigFile =  Project_CreateConVar("gamerules_configfile",  "configs/zr/gamerules.txt",   "Path to game rules config file.  Path is relative to the SourceMod directory.");
     
     // Create array.
     g_hGameRules = CreateArray(sizeof(GameRulesDummyArray));
@@ -120,17 +132,15 @@ GameRules_OnPluginStart()
 public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname[])
 {
     new gameRule[GameRule];
-    new numModules = 0;
-    new Module:module = INVALID_MODULE;
-    new GameRulesAction:action = GameRuleAction_Invalid:
+    new numModules;
+    new Module:module;
+    new GameRuleAction:action;
     
     // Section name.
     strcopy(gameRule[GameRule_Name], GAMERULES_NAME_LEN, sectionname);
     
     decl String:keyName[64];
     decl String:keyValue[64];
-    keyName[0] = 0;
-    keyValue[0] = 0;
     
     KvGotoFirstSubKey(kv);
     do
@@ -139,11 +149,7 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
         if (numModules >= GAMERULES_MAX_MODULES)
         {
             // Log a warning. Too many modules.
-            #if defined LOG_MANAGER
-                LogMgr_Print(module, LogType_Error, "Config validation", "Too many modules in game rule: \"%s\".", sectionname);
-            #else
-                PrintToServer("Too many modules in game rule: \"%s\".", sectionname);
-            #endif
+            LogMgr_Print(module, LogType_Error, "Config validation", "Too many modules in game rule: \"%s\".", sectionname);
             break;
         }
         
@@ -186,11 +192,36 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
 }
 
 /**
+ * Re-cache all game rules data from disk.
+ * Never use this before OnConfigsExecuted!
+ */
+GameRules_CacheGameRulesData()
+{
+    decl String:configfile[PLATFORM_MAX_PATH];
+    GetConVarString(g_hCvarGameRulesConfigFile, configfile, sizeof(configfile));
+    
+    if (ConfigMgr_ValidateFile(configfile))
+        ConfigMgr_WriteString(g_moduleGameRules, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);
+    else
+    {
+        LogMgr_Print(g_moduleGameRules, LogType_Fatal_Module, "Config Validation", "Invalid config file path in cvar zr_gamerules_configfile: \"%s\"", configfile);
+        return;
+    }
+    
+    ClearArray(g_hGameRules);
+    g_iGameRuleCount = ConfigMgr_CacheKv(g_moduleGameRules, CM_CONFIGINDEX_FIRST, "GameRules_Cache");
+    
+    // There were no game rule sets configured.
+    if (g_iGameRuleCount == 0)
+        LogMgr_Print(g_moduleGameRules, LogType_Fatal_Plugin, "Config Validation", "No usable data found in game rules config file: %s", configfile);
+}
+
+/**
  * All convars are set, cvar-dependent code should use this.
  */
 public GameRules_OnConfigsExecuted()
 {
-
+    GameRules_CacheGameRulesData();
 }
 
 /**
@@ -198,7 +229,7 @@ public GameRules_OnConfigsExecuted()
  */
 public GameRules_OnConfigReload(configindex)
 {
-
+    GameRules_CacheGameRulesData();
 }
 
 /**

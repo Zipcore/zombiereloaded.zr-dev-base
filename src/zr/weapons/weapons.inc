@@ -88,12 +88,6 @@ stock g_WeaponsDummyArray[WepConfigs];
 #define WEAPONS_GLOBAL 0
 
 /**
- * The number of weapons/weapon types configured in the weapons config file.
- */
-new g_iWeaponCount;
-new g_iWeaponTypeCount;
-
-/**
  * Global and per-client weapon data array.
  * Index 0 holds the global data, the other indexes are for client-specific settings.
  */
@@ -108,6 +102,12 @@ stock bool:Weapons_AreConfigsCached() { return bool:GetArraySize(g_hWeapons[WEAP
  * Stores weapon type data.
  */
 new Handle:g_hWeaponTypes;
+
+/**
+ * The number of weapons/weapon types configured in the weapons config file.
+ */
+new g_iWeaponCount;
+new g_iWeaponTypeCount;
 
 // Include sub-modules.
 #include "zr/weapons/weprestrict"
@@ -266,7 +266,7 @@ public KvCache:Weapons_Cache(Handle:kv, sectionindex, const String:sectionname[]
 
 /**
  * Re-cache all weapon data from disk.
- * Never use this before OnConfigsExecuted! 
+ * Never use this before OnConfigsExecuted!
  */
 Weapons_CacheWeaponData()
 {

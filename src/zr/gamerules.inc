@@ -41,12 +41,12 @@ stock Module:GameRules_GetIdentifier() { return g_moduleGameRules; }
 /**
  * Available game rule actions.
  */
-/*enum GameRulesAction
+enum GameRulesAction
 {
     GameRuleAction_Invalid = -1,
     GameRuleAction_Enable,
     GameRuleAction_Disable
-}*/
+}
 
 /**
  * Game rule data structure.
@@ -55,7 +55,7 @@ enum GameRule
 {
     String:GameRule_Name[GAMERULES_NAME_LEN],               /** Name of rule */
     Module:GameRule_Modules[GAMERULES_MAX_MODULES],         /** Modules that's listed in the rule set */
-    PhraseToBool:GameRule_Actions[GAMERULES_MAX_MODULES]    /** Modules' action */
+    GameRulesAction:GameRule_Actions[GAMERULES_MAX_MODULES] /** Modules' action */
 }
 
 /**
@@ -122,7 +122,7 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
     new gameRule[GameRule];
     new numModules = 0;
     new Module:module = INVALID_MODULE;
-    new PhraseToBool:phrasebool;
+    new GameRulesAction:action = GameRuleAction_Invalid:
     
     // Section name.
     strcopy(gameRule[GameRule_Name], GAMERULES_NAME_LEN, sectionname);
@@ -160,10 +160,10 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
         {
             gameRule[GameRule_Modules][numModules] = module;
             
-            phrasebool = TransMgr_PhraseToBoolEx(BoolPhrase_OnOff, keyValue);
-            if (phrasebool != PhraseToBool_Neither)
+            action = StringToGameRuleAction(keyValue);
+            if (action != GameRuleAction_Invalid)
             {
-                gameRule[GameRule_Actions][numModules] = phrasebool;
+                gameRule[GameRule_Actions][numModules] = action;
                 numModules++;
             }
             else
@@ -207,7 +207,7 @@ public GameRules_OnConfigReload(configindex)
  * @param action    String value to convert.
  * @return          Game rule action, or GameRuleAction_Invalid on error.
  */
-/*GameRuleAction:StringToGameRuleAction(const String:action[])
+GameRuleAction:StringToGameRuleAction(const String:action[])
 {
     // TODO: Use a generic function for converting a string value to boolean.
     
@@ -221,4 +221,4 @@ public GameRules_OnConfigReload(configindex)
     }
     
     return GameRuleAction_Invalid;
-}*/
+}

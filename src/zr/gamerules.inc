@@ -41,12 +41,12 @@ stock Module:GameRules_GetIdentifier() { return g_moduleGameRules; }
 /**
  * Available game rule actions.
  */
-enum GameRulesAction
+/*enum GameRulesAction
 {
     GameRuleAction_Invalid = -1,
     GameRuleAction_Enable,
     GameRuleAction_Disable
-}
+}*/
 
 /**
  * Game rule data structure.
@@ -55,7 +55,7 @@ enum GameRule
 {
     String:GameRule_Name[GAMERULES_NAME_LEN],               /** Name of rule */
     Module:GameRule_Modules[GAMERULES_MAX_MODULES],         /** Modules that's listed in the rule set */
-    GameRulesAction:GameRule_Actions[GAMERULES_MAX_MODULES]  /** Modules' action */
+    PhraseToBool:GameRule_Actions[GAMERULES_MAX_MODULES]    /** Modules' action */
 }
 
 /**
@@ -88,9 +88,9 @@ GameRules_Register()
     g_moduleGameRules = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
-    //EventMgr_RegisterEvent(g_moduleGameRules, Event_OnMyModuleEnable,        "GameRules_OnMyModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleGameRules, Event_OnMyModuleDisable,       "GameRules_OnMyModuleDisable");
-    EventMgr_RegisterEvent(g_moduleGameRules, Event_OnConfigsExecuted,       "GameRules_OnConfigsExecuted");
+    //EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnMyModuleEnable",         "GameRules_OnMyModuleEnable");
+    //EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnMyModuleDisable",        "GameRules_OnMyModuleDisable");
+    EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnConfigsExecuted",        "GameRules_OnConfigsExecuted");
     
     // Register config file(s) that this module will use.
     ConfigMgr_Register(g_moduleGameRules, "GameRules_OnConfigReload", "configs/zr/gamerules.txt");
@@ -122,7 +122,7 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
     new gameRule[GameRule];
     new numModules = 0;
     new Module:module = INVALID_MODULE;
-    new GameRulesAction:action = GameRuleAction_Invalid:
+    new PhraseToBool:phrasebool;
     
     // Section name.
     strcopy(gameRule[GameRule_Name], GAMERULES_NAME_LEN, sectionname);
@@ -160,30 +160,22 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
         {
             gameRule[GameRule_Modules][numModules] = module;
             
-            action = StringToGameRuleAction(keyValue);
-            if (action != GameRuleAction_Invalid)
+            phrasebool = TransMgr_PhraseToBoolEx(BoolPhrase_OnOff, keyValue);
+            if (phrasebool != PhraseToBool_Neither)
             {
-                gameRule[GameRule_Actions][numModules] = action;
+                gameRule[GameRule_Actions][numModules] = phrasebool;
                 numModules++;
             }
             else
             {
                 // Log a warning. Invalid action.
-                #if defined LOG_MANAGER
-                    LogMgr_Print(module, LogType_Error, "Config validation", "Invalid action in rule \"%s\": \"%s\".", sectionname, keyValue);
-                #else
-                    PrintToServer("Invalid action in rule \"%s\": \"%s\".", sectionname, keyValue);
-                #endif
+                LogMgr_Print(module, LogType_Error, "Config validation", "Invalid action in rule \"%s\": \"%s\".", sectionname, keyValue);
             }
         }
         else
         {
             // Log a warning. Invalid module.
-            #if defined LOG_MANAGER
-                LogMgr_Print(module, LogType_Error, "Config validation", "Invalid module in rule \"%s\": \"%s\".", sectionname, keyName);
-            #else
-                PrintToServer("Invalid module in rule \"%s\": \"%s\".", sectionname, keyName);
-            #endif
+            LogMgr_Print(module, LogType_Error, "Config validation", "Invalid module in rule \"%s\": \"%s\".", sectionname, keyName);
         }
         
     } while (KvGotoNextKey(kv));
@@ -215,7 +207,7 @@ public GameRules_OnConfigReload(configindex)
  * @param action    String value to convert.
  * @return          Game rule action, or GameRuleAction_Invalid on error.
  */
-GameRuleAction:StringToGameRuleAction(const String:action[])
+/*GameRuleAction:StringToGameRuleAction(const String:action[])
 {
     // TODO: Use a generic function for converting a string value to boolean.
     
@@ -229,4 +221,4 @@ GameRuleAction:StringToGameRuleAction(const String:action[])
     }
     
     return GameRuleAction_Invalid;
-}
+}*/

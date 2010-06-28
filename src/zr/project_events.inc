@@ -26,98 +26,57 @@
  */
 
 /**
- * This is a collection of ALL game and custom events.
- * Add any custom events here to the bottom of the list, and update define EVENT_DATA_CELL_COUNT. (below)
- * Also don't forget to add the display name of your event to g_ProjectEventDisplay. (below)
+ * The max number of events that the project can have.
  */
-enum ProjectEvents
+#define PROJECT_MAX_EVENTS 128
+
+/**
+ * Event tag.
+ */
+enum ProjectEvent
 {
-    // Cross-game events.
-    Event_OnAllPluginsLoaded,       /** All plugins have loaded. */
-    Event_OnPluginEnd,              /** Plugin is ending. */
-    Event_OnAllModulesLoaded,       /** All modules have been registered. */
-    Event_OnModuleEnable,           /** A module has been enabled. */
-    Event_OnMyModuleEnable,         /** The module that hooked this event callback has been enabled. */
-    Event_OnModuleDisable,          /** A module has been disabled. */
-    Event_OnMyModuleDisable,        /** The module that hooked this event callback has been disabled. */
-    Event_OnMapStart,               /** The map has started. */
-    Event_OnMapEnd,                 /** The map has ended. */
-    Event_OnAutoConfigsBuffered,    /** This is called before OnConfigsExecuted but any time after OnMapStart. */
-    Event_OnConfigsExecuted,        /** All convars are set, cvar-dependent code should use this. */
-    Event_OnClientPutInServer,      /** Client has joined the server. */
-    Event_OnClientDisconnect,       /** Client is disconnecting from the server. */
-    Event_OnClientCookiesCached,    /** A client's cookies have been cached from the database. */
-    
-    // Custom events.
-    Event_OnClientAlphaChanged,
-    
-    // CS:S events.
-    #if defined PROJECT_GAME_CSS
-    
-    Event_RoundStart,               /** Round has started. */
-    Event_RoundFreezeEnd,           /** Pre-round has freezetime has finished. */
-    Event_RoundEnd,                 /** Round has ended. */
-    Event_PlayerTeam,               /** Client has joined a team. */
-    Event_PlayerSpawn,              /** Client has spawned. */
-    Event_PlayerHurt,               /** Client has been damaged. */
-    Event_PlayerDeath,              /** Client has been killed. */
-    Event_PlayerJump,               /** Client has jumped. */
-    Event_WeaponFire,               /** Client has fired a weapon. */
-    //Event_WeaponEntityFire        /** Client has fired a weapon. (returns weapon entity index) */
-    
-    #endif
-    
-    // TF2 events.
-    #if defined PROJECT_GAME_TF2
-    
-    #endif
+    INVALID_EVENT = -1  /** Used as an invalid event. */
 }
 
 /**
- * String array of display names for project events. (above)
- * Keep this updated as ProjectEvents is modified.
+ * Global variables to store each event's ID.
  */
-stock String:g_ProjectEventNames[ProjectEvents][] = {
-    // Cross-game events.
-    "OnAllPluginsLoaded",
-    "OnPluginEnd",
-    "OnAllModulesLoaded",
-    "OnModuleEnable",
-    "OnMyModuleEnable",
-    "OnModuleDisable",
-    "OnMyModuleDisable",
-    "OnMapStart",
-    "OnMapEnd",
-    "OnAutoConfigsBuffered",
-    "OnConfigsExecuted",
-    "OnClientPutInServer",
-    "OnClientDisconnect",
-    "OnClientCookiesCached",
-    
-    // Custom events.
-    "OnClientAlphaChanged"
-    
-    // CS:S events.
-    #if defined PROJECT_GAME_CSS
-    
-   ,"RoundStart",      // The beginning of a group of game events has to include the preceding "," from the group before it.
-    "RoundFreezeEnd",
-    "RoundEnd",
-    "PlayerTeam",
-    "PlayerSpawn",
-    "PlayerHurt",
-    "PlayerDeath",
-    "PlayerJump",
-    "WeaponFire"
-    //"WeaponEntityFire"
-    
-    #endif
-    
-    // TF2 events.
-    #if defined PROJECT_GAME_TF2
-    
-    #endif
-};
+
+// Cross-game events
+new ProjectEvent:g_EvOnAllPluginsLoaded;
+new ProjectEvent:g_EvOnPluginEnd;
+new ProjectEvent:g_EvOnAllModulesLoaded;
+new ProjectEvent:g_EvOnModuleEnable;
+new ProjectEvent:g_EvOnMyModuleEnable;
+new ProjectEvent:g_EvOnModuleDisable;
+new ProjectEvent:g_EvOnMyModuleDisable;
+new ProjectEvent:g_EvOnMapStart;
+new ProjectEvent:g_EvOnMapEnd;
+new ProjectEvent:g_EvOnAutoConfigsBuffered;
+new ProjectEvent:g_EvOnConfigsExecuted;
+new ProjectEvent:g_EvOnClientAlphaChanged;
+new ProjectEvent:g_EvOnClientPutInServer;
+new ProjectEvent:g_EvOnClientDisconnect;
+new ProjectEvent:g_EvOnClientCookiesCached;
+
+// CS:S events.
+#if defined PROJECT_GAME_CSS
+new ProjectEvent:g_EvRoundStart;
+new ProjectEvent:g_EvRoundFreezeEnd;
+new ProjectEvent:g_EvRoundEnd;
+new ProjectEvent:g_EvPlayerTeam;
+new ProjectEvent:g_EvPlayerSpawn;
+new ProjectEvent:g_EvPlayerHurt;
+new ProjectEvent:g_EvPlayerDeath;
+new ProjectEvent:g_EvPlayerJump;
+new ProjectEvent:g_EvWeaponFire;
+//new ProjectEvent:g_EvWeaponEntityFire;
+#endif
+
+// TF2 events.
+#if defined PROJECT_GAME_TF2
+
+#endif
 
 /**
  * Datatypes that can be passed with each event to modules.
@@ -152,7 +111,7 @@ stock EventDataTypes:g_CommonDataType2[] = {DataType_Cell};
 public OnAllPluginsLoaded()
 {
     // Forward event to all modules.
-    EventMgr_Forward(Event_OnAllPluginsLoaded, g_CommonEventData1, 0, 0, g_CommonDataType1);
+    EventMgr_Forward(g_EvOnAllPluginsLoaded, g_CommonEventData1, 0, 0, g_CommonDataType1);
 }
 
 /**
@@ -161,7 +120,7 @@ public OnAllPluginsLoaded()
 public OnMapStart()
 {
     // Forward event to all modules.
-    EventMgr_Forward(Event_OnMapStart, g_CommonEventData1, 0, 0, g_CommonDataType1);
+    EventMgr_Forward(g_EvOnMapStart, g_CommonEventData1, 0, 0, g_CommonDataType1);
 }
 
 /**
@@ -170,7 +129,7 @@ public OnMapStart()
 public OnMapEnd()
 {
     // Forward event to all modules.
-    EventMgr_Forward(Event_OnMapEnd, g_CommonEventData1, 0, 0, g_CommonDataType1);
+    EventMgr_Forward(g_EvOnMapEnd, g_CommonEventData1, 0, 0, g_CommonDataType1);
 }
 
 /**
@@ -180,7 +139,7 @@ public OnMapEnd()
 public OnAutoConfigsBuffered()
 {
     // Forward event to all modules.
-    EventMgr_Forward(Event_OnAutoConfigsBuffered, g_CommonEventData1, 0, 0, g_CommonDataType1);
+    EventMgr_Forward(g_EvOnAutoConfigsBuffered, g_CommonEventData1, 0, 0, g_CommonDataType1);
 }
 
 /**
@@ -189,7 +148,7 @@ public OnAutoConfigsBuffered()
 public OnConfigsExecuted()
 {
     // Forward event to all modules.
-    EventMgr_Forward(Event_OnConfigsExecuted, g_CommonEventData1, 0, 0, g_CommonDataType1);
+    EventMgr_Forward(g_EvOnConfigsExecuted, g_CommonEventData1, 0, 0, g_CommonDataType1);
 }
 
 /**
@@ -217,7 +176,7 @@ public OnGameFrame()
             eventdata[0][0] = client;
             eventdata[1][0] = color[3];
             
-            EventMgr_Forward(Event_OnClientAlphaChanged, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+            EventMgr_Forward(g_EvOnClientAlphaChanged, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
         }
         
         lastalpha[client] = color[3];
@@ -235,7 +194,7 @@ public OnClientPutInServer(client)
     new any:eventdata[1][1];
     eventdata[0][0] = client;
     
-    EventMgr_Forward(Event_OnClientPutInServer, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+    EventMgr_Forward(g_EvOnClientPutInServer, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
 }
 
 /**
@@ -249,7 +208,7 @@ public OnClientDisconnect(client)
     new any:eventdata[1][1];
     eventdata[0][0] = client;
     
-    EventMgr_Forward(Event_OnClientDisconnect, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+    EventMgr_Forward(g_EvOnClientDisconnect, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
 }
 
 /**
@@ -267,13 +226,75 @@ public OnClientCookiesCached(client)
     new any:eventdata[1][1];
     eventdata[0][0] = client;
     
-    EventMgr_Forward(Event_OnClientCookiesCached, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+    EventMgr_Forward(g_EvOnClientCookiesCached, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
 }
 
 // **********************************************
-//            Custom Event Forwarding
+//             Game Event Creating
 // **********************************************
 
+/**
+ * This is called from the event manager in OnPluginStart.
+ * Create the events you want to forward to modules here.
+ */
+stock EventMgr_CreateEvents()
+{
+    // Hook events to manage and forward to modules.
+    
+    // Cross-game events.
+    g_EvOnAllPluginsLoaded =        EventMgr_CreateEvent("Event_OnAllPluginsLoaded");       /** All plugins have loaded. */
+    g_EvOnPluginEnd =               EventMgr_CreateEvent("Event_OnPluginEnd");              /** Plugin is ending. */
+    g_EvOnAllModulesLoaded =        EventMgr_CreateEvent("Event_OnAllModulesLoaded");       /** All modules have been registered. */
+    g_EvOnModuleEnable =            EventMgr_CreateEvent("Event_OnModuleEnable");           /** A module has been enabled. */
+    g_EvOnMyModuleEnable =          EventMgr_CreateEvent("Event_OnMyModuleEnable");         /** The module that hooked this event callback has been enabled. */
+    g_EvOnModuleDisable =           EventMgr_CreateEvent("Event_OnModuleDisable");          /** A module has been disabled. */
+    g_EvOnMyModuleDisable =         EventMgr_CreateEvent("Event_OnMyModuleDisable");        /** The module that hooked this event callback has been disabled. */
+    g_EvOnMapStart =                EventMgr_CreateEvent("Event_OnMapStart");               /** The map has started. */
+    g_EvOnMapEnd =                  EventMgr_CreateEvent("Event_OnMapEnd");                 /** The map has ended. */
+    g_EvOnAutoConfigsBuffered =     EventMgr_CreateEvent("Event_OnAutoConfigsBuffered");    /** This is called before OnConfigsExecuted but any time after OnMapStart. */
+    g_EvOnConfigsExecuted =         EventMgr_CreateEvent("Event_OnConfigsExecuted");        /** All convars are set, cvar-dependent code should use this. */
+    g_EvOnClientAlphaChanged =      EventMgr_CreateEvent("Event_OnClientAlphaChanged");     /** Client cookies were cached from the database. */
+    g_EvOnClientPutInServer =       EventMgr_CreateEvent("Event_OnClientPutInServer");      /** Client has joined the server. */
+    g_EvOnClientDisconnect =        EventMgr_CreateEvent("Event_OnClientDisconnect");       /** Client is disconnecting from the server. */
+    g_EvOnClientCookiesCached =     EventMgr_CreateEvent("Event_OnClientCookiesCached");    /** Client cookies were cached from the database. */
+    
+    // CS:S events.
+    #if defined PROJECT_GAME_CSS
+        g_EvRoundStart =            EventMgr_CreateEvent("Event_RoundStart");               /** Round has started. */
+        g_EvRoundFreezeEnd =        EventMgr_CreateEvent("Event_RoundFreezeEnd");           /** Pre-round has freezetime has finished. */
+        g_EvRoundEnd =              EventMgr_CreateEvent("Event_RoundEnd");                 /** Round has ended. */
+        g_EvPlayerTeam =            EventMgr_CreateEvent("Event_PlayerTeam");               /** Client has joined a team. */
+        g_EvPlayerSpawn =           EventMgr_CreateEvent("Event_PlayerSpawn");              /** Client has spawned. */
+        g_EvPlayerHurt =            EventMgr_CreateEvent("Event_PlayerHurt");               /** Client has been damaged. */
+        g_EvPlayerDeath =           EventMgr_CreateEvent("Event_PlayerDeath");              /** Client has been killed. */
+        g_EvPlayerJump =            EventMgr_CreateEvent("Event_PlayerJump");               /** Client has jumped. */
+        g_EvWeaponFire =            EventMgr_CreateEvent("Event_WeaponFire");               /** Client has fired a weapon. */
+        //g_EvWeaponEntityFire =      EventMgr_CreateEvent("Event_WeaponEntityFire");         /** Client has fired a weapon. (returns weapon entity index) */
+    #endif
+    
+    // HL2DM events.
+    #if defined PROJECT_GAME_HL2DM
+    
+    #endif
+    
+    // DOD events.
+    #if defined PROJECT_GAME_DOD
+    
+    #endif
+    
+    // TF2 events.
+    #if defined PROJECT_GAME_TF2
+    
+    #endif
+    
+    // L4D events.
+    #if defined PROJECT_GAME_L4D
+    #endif
+    
+    // L4D2 events.
+    #if defined PROJECT_GAME_L4D2
+    #endif
+}
 
 // **********************************************
 //              Game Event Hooking
@@ -300,9 +321,27 @@ stock EventMgr_HookEvents()
         HookEvent("weapon_fire", GameEvent_WeaponFire);
     #endif
     
+    // HL2DM events.
+    #if defined PROJECT_GAME_HL2DM
+    
+    #endif
+    
+    // DOD events.
+    #if defined PROJECT_GAME_DOD
+    
+    #endif
+    
     // TF2 events.
     #if defined PROJECT_GAME_TF2
     
+    #endif
+    
+    // L4D events.
+    #if defined PROJECT_GAME_L4D
+    #endif
+    
+    // L4D2 events.
+    #if defined PROJECT_GAME_L4D2
     #endif
 }
 
@@ -323,7 +362,7 @@ stock EventMgr_HookEvents()
 public GameEvent_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
     // Forward event to all modules.
-    EventMgr_Forward(Event_RoundStart, g_CommonEventData1, 0, 0, g_CommonDataType1);
+    EventMgr_Forward(g_EvRoundStart, g_CommonEventData1, 0, 0, g_CommonDataType1);
 }
 
 /**
@@ -337,7 +376,7 @@ public GameEvent_RoundStart(Handle:event, const String:name[], bool:dontBroadcas
 public GameEvent_RoundFreezeEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
     // Forward event to all modules.
-    EventMgr_Forward(Event_RoundFreezeEnd, g_CommonEventData1, 0, 0, g_CommonDataType1);
+    EventMgr_Forward(g_EvRoundFreezeEnd, g_CommonEventData1, 0, 0, g_CommonDataType1);
 }
 
 /**
@@ -351,7 +390,7 @@ public GameEvent_RoundFreezeEnd(Handle:event, const String:name[], bool:dontBroa
 public GameEvent_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
     // Forward event to all modules.
-    EventMgr_Forward(Event_RoundEnd, g_CommonEventData1, 0, 0, g_CommonDataType1);
+    EventMgr_Forward(g_EvRoundEnd, g_CommonEventData1, 0, 0, g_CommonDataType1);
 }
 
 /**
@@ -373,7 +412,7 @@ public GameEvent_PlayerTeam(Handle:event, const String:name[], bool:dontBroadcas
     eventdata[2][0] = GetEventInt(event, "oldteam");
     eventdata[3][0] = GetEventBool(event, "disconnect");
     
-    EventMgr_Forward(Event_PlayerTeam, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    EventMgr_Forward(g_EvPlayerTeam, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
 }
 
 /**
@@ -390,7 +429,7 @@ public GameEvent_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadca
     new any:eventdata[1][1];
     eventdata[0][0] = GetClientOfUserId(GetEventInt(event, "userid"));
     
-    EventMgr_Forward(Event_PlayerSpawn, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+    EventMgr_Forward(g_EvPlayerSpawn, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
 }
 
 /**
@@ -416,7 +455,7 @@ public GameEvent_PlayerHurt(Handle:event, const String:name[], bool:dontBroadcas
     eventdata[6][0] = GetEventInt(event, "dmg_armor");
     eventdata[7][0] = GetEventInt(event, "hitgroup");
     
-    EventMgr_Forward(Event_PlayerHurt, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    EventMgr_Forward(g_EvPlayerHurt, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
 }
 
 /**
@@ -438,7 +477,7 @@ public GameEvent_PlayerDeath(Handle:event, const String:name[], bool:dontBroadca
     GetEventString(event, "weapon", eventdata[2], sizeof(eventdata[]));
     eventdata[3][0] = GetEventInt(event, "headshot");
     
-    EventMgr_Forward(Event_PlayerDeath, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    EventMgr_Forward(g_EvPlayerDeath, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
 }
 
 /**
@@ -455,7 +494,7 @@ public GameEvent_PlayerJump(Handle:event, const String:name[], bool:dontBroadcas
     new any:eventdata[1][1];
     eventdata[0][0] = GetClientOfUserId(GetEventInt(event, "userid"));
     
-    EventMgr_Forward(Event_PlayerJump, eventdata, 1, 1, g_CommonDataType2);
+    EventMgr_Forward(g_EvPlayerJump, eventdata, 1, 1, g_CommonDataType2);
 }
 
 /**
@@ -475,7 +514,7 @@ public GameEvent_WeaponFire(Handle:event, const String:name[], bool:dontBroadcas
     eventdata[0][0] = GetClientOfUserId(GetEventInt(event, "userid"));
     GetEventString(event, "weapon", eventdata[1], sizeof(eventdata[]));
     
-    EventMgr_Forward(Event_WeaponFire, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    EventMgr_Forward(g_EvWeaponFire, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
     
     /*
     // Forward event to all modules. (WeaponEntityFire)
@@ -506,7 +545,7 @@ public GameEvent_WeaponFire(Handle:event, const String:name[], bool:dontBroadcas
     eventdata2[0][0] = eventdata[0][0];
     eventdata2[1][0] = weaponentity;
     
-    EventMgr_Forward(Event_WeaponEntityFire, eventdata2, sizeof(eventdata2), sizeof(eventdata2[]), eventdatatypes2);
+    EventMgr_Forward(g_EvWeaponEntityFire, eventdata2, sizeof(eventdata2), sizeof(eventdata2[]), eventdatatypes2);
     */
 }
 

@@ -135,10 +135,10 @@ Weapons_Register()
     g_moduleWeapons = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleWeapons, Event_OnPluginEnd,          "Weapons_OnPluginEnd");
-    EventMgr_RegisterEvent(g_moduleWeapons, Event_OnConfigsExecuted,    "Weapons_OnConfigsExecuted");
-    EventMgr_RegisterEvent(g_moduleWeapons, Event_OnClientPutInServer,  "Weapons_OnClientPutInServer");
-    EventMgr_RegisterEvent(g_moduleWeapons, Event_OnClientDisconnect,   "Weapons_OnClientDisconnect");
+    EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnPluginEnd",            "Weapons_OnPluginEnd");
+    EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnConfigsExecuted",      "Weapons_OnConfigsExecuted");
+    EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnClientPutInServer",    "Weapons_OnClientPutInServer");
+    EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnClientDisconnect",     "Weapons_OnClientDisconnect");
     
     // Register config file(s) that this module will use.
     ConfigMgr_Register(g_moduleWeapons, "Weapons_OnConfigReload", "");

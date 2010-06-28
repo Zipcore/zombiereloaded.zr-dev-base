@@ -81,11 +81,11 @@ ZMarket_Register()
     g_moduleZMarket = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZMarket, Event_OnPluginEnd,             "ZMarket_OnPluginEnd");
-    EventMgr_RegisterEvent(g_moduleZMarket, Event_OnClientPutInServer,     "ZMarket_OnClientPutInServer");
-    EventMgr_RegisterEvent(g_moduleZMarket, Event_OnClientDisconnect,      "ZMarket_OnClientDisconnect");
-    EventMgr_RegisterEvent(g_moduleZMarket, Event_OnClientCookiesCached,   "ZMarket_OnClientCookiesCached");
-    EventMgr_RegisterEvent(g_moduleZMarket, Event_PlayerSpawn,             "ZMarket_PlayerSpawn");
+    EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnPluginEnd",            "ZMarket_OnPluginEnd");
+    EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnClientPutInServer",    "ZMarket_OnClientPutInServer");
+    EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnClientDisconnect",     "ZMarket_OnClientDisconnect");
+    EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnClientCookiesCached",  "ZMarket_OnClientCookiesCached");
+    EventMgr_RegisterEvent(g_moduleZMarket, "Event_PlayerSpawn",            "ZMarket_PlayerSpawn");
 }
 
 /**

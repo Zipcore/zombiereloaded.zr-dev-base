@@ -51,9 +51,9 @@ WepAlpha_Register()
     g_moduleWepAlpha = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleWepAlpha, Event_OnClientPutInServer,      "WepAlpha_OnClientPutInServer");
-    EventMgr_RegisterEvent(g_moduleWepAlpha, Event_OnClientDisconnect,       "WepAlpha_OnClientDisconnect");
-    EventMgr_RegisterEvent(g_moduleWepAlpha, Event_OnClientAlphaChanged,     "WepAlpha_OnClientAlphaChanged");
+    EventMgr_RegisterEvent(g_moduleWepAlpha, "Event_OnClientPutInServer",       "WepAlpha_OnClientPutInServer");
+    EventMgr_RegisterEvent(g_moduleWepAlpha, "Event_OnClientDisconnect",        "WepAlpha_OnClientDisconnect");
+    EventMgr_RegisterEvent(g_moduleWepAlpha, "Event_OnClientAlphaChanged",      "WepAlpha_OnClientAlphaChanged");
 }
 
 /**

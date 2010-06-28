@@ -54,19 +54,19 @@ Core_Register()
     g_moduleCore = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
-    //EventMgr_RegisterEvent(g_moduleCore, Event_OnAllPluginsLoaded,      "Core_OnAllPluginsLoaded");
-    //EventMgr_RegisterEvent(g_moduleCore, Event_OnPluginEnd,             "Core_OnPluginEnd");
-    //EventMgr_RegisterEvent(g_moduleCore, Event_OnAllModulesLoaded,      "Core_OnAllModulesLoaded");
-    //EventMgr_RegisterEvent(g_moduleCore, Event_OnModuleEnable,          "Core_OnModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleCore, Event_OnMyModuleEnable,        "Core_OnMyModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleCore, Event_OnModuleDisable,         "Core_OnModuleDisable");
-    //EventMgr_RegisterEvent(g_moduleCore, Event_OnModuleMyDisable,       "Core_OnMyModuleDisable");
-    //EventMgr_RegisterEvent(g_moduleCore, Event_OnMapStart,              "Core_OnMapStart");
-    //EventMgr_RegisterEvent(g_moduleCore, Event_OnMapEnd,                "Core_OnMapEnd");
-    //EventMgr_RegisterEvent(g_moduleCore, Event_OnAutoConfigsBuffered,   "Core_OnAutoConfigsBuffered");
-    //EventMgr_RegisterEvent(g_moduleCore, Event_OnConfigsExecuted,       "Core_OnConfigsExecuted");
-    //EventMgr_RegisterEvent(g_moduleCore, Event_OnClientPutInServer,     "Core_OnClientPutInServer");
-    //EventMgr_RegisterEvent(g_moduleCore, Event_OnClientDisconnect,      "Core_OnClientDisconnect");
+    //EventMgr_RegisterEvent(g_moduleCore, "Event_OnAllPluginsLoaded",      "Core_OnAllPluginsLoaded");
+    //EventMgr_RegisterEvent(g_moduleCore, "Event_OnPluginEnd",             "Core_OnPluginEnd");
+    //EventMgr_RegisterEvent(g_moduleCore, "Event_OnAllModulesLoaded",      "Core_OnAllModulesLoaded");
+    //EventMgr_RegisterEvent(g_moduleCore, "Event_OnModuleEnable",          "Core_OnModuleEnable");
+    //EventMgr_RegisterEvent(g_moduleCore, "Event_OnMyModuleEnable",        "Core_OnMyModuleEnable");
+    //EventMgr_RegisterEvent(g_moduleCore, "Event_OnModuleDisable",         "Core_OnModuleDisable");
+    //EventMgr_RegisterEvent(g_moduleCore, "Event_OnModuleMyDisable",       "Core_OnMyModuleDisable");
+    //EventMgr_RegisterEvent(g_moduleCore, "Event_OnMapStart",              "Core_OnMapStart");
+    //EventMgr_RegisterEvent(g_moduleCore, "Event_OnMapEnd",                "Core_OnMapEnd");
+    //EventMgr_RegisterEvent(g_moduleCore, "Event_OnAutoConfigsBuffered",   "Core_OnAutoConfigsBuffered");
+    //EventMgr_RegisterEvent(g_moduleCore, "Event_OnConfigsExecuted",       "Core_OnConfigsExecuted");
+    //EventMgr_RegisterEvent(g_moduleCore, "Event_OnClientPutInServer",     "Core_OnClientPutInServer");
+    //EventMgr_RegisterEvent(g_moduleCore, "Event_OnClientDisconnect",      "Core_OnClientDisconnect");
 }
 
 /**

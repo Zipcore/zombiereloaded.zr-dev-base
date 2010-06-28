@@ -79,14 +79,14 @@ WepRestrict_Register()
     g_moduleWepRestrict = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleWepRestrict, Event_OnMyModuleEnable,         "WepRestrict_OnMyModuleEnable");
-    EventMgr_RegisterEvent(g_moduleWepRestrict, Event_OnMyModuleDisable,        "WepRestrict_OnMyModuleDisable");
-    EventMgr_RegisterEvent(g_moduleWepRestrict, Event_OnClientPutInServer,      "WepRestrict_OnClientPutInServer");
-    EventMgr_RegisterEvent(g_moduleWepRestrict, Event_OnClientDisconnect,       "WepRestrict_OnClientDisconnect");
+    EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnMyModuleEnable",       "WepRestrict_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnMyModuleDisable",      "WepRestrict_OnMyModuleDisable");
+    EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnClientPutInServer",    "WepRestrict_OnClientPutInServer");
+    EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnClientDisconnect",     "WepRestrict_OnClientDisconnect");
     
     #if defined PROJECT_GAME_CSS
-        EventMgr_RegisterEvent(g_moduleWepRestrict, Event_RoundEnd,             "WepRestrict_RoundEnd");
-        EventMgr_RegisterEvent(g_moduleWepRestrict, Event_PlayerSpawn,          "WepRestrict_PlayerSpawn");
+        EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_RoundEnd",           "WepRestrict_RoundEnd");
+        EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_PlayerSpawn",        "WepRestrict_PlayerSpawn");
     #endif
 }
 

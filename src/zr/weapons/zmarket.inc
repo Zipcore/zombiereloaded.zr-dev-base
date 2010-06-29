@@ -39,7 +39,6 @@ stock Module:ZMarket_GetIdentifier() { return g_moduleZMarket; }
 /**
  * Cvar handles.
  */
-new Handle:g_hCvarZMarket;
 new Handle:g_hCvarZMarketBuyzone;
 new Handle:g_hCvarZMarketRebuy;
 new Handle:g_hCvarZMarketAutoRebuy;
@@ -97,7 +96,6 @@ ZMarket_OnPluginStart()
     ZMarket_Register();
     
     // Create cvars.
-    g_hCvarZMarket =                Project_CreateConVar("zmarket",                 "1",        "Allow player to buy from a list of weapons in the weapons config. [Dependency: zr_weapons]");
     g_hCvarZMarketBuyzone =         Project_CreateConVar("zmarket_buyzone",         "1",        "Requires player to be inside a buyzone to use ZMarket. [Dependency: zr_zmarket]");
     g_hCvarZMarketRebuy =           Project_CreateConVar("zmarket_rebuy",           "1",        "Allow players to rebuy their weapon setup. [Dependency: zr_zmarket]");
     g_hCvarZMarketAutoRebuy =       Project_CreateConVar("zmarket_autorebuy",       "1",        "Allow players to automatically rebuy their weapon setup on spawn. [Dependency: zr_zmarket&zr_zmarket_rebuy]");
@@ -265,8 +263,8 @@ stock ZMarket_GetBuyCount(client, windex)
  */
 stock bool:ZMarket_MenuMain(client)
 {
-    // If the module isn't enabled, or the weapons file isn't loaded, then stop.
-    if (!GetConVarBool(g_hCvarWeapons) || !GetConVarBool(g_hCvarZMarket))
+    // If the module isn't enabled, then stop.
+    if (ModuleMgr_IsDisabled(g_moduleZMarket))
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "Feature is disabled");
         return false;

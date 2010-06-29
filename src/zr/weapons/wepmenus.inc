@@ -44,7 +44,7 @@ stock WepMenus_Main(client)
     
     // Draw items, make unselectable if module is disabled.
     SetMenuTitle(menu_weapons_main, title);
-    AddMenuItem(menu_weapons_main, "restrict", restrict, Util_GetMenuItemDraw(GetConVarBool(g_hCvarRestrict)));
+    AddMenuItem(menu_weapons_main, "restrict", restrict, Util_GetMenuItemDraw(!ModuleMgr_IsDisabled(g_moduleWepRestrict)));
     
     SetMenuExitBackButton(menu_weapons_main, true);
     DisplayMenu(menu_weapons_main, client, MENU_TIME_FOREVER);

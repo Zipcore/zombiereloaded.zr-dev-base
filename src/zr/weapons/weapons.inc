@@ -38,7 +38,6 @@ stock Module:Weapons_GetIdentifier() { return g_moduleWeapons; }
 /**
  * Cvar handles.
  */
-new Handle:g_hCvarWeapons;
 new Handle:g_hCvarWeaponsConfigFile;
 
 /**
@@ -153,7 +152,6 @@ Weapons_OnPluginStart()
     Weapons_Register();
     
     // Create cvars.
-    g_hCvarWeapons =            Project_CreateConVar("weapons",             "1",                        "Enable weapons module, disabling this will disable any weapons-related features. (weapon restrictions, weapon knockback multipliers, etc)");
     g_hCvarWeaponsConfigFile =  Project_CreateConVar("weapons_configfile",  "configs/zr/weapons.txt",   "Path to weapons config file.  Path is relative to the SourceMod directory.");
     
     // Create dynamic arrays to store weapon data.

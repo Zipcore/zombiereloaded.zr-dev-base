@@ -34,7 +34,6 @@ new Module:g_moduleWepRestrict;
 /**
  * Cvar handles.
  */
-new Handle:g_hCvarRestrict;
 new Handle:g_hCvarRestrictEndEquip;
 
 /**
@@ -99,7 +98,6 @@ WepRestrict_OnPluginStart()
     WepRestrict_Register();
     
     // Create cvars.
-    g_hCvarRestrict =           Project_CreateConVar("weprestrict",            "1",    "Enable weapon restrictions. [Dependency: zr_weapons]");
     g_hCvarRestrictEndEquip =   Project_CreateConVar("weprestrict_endequip",   "1",    "Restricts zombies from picking up weapons after the round has ended but before the next round has begun.");
     
     #if defined PROJECT_GAME_CSS
@@ -477,10 +475,6 @@ public Action:WepRestrict_CanUse(client, weapon)
     if (g_bRestrictBlockWeapon[client])
         return Plugin_Handled;
     
-    // Check if either this module or its parent module is disabled.
-    if (!GetConVarBool(g_hCvarWeapons) || !GetConVarBool(g_hCvarRestrict))
-        return Plugin_Continue;
-    
     decl String:weapondisp[WEPCONFIG_NAME];
     new windex = Weapons_ClsNameToDisplay(weaponentity, weapondisp, sizeof(weapondisp));
     
@@ -508,17 +502,17 @@ public Action:WepRestrict_CanUse(client, weapon)
  */
 public Action:Command_Restrict(client, argc)
 {
+    // Check if the module is disabled.
+    if (ModuleMgr_IsDisabled(g_moduleWepRestrict))
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Feature is disabled");
+        return Plugin_Handled;
+    }
+    
     // Check if client has access.
     if (!AccessMgr_HasAccess(client, g_moduleWepRestrict))
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
-        return Plugin_Handled;
-    }
-    
-    // Check if the module is disabled.
-    if (!GetConVarBool(g_hCvarWeapons) || !GetConVarBool(g_hCvarRestrict))
-    {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Feature is disabled");
         return Plugin_Handled;
     }
     
@@ -559,17 +553,17 @@ public Action:Command_Restrict(client, argc)
  */
 public Action:Command_Unrestrict(client, argc)
 {
+    // Check if the module is disabled.
+    if (ModuleMgr_IsDisabled(g_moduleWepRestrict))
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Feature is disabled");
+        return Plugin_Handled;
+    }
+    
     // Check if client has access.
     if (!AccessMgr_HasAccess(client, g_moduleWepRestrict))
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
-        return Plugin_Handled;
-    }
-    
-    // Check if the module is disabled.
-    if (!GetConVarBool(g_hCvarWeapons) || !GetConVarBool(g_hCvarRestrict))
-    {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Feature is disabled");
         return Plugin_Handled;
     }
     

@@ -34,7 +34,7 @@
 #include "zr/base/wrappers"
 
 // Non-module includes.
-
+#include "zr/utilities"
 
 // Base project includes.
 #include "zr/base/versioninfo"
@@ -54,7 +54,6 @@
 #include "zr/libraries/weaponlib"
 
 // Module includes.
-#include "zr/core"
 #include "zr/gamedata"
 #include "zr/gamerules"
 #include "zr/weapons/weapons"

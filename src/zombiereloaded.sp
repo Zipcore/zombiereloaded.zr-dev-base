@@ -46,11 +46,12 @@
 #include "zr/base/modulemanager"
 
 // Library includes.
-#include "zr/libraries/cookielib"
-#include "zr/libraries/offsetlib"
-#include "zr/libraries/weaponlib"
-#include "zr/libraries/shoppinglistlib"
 #include "zr/libraries/authcachelib"
+#include "zr/libraries/cookielib"
+#include "zr/libraries/menulib"
+#include "zr/libraries/offsetlib"
+#include "zr/libraries/shoppinglistlib"
+#include "zr/libraries/weaponlib"
 
 // Module includes.
 #include "zr/core"

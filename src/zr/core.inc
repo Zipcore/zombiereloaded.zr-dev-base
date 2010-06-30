@@ -122,18 +122,6 @@ stock bool:Util_KvGetPhraseAsBool(Handle:kv, const String:key[], BoolPhrases:boo
 }
 
 /**
- * Converts a boolean value into a menu draw define.
- * true =   ITEMDRAW_DEFAULT
- * false =  ITEMDRAW_DISABLED
- * 
- * @param condition The boolean to convert. 
- */
-stock Util_GetMenuItemDraw(bool:condition)
-{
-    return condition ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
-}
-
-/**
  * Closes a handle and sets it to invalid handle.
  * 
  * @param handle    The handle to close.

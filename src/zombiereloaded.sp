@@ -50,6 +50,7 @@
 #include "zr/libraries/offsetlib"
 #include "zr/libraries/weaponlib"
 #include "zr/libraries/shoppinglistlib"
+#include "zr/libraries/authcachelib"
 
 // Module includes.
 #include "zr/core"

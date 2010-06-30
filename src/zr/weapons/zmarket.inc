@@ -96,10 +96,10 @@ ZMarket_OnPluginStart()
     ZMarket_Register();
     
     // Create cvars.
-    g_hCvarZMarketBuyzone =         Project_CreateConVar("zmarket_buyzone",         "1",        "Requires player to be inside a buyzone to use ZMarket. [Dependency: zr_zmarket]");
-    g_hCvarZMarketRebuy =           Project_CreateConVar("zmarket_rebuy",           "1",        "Allow players to rebuy their weapon setup. [Dependency: zr_zmarket]");
-    g_hCvarZMarketAutoRebuy =       Project_CreateConVar("zmarket_autorebuy",       "1",        "Allow players to automatically rebuy their weapon setup on spawn. [Dependency: zr_zmarket&zr_zmarket_rebuy]");
-    g_hCvarZMarketMultiWepFormat =  Project_CreateConVar("zmarket_multiwep_format", " (##)",    "The text that indicates the number of weapons in a single slot in the ZMarket menu. ['##' = The item count | Dependency: zr_zmarket&zr_zmarket_rebuy]");
+    g_hCvarZMarketBuyzone =         Project_CreateConVar("zmarket_buyzone",         "1",        "Requires player to be inside a buyzone to use ZMarket.");
+    g_hCvarZMarketRebuy =           Project_CreateConVar("zmarket_rebuy",           "1",        "Allow players to rebuy their weapon setup.");
+    g_hCvarZMarketAutoRebuy =       Project_CreateConVar("zmarket_autorebuy",       "1",        "Allow players to automatically rebuy their weapon setup on spawn. [Dependency: zmarket_rebuy]");
+    g_hCvarZMarketMultiWepFormat =  Project_CreateConVar("zmarket_multiwep_format", " (##)",    "The text that indicates the number of weapons in a single slot in the ZMarket menu. ['##' = The item count]");
     
     // Create commands.
     RegConsoleCmd("zmarket", Command_ZMarket, "Accesses ZMarket menu.");

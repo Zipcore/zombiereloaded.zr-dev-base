@@ -26,7 +26,7 @@
  */
 
 /**
- * This file is meant for formatting a given string into a list formatted around the style of a shopping
+ * This file library meant for formatting a given string into a list formatted around the style of a shopping
  * list.
  * Example:
  * String: "Bacon, Egg, Egg, Milk, Butter"

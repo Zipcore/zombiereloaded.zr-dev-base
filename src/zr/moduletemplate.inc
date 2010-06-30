@@ -1,13 +1,13 @@
 /*
  * ============================================================================
  *
- *  <Project Name>
+ *  Zombie:Reloaded
  *
- *  File:          .inc
+ *  File:          
  *  Type:          Module
  *  Description:   
  *
- *  Copyright (C) 2009-2010  <Author>
+ *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,8 +33,6 @@
  * Simply search-and-replace (usually CTRL+H) each of the tags below and replace it with the module specifics.
  * 
  * Tags:
- * <Project Name>       The name of the project.  (PROJECT_FULLNAME)
- * <Author>             The author(s) of the project.  (PROJECT_AUTHOR)
  * <FuncPrefix>         The prefix of your module's functions.  Usually the module's full name with no whitespaces.
  * <ModuleVarName>      Usually the same as <FuncPrefix>.  Names the global variable that stores this module's identifier.
  * 
@@ -229,7 +227,7 @@ public <FuncPrefix>_RoundStart()
 }
 
 /**
- * Pre-round has freezetime has finished.
+ * Pre-round freezetime has finished.
  */
 public <FuncPrefix>_RoundFreezeEnd()
 {

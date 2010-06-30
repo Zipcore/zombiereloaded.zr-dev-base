@@ -132,3 +132,17 @@ stock Util_GetMenuItemDraw(bool:condition)
 {
     return condition ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
 }
+
+/**
+ * Closes a handle and sets it to invalid handle.
+ * 
+ * @param handle    The handle to close.
+ */
+stock Util_CloseHandle(&Handle:handle)
+{
+    if (handle != INVALID_HANDLE)
+    {
+        CloseHandle(handle);
+        handle = INVALID_HANDLE;
+    }
+}

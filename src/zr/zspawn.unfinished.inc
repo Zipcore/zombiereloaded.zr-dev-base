@@ -26,6 +26,12 @@
  */
 
 /**
+ * TODO:
+ * Identify and #if CS:S-only stuff.
+ * The rest should be compiler errors.
+ */
+
+/**
  * This module's identifier.
  */
 new Module:g_moduleZSpawn;

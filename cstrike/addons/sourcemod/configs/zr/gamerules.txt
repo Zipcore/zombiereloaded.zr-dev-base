@@ -1,0 +1,22 @@
+// ============================================================================
+//
+//                              ZOMBIE:RELOADED
+//                        Game Rule Set Configuration
+//
+// See Game Rule Set Configuration (3.x) section in the manual for detailed
+// info.
+//
+// ============================================================================
+//
+// Valid actions:
+// off          Enable the module
+// on           Disable the module
+// force_on     Force the module to be enabled (ignore module enable-cvar)
+
+"gamerules"
+{
+    "default"
+    {
+        "weapons"       "on"
+    }
+}

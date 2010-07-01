@@ -297,7 +297,7 @@ stock bool:ZMarket_MenuMain(client)
     new bool:zmarketautorebuy = GetConVarBool(g_hCvarZMarketAutoRebuy);
     
     // Determine if the option will be selectable or not.
-    new itemdraw = Util_GetMenuItemDraw(zmarketrebuy || zmarketautorebuy);
+    new itemdraw = MenuLib_GetMenuItemDraw(zmarketrebuy || zmarketautorebuy);
     
     // Add formatted options to menu.
     SetMenuTitle(menu_zmarket_main, title);
@@ -305,7 +305,7 @@ stock bool:ZMarket_MenuMain(client)
     AddMenuItem(menu_zmarket_main, "Buy Weapons", buyweapons);
     AddMenuItem(menu_zmarket_main, "Save Current Setup", savecurrentsetup, itemdraw);
     AddMenuItem(menu_zmarket_main, "View Weapon Setup", viewsavedsetup, itemdraw);
-    AddMenuItem(menu_zmarket_main, "Auto-Rebuy", autorebuy, Util_GetMenuItemDraw(zmarketautorebuy));
+    AddMenuItem(menu_zmarket_main, "Auto-Rebuy", autorebuy, MenuLib_GetMenuItemDraw(zmarketautorebuy));
     
     // Set exit back button.
     SetMenuExitBackButton(menu_zmarket_main, true);
@@ -521,7 +521,7 @@ stock ZMarket_MenuTypeWeapons(client, typeindex)
         IntToString(windex, strWIndex, sizeof(strWIndex));
         
         // Disable option if it isn't toggleable.
-        new itemdraw = Util_GetMenuItemDraw((itemprice > -1) && !restricted && (buylimit <= 0 || buysleft > 0));
+        new itemdraw = MenuLib_GetMenuItemDraw((itemprice > -1) && !restricted && (buylimit <= 0 || buysleft > 0));
         AddMenuItem(menu_zmarket_typeweapons, strWIndex, display, itemdraw);
     }
     
@@ -617,7 +617,7 @@ stock bool:ZMarket_MenuWepSetup(client)
     decl String:info[4];
     
     Format(clearall, sizeof(clearall), "%T\n ", "Weapons menu zmarket weapon setup clear all", client);
-    AddMenuItem(menu_zmarket_weaponsetup, "-1", clearall, Util_GetMenuItemDraw(!StrEqual(weaponsetup[Slot_Primary], none) || !StrEqual(weaponsetup[Slot_Secondary], none) || !StrEqual(weaponsetup[Slot_Melee], none) || !StrEqual(weaponsetup[Slot_Projectile], none) || !StrEqual(weaponsetup[Slot_Explosive], none)));
+    AddMenuItem(menu_zmarket_weaponsetup, "-1", clearall, MenuLib_GetMenuItemDraw(!StrEqual(weaponsetup[Slot_Primary], none) || !StrEqual(weaponsetup[Slot_Secondary], none) || !StrEqual(weaponsetup[Slot_Melee], none) || !StrEqual(weaponsetup[Slot_Projectile], none) || !StrEqual(weaponsetup[Slot_Explosive], none)));
     
     decl String:multiwepformat[32];
     GetConVarString(g_hCvarZMarketMultiWepFormat, multiwepformat, sizeof(multiwepformat));
@@ -638,7 +638,7 @@ stock bool:ZMarket_MenuWepSetup(client)
         }
         
         IntToString(wepslotindex, info, sizeof(info));
-        AddMenuItem(menu_zmarket_weaponsetup, info, weaponslot[wepslotindex], Util_GetMenuItemDraw(!StrEqual(weaponsetup[wepslotindex], none)));
+        AddMenuItem(menu_zmarket_weaponsetup, info, weaponslot[wepslotindex], MenuLib_GetMenuItemDraw(!StrEqual(weaponsetup[wepslotindex], none)));
     }
     
     SetMenuExitBackButton(menu_zmarket_weaponsetup, true);

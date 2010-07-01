@@ -56,7 +56,6 @@ stock ForwardOnPluginStart()
     
     
     // Forward the OnPluginStart event to all modules here.
-    Core_OnPluginStart();
     GameData_OnPluginStart();
     Weapons_OnPluginStart();
     StripObj_OnPluginStart();

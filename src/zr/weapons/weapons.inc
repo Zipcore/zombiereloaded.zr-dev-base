@@ -240,9 +240,9 @@ public KvCache:Weapons_Cache(Handle:kv, sectionindex, const String:sectionname[]
     weapondata[WepConfig_Slot] = WepLib_Slots:KvGetNum(kv, "slot");
     
     // Restriction.
-    weapondata[WepConfig_RestrictDefault] = Util_KvGetPhraseAsBool(kv, "restrictdefault", BoolPhrase_YesNo, "no");
+    weapondata[WepConfig_RestrictDefault] = bool:TransMgr_KvPhraseToBoolEx(kv, BoolPhrase_YesNo, "restrictdefault", "no");
     weapondata[WepConfig_Restricted] = weapondata[WepConfig_RestrictDefault];
-    weapondata[WepConfig_Toggleable] = Util_KvGetPhraseAsBool(kv, "toggleable", BoolPhrase_YesNo, "yes");
+    weapondata[WepConfig_Toggleable] = bool:TransMgr_KvPhraseToBoolEx(kv, BoolPhrase_YesNo, "toggleable", "yes");
     
     // Weapon Ammo.
     KvGetString(kv, "ammocvar", weapondata[WepConfig_AmmoCvar], sizeof(weapondata[WepConfig_AmmoCvar]));

@@ -44,7 +44,7 @@ stock WepMenus_Main(client)
     
     // Draw items, make unselectable if module is disabled.
     SetMenuTitle(menu_weapons_main, title);
-    AddMenuItem(menu_weapons_main, "restrict", restrict, Util_GetMenuItemDraw(!ModuleMgr_IsDisabled(g_moduleWepRestrict)));
+    AddMenuItem(menu_weapons_main, "restrict", restrict, MenuLib_GetMenuItemDraw(!ModuleMgr_IsDisabled(g_moduleWepRestrict)));
     
     SetMenuExitBackButton(menu_weapons_main, true);
     DisplayMenu(menu_weapons_main, client, MENU_TIME_FOREVER);
@@ -169,8 +169,8 @@ stock WepMenus_TypeWeapons(client, typeindex)
     // Draw items as selectable only if not all weapons within the type are restricted or unrestricted.
     SetMenuTitle(menu_weapons_typeweapons, title);
     
-    AddMenuItem(menu_weapons_typeweapons, "restrictall", restrictall, Util_GetMenuItemDraw(!WepRestrict_AreWeaponsUniform(typeindex, true)));
-    AddMenuItem(menu_weapons_typeweapons, "unrestrictall", unrestrictall, Util_GetMenuItemDraw(!WepRestrict_AreWeaponsUniform(typeindex, true)));
+    AddMenuItem(menu_weapons_typeweapons, "restrictall", restrictall, MenuLib_GetMenuItemDraw(!WepRestrict_AreWeaponsUniform(typeindex, true)));
+    AddMenuItem(menu_weapons_typeweapons, "unrestrictall", unrestrictall, MenuLib_GetMenuItemDraw(!WepRestrict_AreWeaponsUniform(typeindex, true)));
     
     decl String:typeweapon[WEPCONFIG_NAME];
     decl String:display[64 + 2]; // +2 to allow room for the [ ] if its restricted.
@@ -193,7 +193,7 @@ stock WepMenus_TypeWeapons(client, typeindex)
             Format(display, sizeof(display), "[%s]", typeweapon);
         
         // Add the item to the menu
-        AddMenuItem(menu_weapons_typeweapons, typeweapon, display, Util_GetMenuItemDraw(bool:Weapons_ReadCell(windex, WepConfig_Toggleable)));
+        AddMenuItem(menu_weapons_typeweapons, typeweapon, display, MenuLib_GetMenuItemDraw(bool:Weapons_ReadCell(windex, WepConfig_Toggleable)));
     }
     
     CloseHandle(hWeapons);

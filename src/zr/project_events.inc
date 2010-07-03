@@ -58,6 +58,7 @@ new ProjectEvent:g_EvOnClientAlphaChanged;
 new ProjectEvent:g_EvOnClientPutInServer;
 new ProjectEvent:g_EvOnClientDisconnect;
 new ProjectEvent:g_EvOnClientCookiesCached;
+new ProjectEvent:g_EvOnPlayerRunCmd;
 
 // CS:S events.
 #if defined PROJECT_GAME_CSS
@@ -85,9 +86,13 @@ new ProjectEvent:g_EvWeaponFire;
 enum EventDataTypes
 {
     DataType_Cell,
+    DataType_CellRef,
     DataType_Float,
+    DataType_FloatRef,
     DataType_Array,
-    DataType_String
+    DataType_ArrayRef,
+    DataType_String,
+    DataType_StringRef,
 }
 
 /**
@@ -234,8 +239,32 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
     if (!IsClientInGame(client))
         return Plugin_Continue;
     
-    //Speed_OnPlayerRunCmd(client, vel);
-    return Plugin_Continue;
+    // Forward event to all modules.
+    static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_CellRef, DataType_CellRef, DataType_ArrayRef, DataType_ArrayRef, DataType_CellRef};
+    new any:eventdata[sizeof(eventdatatypes)][3];
+    
+    eventdata[0][0] = client;
+    eventdata[1][0] = buttons;
+    eventdata[2][0] = impulse;
+    for (new x = 0; x < 3; x++)
+        eventdata[3][x] = vel[x];
+    for (new x = 0; x < 3; x++)
+        eventdata[4][x] = angles[x];
+    eventdata[5][0] = weapon;
+    
+    new Action:result = EventMgr_Forward(g_EvOnPlayerRunCmd, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    
+    // Copy event data back to this hook's variables, to let the engine use the new values.
+    client = eventdata[0][0];
+    buttons = eventdata[1][0];
+    impulse = eventdata[2][0];
+    for (new x = 0; x < 3; x++)
+        vel[x] = eventdata[3][x];
+    for (new x = 0; x < 3; x++)
+        angles[x] = eventdata[4][x];
+    weapon = eventdata[5][0];
+    
+    return result;
 }
 
 // **********************************************
@@ -266,6 +295,7 @@ stock EventMgr_CreateEvents()
     g_EvOnClientPutInServer =       EventMgr_CreateEvent("Event_OnClientPutInServer");      /** Client has joined the server. */
     g_EvOnClientDisconnect =        EventMgr_CreateEvent("Event_OnClientDisconnect");       /** Client is disconnecting from the server. */
     g_EvOnClientCookiesCached =     EventMgr_CreateEvent("Event_OnClientCookiesCached");    /** Client cookies were cached from the database. */
+    g_EvOnPlayerRunCmd =            EventMgr_CreateEvent("Event_OnPlayerRunCmd");           /** Client's movement buttons are being processed. */
     
     // CS:S events.
     #if defined PROJECT_GAME_CSS

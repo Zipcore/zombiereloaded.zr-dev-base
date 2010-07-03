@@ -53,9 +53,11 @@ Speed_Register()
     g_moduleSpeed = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
+    EventMgr_RegisterEvent(g_moduleSpeed, "Event_OnMyModuleEnable",         "Speed_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleSpeed, "Event_OnMyModuleDisable",        "Speed_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleSpeed, "Event_OnClientPutInServer",      "Speed_OnClientPutInServer");
     EventMgr_RegisterEvent(g_moduleSpeed, "Event_OnClientDisconnect",       "Speed_OnClientDisconnect");
-
+    EventMgr_RegisterEvent(g_moduleSpeed, "Event_OnPlayerRunCmd",           "Speed_OnPlayerRunCmd");
     
     // Register config file(s) that this module will use.
     // ConfigMgr_Register(g_moduleSpeed, "Speed_OnConfigReload", "configs/<projectshortname>/<config>.txt");
@@ -68,6 +70,39 @@ Speed_OnPluginStart()
 {
     // Register the module.
     Speed_Register();
+}
+
+/**
+ * The module that hooked this event callback has been enabled.
+ * 
+ * @return      Return Plugin_Handled to stop load, and Plugin_Continue to allow it.
+ */
+public Speed_OnMyModuleEnable()
+{
+    // Hook all clients in the server.
+    for (new client = 1; client <= MaxClients; client++)
+    {
+        if (!IsClientInGame(client))
+            continue;
+        
+        // Hook WeaponCanUse on the client for restricting the weapon.
+        SDKHook(client, SDKHook_PreThinkPost, Speed_PreThinkPost);
+    }
+}
+
+/**
+ * The module that hooked this event callback has been disabled.
+ */
+public Speed_OnMyModuleDisable()
+{
+    // Unhook all clients in the server.
+    for (new client = 1; client <= MaxClients; client++)
+    {
+        if (!IsClientInGame(client))
+            continue;
+        
+        SDKUnhook(client, SDKHook_PreThinkPost, Speed_PreThinkPost);
+    }
 }
 
 /**
@@ -101,24 +136,24 @@ public Speed_PreThinkPost(client)
     SetEntPropFloat(client, Prop_Data, "m_flMaxspeed", curspeed + ___);
 }
 
-public Action:Speed_OnPlayerRunCmd(client, Float:vel[3])
+public Action:Speed_OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon)
 {
     if (!IsPlayerAlive(client))
-        return;
+        return Plugin_Continue;
     
     // x-axis speed.
     if (vel[0] < 0.0)
-        vel[0] = ___;
+        vel[0] = -5000.0;
     
     else if (vel[0] > 0.0)
-        vel[0] = ___;
+        vel[0] = 5000.0;
     
     // y-axis speed.
     if (vel[1] < 0.0)
-        vel[1] = ___;
+        vel[1] = -5000.0;
     
     else if (vel[1] > 0.0)
-        vel[1] = ___;
-     
+        vel[1] = 5000.0;
+    
     return Plugin_Continue; 
 }

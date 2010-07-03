@@ -191,7 +191,6 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
         KvJumpToKey(kv, keyName);
         
         // Get the module ID.
-        PrintToServer("module: %s", keyName);
         module =  ModuleMgr_FindByString(ModuleData_ShortName, keyName);
         
         // Check if module is valid.

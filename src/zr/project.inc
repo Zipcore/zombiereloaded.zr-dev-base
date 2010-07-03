@@ -57,9 +57,9 @@ stock ForwardOnPluginStart()
     
     // Forward the OnPluginStart event to all modules here.
     GameData_OnPluginStart();
+    GameRules_OnPluginStart();
     Weapons_OnPluginStart();
     StripObj_OnPluginStart();
-    GameRules_OnPluginStart();
 }
 
 // **********************************************

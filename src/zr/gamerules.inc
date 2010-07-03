@@ -174,14 +174,14 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
     decl String:keyName[64];
     decl String:keyValue[64];
     
-    KvGotoFirstSubKey(kv);
+    KvGotoFirstSubKey(kv, false);
     do
     {
         // Check if the module limit is reached.
         if (numModules >= GAMERULES_MAX_MODULES)
         {
             // Log a warning. Too many modules.
-            LogMgr_Print(module, LogType_Error, "Config validation", "Too many modules in game rule: \"%s\".", sectionname);
+            LogMgr_Print(g_moduleGameRules, LogType_Error, "Config validation", "Too many modules in game rule: \"%s\".", sectionname);
             break;
         }
         
@@ -191,6 +191,7 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
         KvJumpToKey(kv, keyName);
         
         // Get the module ID.
+        PrintToServer("module: %s", keyName);
         module =  ModuleMgr_FindByString(ModuleData_ShortName, keyName);
         
         // Check if module is valid.
@@ -208,16 +209,16 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
             else
             {
                 // Log a warning. Invalid action.
-                LogMgr_Print(module, LogType_Error, "Config validation", "Invalid action in rule \"%s\": \"%s\".", sectionname, keyValue);
+                LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Invalid action in rule \"%s\": \"%s\".", sectionname, keyValue);
             }
         }
         else
         {
             // Log a warning. Invalid module.
-            LogMgr_Print(module, LogType_Error, "Config validation", "Invalid module in rule \"%s\": \"%s\".", sectionname, keyName);
+            LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Invalid module in rule \"%s\": \"%s\".", sectionname, keyName);
         }
         
-    } while (KvGotoNextKey(kv));
+    } while (KvGotoNextKey(kv, false));
     
     gameRuleSet[GameRuleSet_NumModules] = numModules;
     PushArrayArray(g_hGameRules, gameRuleSet[0], sizeof(gameRuleSet));

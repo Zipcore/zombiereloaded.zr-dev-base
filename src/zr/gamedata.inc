@@ -58,6 +58,7 @@ GameData_Register()
     strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "GameData");
     strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "gamedata");
     strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Handles virtual offsets and signatures.");
+    moduledata[ModuleData_Dependencies][0] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
     /*g_moduleGameData = */

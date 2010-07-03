@@ -229,6 +229,15 @@ public OnClientCookiesCached(client)
     EventMgr_Forward(g_EvOnClientCookiesCached, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
 }
 
+public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon)
+{
+    if (!IsClientInGame(client))
+        return Plugin_Continue;
+    
+    //Speed_OnPlayerRunCmd(client, vel);
+    return Plugin_Continue;
+}
+
 // **********************************************
 //             Game Event Creating
 // **********************************************

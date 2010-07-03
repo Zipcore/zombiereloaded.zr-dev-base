@@ -114,7 +114,7 @@
 	//               Restrict		       //
 	/////////////////////////////////////////////////
 
-	{1}: Weapon whose restrictions are being changed.
+	// {1}: Weapon whose restrictions are being changed.
 
 	"Restrict weapon"
 	{
@@ -140,7 +140,7 @@
 		"en"		"Weapon {green}\"{1}\" {default} has no restrictions set."
 	}
 
-	{1}: Weapon type whose restrictions are being changed.
+	// {1}: Weapon type whose restrictions are being changed.
 
 	"Restrict weapon type"
 	{

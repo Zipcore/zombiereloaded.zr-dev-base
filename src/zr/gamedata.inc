@@ -43,6 +43,9 @@
 new Handle:g_hGameConfig;
 new Handle:g_hTerminateRound;
 new Handle:g_hCSWeaponDrop;
+new Handle:g_hFlashlightIsOn;
+new Handle:g_hFlashlightTurnOn;
+new Handle:g_hFlashlightTurnOff;
 #endif
 
 /**
@@ -113,6 +116,41 @@ GameData_OnPluginStart()
     if(g_hCSWeaponDrop == INVALID_HANDLE)
     {
         SetFailState("Signature \"CBasePlayer::CSWeaponDrop\" was not found.");
+    }
+    
+    // Prep the SDKCall for "FlashlightIsOn"
+    StartPrepSDKCall(SDKCall_Player);
+    PrepSDKCall_SetFromConf(g_hGameConfig, SDKConf_Virtual, "FlashlightIsOn");
+    PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+    g_hFlashlightIsOn = EndPrepSDKCall();
+    
+    // If offset "FlashlightIsOn" can't be found, then stop the plugin.
+    if(g_hFlashlightIsOn == INVALID_HANDLE)
+    {
+        
+        SetFailState("Signature \"CCSPlayer::FlashlightIsOn\" was not found.");
+    }
+    
+    // Prep the SDKCall for "FlashlightTurnOn"
+    StartPrepSDKCall(SDKCall_Player);
+    PrepSDKCall_SetFromConf(g_hGameConfig, SDKConf_Virtual, "FlashlightTurnOn");
+    g_hFlashlightTurnOn = EndPrepSDKCall();
+    
+    // If offset "FlashlightTurnOn" can't be found, then stop the plugin.
+    if(g_hFlashlightTurnOn == INVALID_HANDLE)
+    {
+        SetFailState("Signature \"CCSPlayer::FlashlightTurnOn\" was not found.");
+    }
+    
+    // Prep the SDKCall for "FlashlightTurnOff"
+    StartPrepSDKCall(SDKCall_Player);
+    PrepSDKCall_SetFromConf(g_hGameConfig, SDKConf_Virtual, "FlashlightTurnOff");
+    g_hFlashlightTurnOff = EndPrepSDKCall();
+    
+    // If offset "FlashlightTurnOff" can't be found, then stop the plugin.
+    if(g_hFlashlightTurnOff == INVALID_HANDLE)
+    {
+        SetFailState("Signature \"CCSPlayer::FlashlightTurnOff\" was not found.");
     }
     
     #endif
@@ -191,6 +229,38 @@ stock GameData_TerminateRound(teamindex)
 stock GameData_CSDropWeapon(client, weapon)
 {
     SDKCall(g_hCSWeaponDrop, client, weapon, true, false);
+}
+
+/**
+ * Check if the client's flashlight is turned on. (CS:S)
+ * 
+ * @param client    The client index.
+ * 
+ * @return          True if the light is on, false if off.
+ */
+stock bool:GameData_FlashlightIsOn(client)
+{
+    return bool:SDKCall(g_hFlashlightIsOn, client);
+}
+
+/**
+ * Force a client's flashlight on. (CS:S)
+ * 
+ * @param client    The client index.
+ */
+stock GameData_FlashlightTurnOn(client)
+{
+    SDKCall(g_hFlashlightTurnOn, client);
+}
+
+/**
+ * Force a client's flashlight off. (CS:S)
+ * 
+ * @param client    The client index.
+ */
+stock GameData_FlashlightTurnOff(client)
+{
+    SDKCall(g_hFlashlightTurnOff, client);
 }
 
 #endif

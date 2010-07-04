@@ -109,11 +109,11 @@ new g_iWeaponCount;
 new g_iWeaponTypeCount;
 
 // Include sub-modules.
-#include "zr/weapons/weprestrict"
-#include "zr/weapons/zmarket"
-#include "zr/weapons/wepalpha"
-#include "zr/weapons/wepmenus"
-#include "zr/weapons/gpbridge"
+#include "zr/modules/weapons/weprestrict"
+#include "zr/modules/weapons/zmarket"
+#include "zr/modules/weapons/wepalpha"
+#include "zr/modules/weapons/wepmenus"
+#include "zr/modules/weapons/gpbridge"
 
 /**
  * Register this module.

@@ -30,17 +30,16 @@ ZR
 			..\src\zr\libraries\weaponlib.inc
 		-Modules
 			-Weapons
-				..\src\zr\weapons\gpbridge.inc
-				..\src\zr\weapons\weapons.inc
-				..\src\zr\weapons\wepalpha.inc
-				..\src\zr\weapons\wepmenus.inc
-				..\src\zr\weapons\weprestrict.inc
-				..\src\zr\weapons\zmarket.inc
-			..\src\zr\core.inc
-			..\src\zr\gamedata.inc
-			..\src\zr\gamerules.inc
-			..\src\zr\moduletemplate.inc
-			..\src\zr\stripobjectives.inc
+				..\src\zr\modules\weapons\gpbridge.inc
+				..\src\zr\modules\weapons\weapons.inc
+				..\src\zr\modules\weapons\wepalpha.inc
+				..\src\zr\modules\weapons\wepmenus.inc
+				..\src\zr\modules\weapons\weprestrict.inc
+				..\src\zr\modules\weapons\zmarket.inc
+			..\src\zr\modules\gamedata.inc
+			..\src\zr\modules\gamerules.inc
+			..\src\zr\modules\moduletemplate.inc
+			..\src\zr\modules\stripobjectives.inc
 	..\src\zr\project.inc
 	..\src\zr\project_events.inc
 	..\src\zombiereloaded.sp

@@ -54,10 +54,10 @@
 #include "zr/libraries/weaponlib"
 
 // Module includes.
-#include "zr/gamedata"
-#include "zr/gamerules"
-#include "zr/weapons/weapons"
-#include "zr/stripobjectives"
+#include "zr/modules/gamedata"
+#include "zr/modules/gamerules"
+#include "zr/modules/weapons/weapons"
+#include "zr/modules/stripobjectives"
 
 /**
  * Record plugin info.

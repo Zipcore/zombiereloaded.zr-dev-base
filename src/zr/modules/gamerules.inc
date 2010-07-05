@@ -51,8 +51,9 @@ enum GameRuleAction
 {
     GameRuleAction_Invalid = -1,
     GameRuleAction_On,
+    GameRuleAction_ForceOn,
     GameRuleAction_Off,
-    GameRuleAction_ForceOn
+    GameRuleAction_ForceOff
 }
 
 /**
@@ -61,8 +62,8 @@ enum GameRuleAction
 enum GameRuleSet
 {
     String:GameRuleSet_Name[GAMERULES_NAME_LEN],                /** Name of rule */
-    Module:GameRuleSet_Modules[GAMERULES_MAX_MODULES],          /** Modules that's listed in the rule set */
-    GameRuleAction:GameRuleSet_Actions[GAMERULES_MAX_MODULES],  /** Action to apply on the modules */
+    Module:GameRuleSet_Module[GAMERULES_MAX_MODULES],           /** Modules that's listed in the rule set */
+    GameRuleAction:GameRuleSet_Action[GAMERULES_MAX_MODULES],   /** Action to apply on the modules */
     GameRuleSet_NumModules                                      /** Number of modules in the rule set */
 }
 
@@ -82,9 +83,22 @@ new Handle:g_hGameRules;
 new g_RuleSetCache[GameRuleSet];
 
 /**
+ * Readability macros for reading data from the above array.
+ */
+#define GAMERULESET_NAME(%1)    g_RuleSetCache[GameRuleSet_Name][%1]
+#define GAMERULESET_MODULE(%1)  g_RuleSetCache[GameRuleSet_Module][%1]
+#define GAMERULESET_ACTION(%1)  g_RuleSetCache[GameRuleSet_Action][%1]
+#define GAMERULESET_NUMMODULES  g_RuleSetCache[GameRuleSet_NumModules]
+
+/**
  * The number of game rule sets that are configured in the game rules config file.
  */
 new g_iGameRuleCount;
+
+/**
+ * The currently applied game rule set.
+ */
+new g_iCurGameRuleSet = -1;
 
 /**
  * Register this module.
@@ -95,8 +109,8 @@ GameRules_Register()
     new moduledata[ModuleData];
     
     moduledata[ModuleData_Disabled] = false;
-    moduledata[ModuleData_Hidden] = true;
-    strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "Game Rule Controller");
+    moduledata[ModuleData_Hidden] = false;
+    strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "Game Rules");
     strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "gamerules");
     strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Manages and controls events to modules.");
     moduledata[ModuleData_Dependencies][0] = INVALID_MODULE;
@@ -105,10 +119,9 @@ GameRules_Register()
     g_moduleGameRules = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
-    //EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnMyModuleEnable",         "GameRules_OnMyModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnMyModuleDisable",        "GameRules_OnMyModuleDisable");
-    //EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnModuleEnable",           "GameRules_OnModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnModuleDisable",          "GameRules_OnModuleDisable");
+    EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnModuleEnable",           "GameRules_OnModuleEnable");
+    EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnModuleDisable",          "GameRules_OnModuleDisable");
+    EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnMyModuleDisable",        "GameRules_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnConfigsExecuted",        "GameRules_OnConfigsExecuted");
     
     // Register config file(s) that this module will use.
@@ -131,26 +144,76 @@ GameRules_OnPluginStart()
     g_hGameRules = CreateArray(sizeof(GameRulesDummyArray));
 }
 
-/*public GameRules_OnMyModuleDisable(Module:module)
-{
-    // TODO: What to do when disabling? Enable modules that were disabled?
-}*/
-
 /**
  * A module has been enabled.
+ * 
+ * @return      Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
  */
-/*public GameRules_OnModuleEnable(Module:module)
+public Action:GameRules_OnModuleEnable(Module:module)
 {
-    // TODO: Prevent module from enabling if the rule says it should be disabled?
-    //       Allow modules to be enabled manually?
-}*/
+    // Ignore this module.
+    if (module == g_moduleGameRules)
+        return Plugin_Continue;
+    
+    // If no game rule set is applied yet, then let it be enabled.
+    if (g_iCurGameRuleSet == -1)
+        return Plugin_Continue;
+    
+    // Find module in current game rule set.
+    new moduleindex = GameRules_FindModuleInRuleSet(g_iCurGameRuleSet, module);
+    if (moduleindex == -1)
+        return Plugin_Continue;
+    
+    // If this module is forced off then don't let it enable.
+    if (GAMERULESET_ACTION(moduleindex) == GameRuleAction_ForceOff)
+    {
+        TransMgr_PrintText(SERVER_INDEX, MsgFormat_Both, MsgType_Reply, g_moduleGameRules, _, "No access to command");
+        return Plugin_Handled;
+    }
+    
+    return Plugin_Continue;
+}
 
 /**
  * A module has been disabled.
+ * 
+ * @return      Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
  */
-/*public GameRules_OnModuleDisable(Module:module)
+public Action:GameRules_OnModuleDisable(Module:module)
 {
-}*/
+    // Ignore this module, it's already handled in GameRules_OnMyModuleDisable
+    if (module == g_moduleGameRules)
+        return Plugin_Continue;
+    
+    // If no game rule set is applied yet, then let it be disabled.
+    if (g_iCurGameRuleSet == -1)
+        return Plugin_Continue;
+    
+    // Find module in current game rule set.
+    new moduleindex = GameRules_FindModuleInRuleSet(g_iCurGameRuleSet, module);
+    if (moduleindex == -1)
+        return Plugin_Continue;
+    
+    // If this module is forced on then don't let it disable.
+    if (GAMERULESET_ACTION(moduleindex) == GameRuleAction_ForceOn)
+    {
+        TransMgr_PrintText(SERVER_INDEX, MsgFormat_Both, MsgType_Reply, g_moduleGameRules, _, "No access to command");
+        return Plugin_Handled;
+    }
+    
+    return Plugin_Continue;
+}
+
+/**
+ * The module that hooked this event callback has been disabled.
+ * 
+ * @return      Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
+ */
+public Action:GameRules_OnMyModuleDisable()
+{
+    TransMgr_PrintText(SERVER_INDEX, MsgFormat_Both, MsgType_Reply, g_moduleGameRules, _, "No access to command");
+    return Plugin_Handled;
+}
 
 /**
  * Loops through each section of the keyvalues tree.
@@ -196,13 +259,13 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
         // Check if module is valid.
         if (module != INVALID_MODULE)
         {
-            gameRuleSet[GameRuleSet_Modules][numModules] = module;
+            gameRuleSet[GameRuleSet_Module][numModules] = module;
             
             // Validate and set rule action.
             action = StringToGameRuleAction(keyValue);
             if (action != GameRuleAction_Invalid)
             {
-                gameRuleSet[GameRuleSet_Actions][numModules] = action;
+                gameRuleSet[GameRuleSet_Action][numModules] = action;
                 numModules++;
             }
             else
@@ -256,7 +319,7 @@ GameRules_CacheGameRulesData()
 public GameRules_OnConfigsExecuted()
 {
     GameRules_CacheGameRulesData();
-    GameRules_LoadRuleSet();
+    GameRules_LoadRuleSetFromCvar();
 }
 
 /**
@@ -265,30 +328,33 @@ public GameRules_OnConfigsExecuted()
 public GameRules_OnConfigReload(configindex)
 {
     GameRules_CacheGameRulesData();
-    GameRules_LoadRuleSet();
+    GameRules_LoadRuleSetFromCvar();
 }
 
 /**
  * Converts a string value to a game rule action.
  *
  * @param action    String value to convert.
+ * 
  * @return          Game rule action, or GameRuleAction_Invalid on error.
  */
 GameRuleAction:StringToGameRuleAction(const String:action[])
 {
-    // TODO: Use a generic function for converting a string value to boolean.
-    
     if (StrEqual(action, "on", false))
     {
         return GameRuleAction_On;
+    }
+    else if (StrEqual(action, "force_on", false))
+    {
+        return GameRuleAction_ForceOn;
     }
     else if (StrEqual(action, "off", false))
     {
         return GameRuleAction_Off;
     }
-    else if (StrEqual(action, "force_on", false))
+    else if (StrEqual(action, "force_off", false))
     {
-        return GameRuleAction_ForceOn;
+        return GameRuleAction_ForceOff;
     }
     
     return GameRuleAction_Invalid;
@@ -297,19 +363,35 @@ GameRuleAction:StringToGameRuleAction(const String:action[])
 /**
  * Loads and applies the rule set specified in the config.
  */
-GameRules_LoadRuleSet()
+GameRules_LoadRuleSetFromCvar()
 {
     decl String:ruleSetName[GAMERULES_NAME_LEN];
     GetConVarString(g_hCvarGameRuleSet, ruleSetName[0], sizeof(ruleSetName));
     
-    new ruleSet = GameRules_FindRuleSet(ruleSetName);
-    if (ruleSet >= 0)
+    GameRules_LoadRuleSet(ruleSetName);
+}
+
+/**
+ * Loads a named rule set.
+ * 
+ * @param ruleset   The ruleset as listed in gamerules config file.
+ */
+stock GameRules_LoadRuleSet(const String:ruleset[])
+{
+    // Find the index of the named ruleset.  -1 is returned if invalid.
+    new rulesetindex = GameRules_FindRuleSet(ruleset);
+    new defaultruleindex = GameRules_FindRuleSet("default");
+    if (rulesetindex > -1)
     {
-        GameRules_ApplyRuleSet(ruleSet);
+        GameRules_ApplyRuleSet(rulesetindex);
+    }
+    else if (defaultruleindex > -1)
+    {
+        GameRules_ApplyRuleSet(defaultruleindex);
     }
     else
     {
-        LogMgr_Print(g_moduleGameRules, LogType_Fatal_Module, "Config Validation", "Invalid rule set name in cvar zr_gamerules_ruleset: \"%s\"", ruleSetName);
+        LogMgr_Print(g_moduleGameRules, LogType_Fatal_Plugin, "Config Validation", "Invalid rule set name \"%s\" and failed to fall back to default, unloading plugin.", ruleset);
     }
 }
 
@@ -317,19 +399,38 @@ GameRules_LoadRuleSet()
  * Gets the rule set with the specified name.
  *
  * @param name  Name of rule set.
+ *  
  * @return      Rule set index if found, -1 otherwise.
  */
-GameRules_FindRuleSet(const String:name[])
+stock GameRules_FindRuleSet(const String:name[])
 {
     new gameRuleSet[GameRuleSet];
     for (new ruleSet = 0; ruleSet < g_iGameRuleCount; ruleSet++)
     {
         GetArrayArray(g_hGameRules, ruleSet, gameRuleSet[0], sizeof(gameRuleSet));  
         if (StrEqual(gameRuleSet[GameRuleSet_Name], name, false))
-        {
             return ruleSet;
-        }
     }
+    
+    return -1;
+}
+
+/**
+ * Gets the rule set with the specified name.
+ *
+ * @param ruleset   The game rule set index to look for module in.
+ * @param module    The module to look for.
+ * 
+ * @return          Index that module lies in.
+ */
+stock GameRules_FindModuleInRuleSet(ruleset, Module:module)
+{
+    for (new moduleindex = 0; moduleindex < GAMERULESET_NUMMODULES; moduleindex++)
+    {
+        if (module == GAMERULESET_MODULE(moduleindex))
+            return moduleindex;
+    }
+    
     return -1;
 }
 
@@ -339,28 +440,20 @@ GameRules_FindRuleSet(const String:name[])
  *
  * @param ruleSet   Index of rule set to apply.
  */
-GameRules_ApplyRuleSet(ruleSet)
+stock GameRules_ApplyRuleSet(ruleSet)
 {
     GetArrayArray(g_hGameRules, ruleSet, g_RuleSetCache[0], sizeof(g_RuleSetCache));
+    g_iCurGameRuleSet = ruleSet;    // Hiding behind this line above in case ruleSet is invalid.
     
     // Loop through each module and apply its action.
-    new numModules = g_RuleSetCache[GameRuleSet_NumModules];
-    for (new i = 0; i < numModules; i++)
+    for (new moduleindex = 0; moduleindex < GAMERULESET_NUMMODULES; moduleindex++)
     {
-        new Module:module = g_RuleSetCache[GameRuleSet_Modules][i];
-        new GameRuleAction:action = g_RuleSetCache[GameRuleSet_Actions][i];
-        
         // Apply action.
-        switch (action)
+        switch (GAMERULESET_ACTION(moduleindex))
         {
-            case GameRuleAction_On, GameRuleAction_ForceOn:
-            {
-                ModuleMgr_Enable(module);
-            }
-            case GameRuleAction_Off:
-            {
-                ModuleMgr_Disable(module);
-            }
+            case GameRuleAction_ForceOn:    ModuleMgr_Enable(GAMERULESET_MODULE(moduleindex));
+            case GameRuleAction_Off:        ModuleMgr_Disable(GAMERULESET_MODULE(moduleindex));
+            case GameRuleAction_ForceOff:   ModuleMgr_Disable(GAMERULESET_MODULE(moduleindex));
         }
     }
 }

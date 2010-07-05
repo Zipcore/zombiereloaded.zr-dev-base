@@ -101,4 +101,13 @@
 		"en"		"Disabled module: \"{1}\"  (Other module(s) dependent on this one were also disabled)"
 	}
 
+	// **********************************
+	//        Translations Manager
+	// **********************************
+
+	"TransMgr cmd reloadtranslations"
+	{
+		"en"		"All translation files have been reloaded."
+	}
+
 }

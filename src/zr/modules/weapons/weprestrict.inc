@@ -32,16 +32,6 @@
 new Module:g_moduleWepRestrict;
 
 /**
- * Cvar handles.
- */
-new Handle:g_hCvarRestrictEndEquip;
-
-/**
- * Array to block any client from picking up weapons.
- */
-new bool:g_bRestrictBlockWeapon[MAXPLAYERS + 1];
-
-/**
  * Query results returned when (un)restricting a weapon.
  */
 enum RestrictQuery
@@ -51,12 +41,6 @@ enum RestrictQuery
     Query_Locked,       /** (Un)restrict was stopped because the weapon is marked "untoggleable." */
     Query_Invalid,      /** (Un)restrict failed because invalid info was given. */
 }
-
-/**
- * Spawn weapons for each team index. (CS:S)
- */
-#define WEAPONS_2_SPAWN_WEAPON "weapon_glock"
-#define WEAPONS_3_SPAWN_WEAPON "weapon_usp"
 
 /**
  * Register this module.
@@ -82,11 +66,6 @@ WepRestrict_Register()
     EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnMyModuleDisable",      "WepRestrict_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnClientPutInServer",    "WepRestrict_OnClientPutInServer");
     EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnClientDisconnect",     "WepRestrict_OnClientDisconnect");
-    
-    #if defined PROJECT_GAME_CSS
-        EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_RoundEnd",           "WepRestrict_RoundEnd");
-        EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_PlayerSpawn",        "WepRestrict_PlayerSpawn");
-    #endif
 }
 
 /**
@@ -97,14 +76,11 @@ WepRestrict_OnPluginStart()
     // Register the module (sub-module of weapons)
     WepRestrict_Register();
     
-    // Create cvars.
-    g_hCvarRestrictEndEquip =   Project_CreateConVar("weprestrict_endequip",   "1",    "Restricts zombies from picking up weapons after the round has ended but before the next round has begun.");
-    
     #if defined PROJECT_GAME_CSS
         // Listen for buy commands.
-        AddCommandListener(Listener_Buy, "buy");
-        AddCommandListener(Listener_Buy, "autobuy");
-        AddCommandListener(Listener_Buy, "rebuy");
+        AddCommandListener(WepRestrict_BuyListener, "buy");
+        AddCommandListener(WepRestrict_BuyListener, "autobuy");
+        AddCommandListener(WepRestrict_BuyListener, "rebuy");
         
         // Create weapon admin commands.
         Project_RegConsoleCmd("restrict", Command_Restrict, "Restricts a weapon or a weapon type. Usage: zr_restrict <weapon|weapon type> [weapon2|weapontype2] ...");
@@ -167,83 +143,24 @@ public WepRestrict_OnClientDisconnect(client)
 }
 
 /**
- * TODO: Remove this.
- * Temp function used because the zombie system hasn't been coded yet. 
- */
-bool:InfectIsClientInfected(client)
-{
-    return false;
-}
-
-/**
- * Round has ended.
- */
-public WepRestrict_RoundEnd()
-{
-    if (!GetConVarBool(g_hCvarRestrictEndEquip))
-        return;
-    
-    for (new client = 1; client <= MaxClients; client++)
-    {
-        if (!IsClientInGame(client))
-            continue;
-        
-        if (InfectIsClientInfected(client))
-            g_bRestrictBlockWeapon[client] = true;
-    }
-}
-
-/**
- * Client has spawned.
- * 
- * @param client    The client index.
- * 
- */
-public WepRestrict_PlayerSpawn(client)
-{
-    #if defined PROJECT_GAME_CSS
-        if (!Util_IsClientOnTeam(client))
-            return;
-        
-        // H4x.  Unfortunately I can't disable this flag early enough for CS:S to give start USP/Glock.
-        // So I have to give BOOTLEG weapons.
-        if (g_bRestrictBlockWeapon[client])
-        {
-            // Reset block weapons flag.
-            g_bRestrictBlockWeapon[client] = false;
-            
-            new team = GetClientTeam(client);
-            if (team == CS_TEAM_T)
-                GivePlayerItem(client, WEAPONS_2_SPAWN_WEAPON);
-            else if (team == CS_TEAM_CT)
-                GivePlayerItem(client, WEAPONS_3_SPAWN_WEAPON);
-        }
-    #endif
-}
-
-/**
- * Command listener for the buy. autorebuy, and rebuy commands.
+ * Command listener for the buy, autorebuy, and rebuy commands.
  * Used to block use of this command under certain conditions.
  * 
  * @param client    The client index.
  * @param argc      Argument count.
  */
-public Action:Listener_Buy(client, const String:command[], argc)
+public Action:WepRestrict_BuyListener(client, const String:command[], argc)
 {
     // Not a client using the command.
     if (client <= 0)
         return Plugin_Continue;
     
+    if (!IsClientInGame(client))
+        return Plugin_Continue;
+    
     // Don't bother blocking them if they aren't in a buyzone.
     if (!WepLib_InBuyZone(client))
         return Plugin_Continue;
-    
-    // If player is a zombie, then block command.
-    if (InfectIsClientInfected(client))
-    {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "Zombie cant use weapon");
-        return Plugin_Handled;
-    }
     
     decl String:weapon[64];
     GetCmdArg(1, weapon, sizeof(weapon));
@@ -466,14 +383,6 @@ public Action:WepRestrict_CanUse(client, weapon)
     // Knife should never be restricted.
     if (StrEqual(weaponentity, "weapon_knife"))
         return Plugin_Continue;
-    
-    // No weapons for zombies.
-    if (InfectIsClientInfected(client))
-        return Plugin_Handled;
-    
-    // The flat override for stopping a client from picking up a weapon.
-    if (g_bRestrictBlockWeapon[client])
-        return Plugin_Handled;
     
     decl String:weapondisp[WEPCONFIG_NAME];
     new windex = Weapons_ClsNameToDisplay(weaponentity, weapondisp, sizeof(weapondisp));

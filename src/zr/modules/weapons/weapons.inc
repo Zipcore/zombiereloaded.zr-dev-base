@@ -177,6 +177,8 @@ public Weapons_OnPluginEnd()
             CloseHandle(g_hWeapons[index]);
         g_hWeapons[index] = INVALID_HANDLE;
     }
+    
+    CloseHandle(g_hWeaponTypes);
 }
 
 /**

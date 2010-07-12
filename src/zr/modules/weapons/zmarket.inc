@@ -189,10 +189,7 @@ public Action:ZMarket_PostPlayerSpawn(Handle:timer, any:client)
         CookieLib_SetBool(client, g_hZMarketAutoRebuyCookie, false);
     }
     
-    if (!Util_IsClientOnTeam(client))
-        return Plugin_Continue;
-    
-    if (InfectIsClientInfected(client))
+    if (!TLib_IsClientHuman(client))
         return Plugin_Continue;
     
     // If auto-rebuy is enabled, then force client to rebuy weapons.
@@ -824,8 +821,8 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
     decl String:weaponentity[64];
     Weapons_ReadString(windex, WepConfig_Entity, weaponentity, sizeof(weaponentity));
     
-    // Check if the client is a zombie or not in a buyzone.
-    if (InfectIsClientInfected(client)
+    // Check if the client is not a human or not in a buyzone.
+    if (!TLib_IsClientHuman(client)
         || (!autorebuy && GetConVarBool(g_hCvarZMarketBuyzone) && !WepLib_InBuyZone(client)))
     {
         // Update cookie with new weapon.
@@ -1183,7 +1180,7 @@ stock ZMarket_RebuySavedSetup(client, bool:autorebuy = false)
         return;
     }
     
-    if (InfectIsClientInfected(client))
+    if (!TLib_IsClientHuman(client))
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Must be human");
         return;

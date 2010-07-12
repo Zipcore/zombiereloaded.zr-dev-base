@@ -57,7 +57,7 @@ GameData_Register()
     new moduledata[ModuleData];
     
     moduledata[ModuleData_Disabled] = false;
-    moduledata[ModuleData_Hidden] = true;
+    moduledata[ModuleData_Hidden] = false;
     strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "GameData");
     strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "gamedata");
     strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Handles virtual offsets and signatures.");

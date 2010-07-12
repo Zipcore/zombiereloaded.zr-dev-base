@@ -166,10 +166,7 @@ public Action:GameRules_OnModuleEnable(Module:module)
     
     // If this module is forced off then don't let it enable.
     if (GAMERULESET_ACTION(moduleindex) == GameRuleAction_ForceOff)
-    {
-        TransMgr_PrintText(SERVER_INDEX, MsgFormat_Both, MsgType_Reply, g_moduleGameRules, _, "No access to command");
         return Plugin_Handled;
-    }
     
     return Plugin_Continue;
 }
@@ -196,10 +193,7 @@ public Action:GameRules_OnModuleDisable(Module:module)
     
     // If this module is forced on then don't let it disable.
     if (GAMERULESET_ACTION(moduleindex) == GameRuleAction_ForceOn)
-    {
-        TransMgr_PrintText(SERVER_INDEX, MsgFormat_Both, MsgType_Reply, g_moduleGameRules, _, "No access to command");
         return Plugin_Handled;
-    }
     
     return Plugin_Continue;
 }
@@ -211,7 +205,6 @@ public Action:GameRules_OnModuleDisable(Module:module)
  */
 public Action:GameRules_OnMyModuleDisable()
 {
-    TransMgr_PrintText(SERVER_INDEX, MsgFormat_Both, MsgType_Reply, g_moduleGameRules, _, "No access to command");
     return Plugin_Handled;
 }
 

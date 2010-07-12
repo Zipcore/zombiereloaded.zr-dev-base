@@ -51,11 +51,13 @@
 #include "zr/libraries/menulib"
 #include "zr/libraries/offsetlib"
 #include "zr/libraries/shoppinglistlib"
+#include "zr/libraries/teamlib"
 #include "zr/libraries/weaponlib"
 
 // Module includes.
 #include "zr/modules/gamedata"
 #include "zr/modules/gamerules"
+#include "zr/modules/zr_core/root.zr"
 #include "zr/modules/weapons/weapons"
 #include "zr/modules/stripobjectives"
 

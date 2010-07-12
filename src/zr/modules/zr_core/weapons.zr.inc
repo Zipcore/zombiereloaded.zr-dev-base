@@ -26,6 +26,11 @@
  */
 
 /**
+ * TODO:
+ * Strip all weapons on infect.
+ */
+
+/**
  * This module's identifier.
  */
 new Module:g_moduleZRWeapons;

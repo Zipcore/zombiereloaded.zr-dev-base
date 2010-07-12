@@ -473,29 +473,29 @@ stock ModuleMgr_ReadString(Module:module, ModuleData:data, String:output[], maxl
 /**
  * Returns a list of modules that depend on the given module.
  * 
- * @param module        The module to find dependencies for.
- * @param dependencies  A list of modules that depend on the given module.
+ * @param module            The module to find dependencies for.
+ * @param dependentmodules  A list of modules that depend on the given module.
  * 
- * @return              The number of modules that depend on the given module.
+ * @return                  The number of modules that depend on the given module.
  */
-stock ModuleMgr_FindDependentModules(Module:module, Module:dependencies[CM_DATA_DEPENDENCIES])
+stock ModuleMgr_FindDependentModules(Module:module, Module:dependentmodules[CM_DATA_DEPENDENCIES])
 {
     new dindex = 0;
-    new Module:_dependencies[CM_DATA_DEPENDENCIES];
+    new Module:_dependentmodules[CM_DATA_DEPENDENCIES];
     
     // Loop through all the modules.
     new count = MODULE_COUNT;
     for (new moduleindex = 0; moduleindex < count; moduleindex++)
     {
-        ModuleMgr_ReadArray(Module:moduleindex, ModuleData_Dependencies, _dependencies, sizeof(_dependencies));
-        for (new _dindex = 0; _dindex < sizeof(_dependencies); _dindex++)
+        ModuleMgr_ReadArray(Module:moduleindex, ModuleData_Dependencies, _dependentmodules, sizeof(_dependentmodules));
+        for (new _dindex = 0; _dindex < sizeof(_dependentmodules); _dindex++)
         {
-            if (_dependencies[_dindex] == INVALID_MODULE)
+            if (_dependentmodules[_dindex] == INVALID_MODULE)
                 break;
             
-            if (_dependencies[_dindex] == module)
+            if (_dependentmodules[_dindex] == module)
             {
-                dependencies[dindex++] = Module:moduleindex;
+                dependentmodules[dindex++] = Module:moduleindex;
                 break;
             }
         }

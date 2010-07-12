@@ -27,6 +27,7 @@ ZR
 			..\src\zr\libraries\offsetlib.inc
 			..\src\zr\libraries\overlaylib.inc
 			..\src\zr\libraries\shoppinglistlib.inc
+			..\src\zr\libraries\teamlib.inc
 			..\src\zr\libraries\weaponlib.inc
 		-Modules
 			-Weapons
@@ -36,6 +37,9 @@ ZR
 				..\src\zr\modules\weapons\wepmenus.inc
 				..\src\zr\modules\weapons\weprestrict.inc
 				..\src\zr\modules\weapons\zmarket.inc
+			-ZR Root
+				..\src\zr\modules\zr_core\root.zr.inc
+				..\src\zr\modules\zr_core\teammanager.zr.inc
 			..\src\zr\modules\gamedata.inc
 			..\src\zr\modules\gamerules.inc
 			..\src\zr\modules\moduletemplate.inc

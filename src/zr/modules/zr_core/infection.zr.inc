@@ -305,6 +305,8 @@ ZRInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
     PrintToChatAll("INFECT %N infected %N", attacker, client);
     TLib_SetClientTeam(client, ZTeam_Zombie);
     
+    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZR infected");
+    
     // Definitely zombies present now.
     g_bZombiesPresent = true;
     

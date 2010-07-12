@@ -55,7 +55,13 @@ ZR_Register()
     g_moduleZRRoot = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRRoot, "Event_OnMyModuleEnable",         "ZR_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleZRRoot, "Event_OnMyModuleEnable",        "ZR_OnMyModuleEnable");
+    
+    #if defined PROJECT_GAME_CSS
+    
+    EventMgr_RegisterEvent(g_moduleZRRoot, "Event_RoundStart",            "ZR_RoundStart");
+    
+    #endif
 }
 
 // Include sub-modules.
@@ -91,4 +97,13 @@ public ZR_OnMyModuleEnable()
     new count = ModuleMgr_FindDependentModules(g_moduleZRRoot, dependentmodules);
     for (new dmoduleindex = 0; dmoduleindex < count; dmoduleindex++)
         ModuleMgr_Enable(dependentmodules[dmoduleindex]);
+}
+
+/**
+ * Round has started.
+ */
+public ZR_RoundStart()
+{
+    // Print ZR objective.
+    TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, _, _, "ZR round objective");
 }

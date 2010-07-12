@@ -55,6 +55,7 @@ ZRTM_Register()
     g_moduleZRTM = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
+    EventMgr_RegisterEvent(g_moduleZRTM, "Event_OnAllModulesLoaded",        "ZRTM_OnAllModulesLoaded");
     EventMgr_RegisterEvent(g_moduleZRTM, "Event_OnClientPutInServer",       "ZRTM_OnClientPutInServer");
     
     #if defined PROJECT_GAME_CSS
@@ -75,6 +76,16 @@ ZRTM_OnPluginStart()
 }
 
 /**
+ * All modules have been registered.
+ */
+public ZRTM_OnAllModulesLoaded()
+{
+    // Register custom events.
+    EventMgr_RegisterEvent(g_moduleZRTM, "Event_OnClientInfect",       "ZRTM_OnClientInfect");
+    EventMgr_RegisterEvent(g_moduleZRTM, "Event_OnClientHuman",        "ZRTM_OnClientHuman");
+}
+
+/**
  * Client has joined the server.
  * 
  * @param client    The client index.
@@ -83,6 +94,32 @@ public ZRTM_OnClientPutInServer(client)
 {
     // Initialize the client's team.
     TLib_SetClientTeam(client, ZTeam_Unassigned);
+}
+
+/**
+ * Client has been infected.
+ * 
+ * @param client        The infected client.
+ * @param attacker      The zombie that infected the client.
+ * @param motherzombie  True if the client has been infected as a mother zombie.
+ */
+public ZRTM_OnClientInfect(client, attacker, bool:motherzombie)
+{
+    #if defined PROJECT_GAME_CSS
+        CS_SwitchTeam(client, CS_TEAM_T);
+    #endif
+}
+
+/**
+ * Client has turned back to human.
+ * 
+ * @param client        The client that became human.
+ */
+public ZRTM_OnClientHuman(client)
+{
+    #if defined PROJECT_GAME_CSS
+        CS_SwitchTeam(client, CS_TEAM_CT);
+    #endif
 }
 
 #if defined PROJECT_GAME_CSS

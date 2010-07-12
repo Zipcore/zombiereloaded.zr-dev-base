@@ -128,7 +128,7 @@ enum ModuleData
     String:ModuleData_ShortName[CM_DATA_SHORTNAME],         /** Used for client interaction with modules. */
     String:ModuleData_Description[CM_DATA_DESCRIPTION],     /** A description of the module */
     Module:ModuleData_Dependencies[CM_DATA_DEPENDENCIES],   /** An array of module IDs that the module depends on.  {INVALID_MODULE} = no dependencies.  Must end with INVALID_MODULE. */
-    any:ModuleData_Root,                                    /** True if the module is a root module.  Typically the top module of a game mode. */
+    bool:ModuleData_Root,                                   /** True if the module is a root module.  Typically the top module of a game mode. */
     any:ModuleData_Extra2,                                  /** An extra spot to store any value that other modules can read. */
     any:ModuleData_Extra3                                   /** An extra spot to store any value that other modules can read. */
 }

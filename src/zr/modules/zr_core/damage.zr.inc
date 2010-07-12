@@ -142,7 +142,7 @@ public ZRDmg_OnClientDisconnect(client)
 public Action:ZRDmg_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
 {
     // Check if the victim and attacker are valid clients.
-    if ((victim <= 0 || victim > MaxClients) || (attacker <= 0 || attacker > MaxClients))
+    if (!Util_IsClientInGame(victim) || !Util_IsClientInGame(attacker))
         return Plugin_Continue;
     
     // Check if a zombie is attacking a human.

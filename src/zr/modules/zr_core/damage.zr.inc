@@ -36,6 +36,11 @@ new Module:g_moduleZRDmg;
 stock Module:ZRDmg_GetIdentifier() { return g_moduleZRDmg; }
 
 /**
+ * Cvar handles.
+ */
+new Handle:g_hCvarFF;
+
+/**
  * Register this module.
  */
 ZRDmg_Register()
@@ -68,11 +73,10 @@ ZRDmg_OnPluginStart()
 {
     // Register the module.
     ZRDmg_Register();
+    
+    // Create cvars.
+    g_hCvarFF = CreateConVar("zr_ff", "0", "Allow humans on opposite teams to hurt each other.  mp_friendlyfire still controls same-team FF.  This might be used for \"pro\" zombie gameplay.");
 }
-
-/**
- * TODO: Hook traceattack and block FF.
- */
 
 /**
  * The module that hooked this event callback has been enabled.
@@ -87,7 +91,7 @@ public ZRDmg_OnMyModuleEnable()
         if (!IsClientInGame(client))
             continue;
         
-        // Hook WeaponCanUse on the client for restricting the weapon.
+        SDKHook(client, SDKHook_TraceAttack, ZRDmg_TraceAttack);
         SDKHook(client, SDKHook_OnTakeDamage, ZRDmg_OnTakeDamage);
     }
 }
@@ -103,6 +107,7 @@ public ZRDmg_OnMyModuleDisable()
         if (!IsClientInGame(client))
             continue;
         
+        SDKUnhook(client, SDKHook_TraceAttack, ZRDmg_TraceAttack);
         SDKUnhook(client, SDKHook_OnTakeDamage, ZRDmg_OnTakeDamage);
     }
 }
@@ -114,7 +119,7 @@ public ZRDmg_OnMyModuleDisable()
  */
 public ZRDmg_OnClientPutInServer(client)
 {
-    // Hook WeaponCanUse on the client for restricting the weapon.
+    SDKHook(client, SDKHook_TraceAttack, ZRDmg_TraceAttack);
     SDKHook(client, SDKHook_OnTakeDamage, ZRDmg_OnTakeDamage);
 }
 
@@ -125,7 +130,38 @@ public ZRDmg_OnClientPutInServer(client)
  */
 public ZRDmg_OnClientDisconnect(client)
 {
+    SDKUnhook(client, SDKHook_TraceAttack, ZRDmg_TraceAttack);
     SDKUnhook(client, SDKHook_OnTakeDamage, ZRDmg_OnTakeDamage);
+}
+
+/**
+ * Stop humans on opposite teams from killing each other.
+ * 
+ * @param victim        The client being attacked.
+ * @param attacker      The client attacking the victim.
+ * @param inflictor     The entity doing damage?
+ * @param damage        The amount of damage inflicted.
+ * @param damagetype    A bit indicating type of damage that was being inflicted.
+ * ... 
+ *  
+ * @return              Hook action.  See include/core.inc.
+ */
+public Action:ZRDmg_TraceAttack(victim, &attacker, &inflictor, &Float:damage, &damagetype, &ammotype, hitbox, hitgroup)
+{
+    // If FF is enabled then don't do anything.
+    if (!GetConVarBool(g_hCvarFF))
+    {
+        // If they're on the same team then let mp_friendlyfire handle it.
+        if (GetClientTeam(victim) != GetClientTeam(attacker))
+        {
+            // Don't let same clients on the same ZTeam, damage each other.
+            // Ex: Terrorist human will not be able to shoot Counter-Terrorist human.
+            if (TLib_GetClientTeam(victim) == TLib_GetClientTeam(attacker))
+                return Plugin_Handled;
+        }
+    }
+    
+    return Plugin_Continue;
 }
 
 /**
@@ -152,7 +188,7 @@ public Action:ZRDmg_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &
         // They couldn't just use DMG_SLASH because that would make sense.
         if (damagetype & DMG_BULLET)
         {
-            SetEntityHealth(victim, GetClientHealth(victim) + RoundToNearest(damage));
+            SetEntityHealth(victim, GetClientHealth(victim));
         }
     }
     

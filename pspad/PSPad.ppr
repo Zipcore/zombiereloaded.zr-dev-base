@@ -37,9 +37,12 @@ ZR
 				..\src\zr\modules\weapons\wepmenus.inc
 				..\src\zr\modules\weapons\weprestrict.inc
 				..\src\zr\modules\weapons\zmarket.inc
-			-ZR Root
+			-ZR Core
+				..\src\zr\modules\zr_core\damage.zr.inc
+				..\src\zr\modules\zr_core\infection.zr.inc
 				..\src\zr\modules\zr_core\root.zr.inc
 				..\src\zr\modules\zr_core\teammanager.zr.inc
+				..\src\zr\modules\zr_core\weapons.zr.inc
 			..\src\zr\modules\gamedata.inc
 			..\src\zr\modules\gamerules.inc
 			..\src\zr\modules\moduletemplate.inc

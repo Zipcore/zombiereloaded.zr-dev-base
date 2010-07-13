@@ -78,7 +78,6 @@ public WepAlpha_OnMyModuleEnable()
         if (!IsClientInGame(client))
             continue;
         
-        // Hook WeaponCanUse on the client for restricting the weapon.
         SDKHook(client, SDKHook_WeaponEquip, WepAlpha_Equip);
         SDKHook(client, SDKHook_WeaponDrop, WepAlpha_Drop);
     }

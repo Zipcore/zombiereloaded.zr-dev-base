@@ -33,9 +33,6 @@
 #include "zr/project"
 #include "zr/base/wrappers"
 
-// Non-module includes.
-#include "zr/utilities"
-
 // Base project includes.
 #include "zr/base/versioninfo"
 #include "zr/base/accessmanager"
@@ -54,12 +51,18 @@
 #include "zr/libraries/teamlib"
 #include "zr/libraries/weaponlib"
 
+// Non-module includes.
+#include "zr/utilities"
+
 // Module includes.
 #include "zr/modules/gamedata"
 #include "zr/modules/gamerules"
 #include "zr/modules/zr_core/root.zr"
-#include "zr/modules/weapons/weapons"
 #include "zr/modules/stripobjectives"
+
+#if defined PROJECT_GAME_CSS
+  #include "zr/modules/weapons/weapons"
+#endif
 
 /**
  * Record plugin info.

@@ -213,8 +213,10 @@ public Action:ZRInfect_InitMotherZombie(Handle:timer)
     // Pick a random mother zombie.
     ZRInfect_MotherZombie();
     
-    // Move everyone to the correct team.
-    ZRTM_UpdateClientTeams();
+    #if defined PROJECT_GAME_CSS
+        // Move everyone to the correct team.
+        ZRTM_UpdateClientTeams();
+    #endif
 }
 
 /**

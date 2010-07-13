@@ -46,6 +46,10 @@
   #include <cstrike>
 #endif
 
+#if defined PROJECT_GAME_TF2
+  #include <tf2>
+#endif
+
 /**
  * This is where it all begins.
  * Forward the OnPluginStart event here to all modules so they can register.
@@ -59,8 +63,11 @@ stock ForwardOnPluginStart()
     GameData_OnPluginStart();
     GameRules_OnPluginStart();
     ZR_OnPluginStart();
-    Weapons_OnPluginStart();
     StripObj_OnPluginStart();
+    
+    #if defined PROJECT_GAME_CSS
+        Weapons_OnPluginStart();
+    #endif
 }
 
 // **********************************************

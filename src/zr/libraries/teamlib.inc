@@ -26,6 +26,23 @@
  */
 
 /**
+ * Team defines.
+ */
+#if defined PROJECT_GAME_CSS
+  #define TEAM_0 CS_TEAM_NON
+  #define TEAM_1 CS_TEAM_SPECTATOR
+  #define TEAM_2 CS_TEAM_T
+  #define TEAM_3 CS_TEAM_CT
+#endif
+
+#if defined PROJECT_GAME_TF2
+  #define TEAM_0 _:TFTeam_Unassigned
+  #define TEAM_1 _:TFTeam_Spectator
+  #define TEAM_2 _:TFTeam_Red
+  #define TEAM_3 _:TFTeam_Blue
+#endif
+
+/**
  * Zombie-based teams.
  */
 enum ZTeam

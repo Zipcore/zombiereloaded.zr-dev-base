@@ -45,7 +45,7 @@ ZRTM_Register()
     
     moduledata[ModuleData_Disabled] = false;
     moduledata[ModuleData_Hidden] = false;
-    strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "Zombie:Reloaded Team Manager");
+    strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "ZR Team Manager");
     strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "zrteammanager");
     strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Manages zombie-based teams for classic zombie gameplay.");
     moduledata[ModuleData_Dependencies][0] = ZR_GetIdentifier();

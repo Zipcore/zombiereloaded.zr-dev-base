@@ -50,7 +50,7 @@ ZRDmg_Register()
     
     moduledata[ModuleData_Disabled] = false;
     moduledata[ModuleData_Hidden] = false;
-    strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "Zombie:Reloaded Damage Control");
+    strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "ZR Damage Control");
     strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "zrdamage");
     strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Handles damage rules for classic ZR.");
     moduledata[ModuleData_Dependencies][0] = ZR_GetIdentifier();
@@ -60,10 +60,7 @@ ZRDmg_Register()
     g_moduleZRDmg = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnMyModuleEnable",         "ZRDmg_OnMyModuleEnable");
-    EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnMyModuleDisable",        "ZRDmg_OnMyModuleDisable");
-    EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnClientPutInServer",      "ZRDmg_OnClientPutInServer");
-    EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnClientDisconnect",       "ZRDmg_OnClientDisconnect");
+    EventMgr_RegisterEvent(g_moduleZRDmg, "Event_OnAllModulesLoaded",       "ZRDmg_OnAllModulesLoaded");
 }
 
 /**
@@ -79,59 +76,13 @@ ZRDmg_OnPluginStart()
 }
 
 /**
- * The module that hooked this event callback has been enabled.
- * 
- * @return      Return Plugin_Handled to stop load, and Plugin_Continue to allow it.
+ * All modules have been registered.
  */
-public ZRDmg_OnMyModuleEnable()
+public ZRDmg_OnAllModulesLoaded()
 {
-    // Hook all clients in the server.
-    for (new client = 1; client <= MaxClients; client++)
-    {
-        if (!IsClientInGame(client))
-            continue;
-        
-        SDKHook(client, SDKHook_TraceAttack, ZRDmg_TraceAttack);
-        SDKHook(client, SDKHook_OnTakeDamage, ZRDmg_OnTakeDamage);
-    }
-}
-
-/**
- * The module that hooked this event callback has been disabled.
- */
-public ZRDmg_OnMyModuleDisable()
-{
-    // Unhook all clients in the server.
-    for (new client = 1; client <= MaxClients; client++)
-    {
-        if (!IsClientInGame(client))
-            continue;
-        
-        SDKUnhook(client, SDKHook_TraceAttack, ZRDmg_TraceAttack);
-        SDKUnhook(client, SDKHook_OnTakeDamage, ZRDmg_OnTakeDamage);
-    }
-}
-
-/**
- * Client has joined the server.
- * 
- * @param client    The client index.
- */
-public ZRDmg_OnClientPutInServer(client)
-{
-    SDKHook(client, SDKHook_TraceAttack, ZRDmg_TraceAttack);
-    SDKHook(client, SDKHook_OnTakeDamage, ZRDmg_OnTakeDamage);
-}
-
-/**
- * Client is disconnecting from the server.
- * 
- * @param client    The client index.
- */
-public ZRDmg_OnClientDisconnect(client)
-{
-    SDKUnhook(client, SDKHook_TraceAttack, ZRDmg_TraceAttack);
-    SDKUnhook(client, SDKHook_OnTakeDamage, ZRDmg_OnTakeDamage);
+    // Register custom events.
+    EventMgr_RegisterEvent(g_moduleZRWeapons, "Hook_TraceAttack",           "ZRDmg_TraceAttack");
+    EventMgr_RegisterEvent(g_moduleZRWeapons, "Hook_OnTakeDamage",          "ZRDmg_OnTakeDamage");
 }
 
 /**
@@ -177,7 +128,6 @@ public Action:ZRDmg_TraceAttack(victim, &attacker, &inflictor, &Float:damage, &d
  */
 public Action:ZRDmg_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
 {
-    PrintToChatAll("victim %N attacker %N", victim, attacker);
     // Check if the victim and attacker are valid clients.
     if (!Util_IsClientInGame(victim) || !Util_IsClientInGame(attacker))
         return Plugin_Continue;

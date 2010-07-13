@@ -68,9 +68,6 @@ StripObj_Register()
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleStripObj, "Event_OnMyModuleDisable",     "StripObj_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleStripObj, "Event_RoundStart",            "StripObj_RoundStart");
-    
-    // Register config file(s) that this module will use.
-    // ConfigMgr_Register(g_moduleStripObj, "StripObj_OnConfigReload", "configs/<projectshortname>/<config>.txt");
 }
 
 /**

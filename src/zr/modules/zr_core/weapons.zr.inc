@@ -66,7 +66,7 @@ ZRWeapons_Register()
     
     moduledata[ModuleData_Disabled] = false;
     moduledata[ModuleData_Hidden] = false;
-    strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "Zombie:Reloaded Weapon Control");
+    strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "ZR Weapon Control");
     strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "zrweapons");
     strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Manages weapons for classic zombie gameplay.");
     moduledata[ModuleData_Dependencies][0] = ZR_GetIdentifier();
@@ -77,10 +77,6 @@ ZRWeapons_Register()
     
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnAllModulesLoaded",       "ZRWeapons_OnAllModulesLoaded");
-    EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnMyModuleEnable",         "ZRWeapons_OnMyModuleEnable");
-    EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnMyModuleDisable",        "ZRWeapons_OnMyModuleDisable");
-    EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnClientPutInServer",      "ZRWeapons_OnClientPutInServer");
-    EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnClientDisconnect",       "ZRWeapons_OnClientDisconnect");
     
     #if defined PROJECT_GAME_CSS
     
@@ -119,60 +115,7 @@ public ZRWeapons_OnAllModulesLoaded()
 {
     // Register custom events.
     EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnClientInfect",       "ZRWeapons_OnClientInfect");
-}
-
-/**
- * The module that hooked this event callback has been enabled.
- * 
- * @return      Return Plugin_Handled to stop load, and Plugin_Continue to allow it.
- */
-public ZRWeapons_OnMyModuleEnable()
-{
-    // Hook all clients in the server.
-    for (new client = 1; client <= MaxClients; client++)
-    {
-        if (!IsClientInGame(client))
-            continue;
-        
-        // Hook WeaponCanUse on the client for restricting the weapon.
-        //SDKHook(client, SDKHook_WeaponCanUse, ZRWeapons_CanUse);
-    }
-}
-
-/**
- * The module that hooked this event callback has been disabled.
- */
-public ZRWeapons_OnMyModuleDisable()
-{
-    // Unhook all clients in the server.
-    for (new client = 1; client <= MaxClients; client++)
-    {
-        if (!IsClientInGame(client))
-            continue;
-        
-        //SDKUnhook(client, SDKHook_WeaponCanUse, ZRWeapons_CanUse);
-    }
-}
-
-/**
- * Client has joined the server.
- * 
- * @param client    The client index.
- */
-public ZRWeapons_OnClientPutInServer(client)
-{
-    // Hook WeaponCanUse on the client for restricting the weapon.
-    //SDKHook(client, SDKHook_WeaponCanUse, ZRWeapons_CanUse);
-}
-
-/**
- * Client is disconnecting from the server.
- * 
- * @param client    The client index.
- */
-public ZRWeapons_OnClientDisconnect(client)
-{
-    //SDKUnhook(client, SDKHook_WeaponCanUse, ZRWeapons_CanUse);
+    EventMgr_RegisterEvent(g_moduleZRWeapons, "Hook_WeaponCanUse",          "ZRWeapons_CanUse");
 }
 
 /**

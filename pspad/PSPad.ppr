@@ -46,9 +46,11 @@ ZR
 			..\src\zr\modules\gamedata.inc
 			..\src\zr\modules\gamerules.inc
 			..\src\zr\modules\moduletemplate.inc
+			..\src\zr\modules\sdkhooksadapter.inc
 			..\src\zr\modules\stripobjectives.inc
 	..\src\zr\project.inc
 	..\src\zr\project_events.inc
+	..\src\zr\utilities.inc
 	..\src\zombiereloaded.sp
 	-Plugin Includes
 		-Classes

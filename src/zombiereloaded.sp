@@ -58,6 +58,7 @@
 #include "zr/modules/gamedata"
 #include "zr/modules/gamerules"
 #include "zr/modules/zr_core/root.zr"
+#include "zr/modules/sdkhooksadapter"
 #include "zr/modules/stripobjectives"
 
 #if defined PROJECT_GAME_CSS

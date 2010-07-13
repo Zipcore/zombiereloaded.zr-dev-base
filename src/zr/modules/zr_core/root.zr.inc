@@ -45,7 +45,7 @@ ZR_Register()
     
     moduledata[ModuleData_Disabled] = false;
     moduledata[ModuleData_Hidden] = false;
-    strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "Zombie:Reloaded Root");
+    strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "ZR Root");
     strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "zr_root");
     strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Top of the chain module for ZR's set of core modules.  Disabling this will end ZR gameplay.");
     moduledata[ModuleData_Dependencies][0] = INVALID_MODULE;

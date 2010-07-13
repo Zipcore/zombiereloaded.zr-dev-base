@@ -131,10 +131,8 @@ stock bool:Util_IsClientInGame(client)
  */
 stock bool:Util_IsClientOnTeam(client)
 {
-    #if defined PROJECT_GAME_CSS
     new cteam = GetClientTeam(client);
-    return (cteam == CS_TEAM_T || cteam == CS_TEAM_CT);
-    #endif
+    return (cteam == TEAM_2 || cteam == TEAM_3);
 }
 
 /**

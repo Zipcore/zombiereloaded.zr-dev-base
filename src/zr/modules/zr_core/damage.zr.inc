@@ -177,6 +177,7 @@ public Action:ZRDmg_TraceAttack(victim, &attacker, &inflictor, &Float:damage, &d
  */
 public Action:ZRDmg_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
 {
+    PrintToChatAll("victim %N attacker %N", victim, attacker);
     // Check if the victim and attacker are valid clients.
     if (!Util_IsClientInGame(victim) || !Util_IsClientInGame(attacker))
         return Plugin_Continue;
@@ -188,7 +189,7 @@ public Action:ZRDmg_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &
         // They couldn't just use DMG_SLASH because that would make sense.
         if (damagetype & DMG_BULLET)
         {
-            SetEntityHealth(victim, GetClientHealth(victim));
+            SetEntityHealth(victim, GetClientHealth(victim) + RoundToNearest(damage));
         }
     }
     

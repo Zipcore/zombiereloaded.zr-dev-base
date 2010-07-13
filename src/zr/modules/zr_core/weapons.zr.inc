@@ -26,11 +26,6 @@
  */
 
 /**
- * TODO:
- * Strip all weapons on infect.
- */
-
-/**
  * This module's identifier.
  */
 new Module:g_moduleZRWeapons;
@@ -43,7 +38,10 @@ stock Module:ZRWeapons_GetIdentifier() { return g_moduleZRWeapons; }
 /**
  * Cvar handles.
  */
-new Handle:g_hCvarZRWeaponsEndEquip;
+#if defined PROJECT_GAME_CSS
+  new Handle:g_hCvarZRWeaponsDrop;
+  new Handle:g_hCvarZRWeaponsEndEquip;
+#endif
 
 /**
  * Array to block any client from picking up weapons.
@@ -54,8 +52,8 @@ new bool:g_bZRWeaponsBlockWeapon[MAXPLAYERS + 1];
  * Spawn weapons for each team index. (CS:S)
  */
 #if defined PROJECT_GAME_CSS
-#define WEAPONS_2_SPAWN_WEAPON "weapon_glock"
-#define WEAPONS_3_SPAWN_WEAPON "weapon_usp"
+  #define WEAPONS_2_SPAWN_WEAPON "weapon_glock"
+  #define WEAPONS_3_SPAWN_WEAPON "weapon_usp"
 #endif
 
 /**
@@ -78,6 +76,7 @@ ZRWeapons_Register()
     g_moduleZRWeapons = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
+    EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnAllModulesLoaded",       "ZRWeapons_OnAllModulesLoaded");
     EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnMyModuleEnable",         "ZRWeapons_OnMyModuleEnable");
     EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnMyModuleDisable",        "ZRWeapons_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnClientPutInServer",      "ZRWeapons_OnClientPutInServer");
@@ -100,7 +99,10 @@ ZRWeapons_OnPluginStart()
     ZRWeapons_Register();
     
     // Create cvars.
-    g_hCvarZRWeaponsEndEquip = CreateConVar("zr_endequip", "1", "Restricts zombies from picking up weapons after the round has ended but before the next round has begun.");
+    #if defined PROJECT_GAME_CSS
+        g_hCvarZRWeaponsDrop = CreateConVar("zr_weapons_drop", "1", "Force player to drop all weapons when infected.  Disabling this will strip weapons instead.");
+        g_hCvarZRWeaponsEndEquip = CreateConVar("zr_weapons_endequip", "1", "Restricts zombies from picking up weapons after the round has ended but before the next round has begun.");
+    #endif
     
     #if defined PROJECT_GAME_CSS
         // Listen for buy commands.
@@ -108,6 +110,15 @@ ZRWeapons_OnPluginStart()
         AddCommandListener(ZRWeapons_BuyListener, "autobuy");
         AddCommandListener(ZRWeapons_BuyListener, "rebuy");
     #endif
+}
+
+/**
+ * All modules have been registered.
+ */
+public ZRWeapons_OnAllModulesLoaded()
+{
+    // Register custom events.
+    EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnClientInfect",       "ZRWeapons_OnClientInfect");
 }
 
 /**
@@ -124,7 +135,7 @@ public ZRWeapons_OnMyModuleEnable()
             continue;
         
         // Hook WeaponCanUse on the client for restricting the weapon.
-        SDKHook(client, SDKHook_WeaponCanUse, ZRWeapons_CanUse);
+        //SDKHook(client, SDKHook_WeaponCanUse, ZRWeapons_CanUse);
     }
 }
 
@@ -139,7 +150,7 @@ public ZRWeapons_OnMyModuleDisable()
         if (!IsClientInGame(client))
             continue;
         
-        SDKUnhook(client, SDKHook_WeaponCanUse, ZRWeapons_CanUse);
+        //SDKUnhook(client, SDKHook_WeaponCanUse, ZRWeapons_CanUse);
     }
 }
 
@@ -151,7 +162,7 @@ public ZRWeapons_OnMyModuleDisable()
 public ZRWeapons_OnClientPutInServer(client)
 {
     // Hook WeaponCanUse on the client for restricting the weapon.
-    SDKHook(client, SDKHook_WeaponCanUse, ZRWeapons_CanUse);
+    //SDKHook(client, SDKHook_WeaponCanUse, ZRWeapons_CanUse);
 }
 
 /**
@@ -161,8 +172,25 @@ public ZRWeapons_OnClientPutInServer(client)
  */
 public ZRWeapons_OnClientDisconnect(client)
 {
-    SDKUnhook(client, SDKHook_WeaponCanUse, ZRWeapons_CanUse);
+    //SDKUnhook(client, SDKHook_WeaponCanUse, ZRWeapons_CanUse);
 }
+
+/**
+ * Client has been infected.
+ * 
+ * @param client        The infected client.
+ * @param attacker      The zombie that infected the client.
+ * @param motherzombie  True if the client has been infected as a mother zombie.
+ */
+public ZRWeapons_OnClientInfect(client, attacker, bool:motherzombie)
+{
+    #if defined PROJECT_GAME_CSS
+        WepLib_RemoveAllWeapons(client, GetConVarBool(g_hCvarZRWeaponsDrop));
+        GivePlayerItem(client, "weapon_knife");
+    #endif
+}
+
+#if defined PROJECT_GAME_CSS
 
 /**
  * Round has ended.
@@ -191,25 +219,25 @@ public ZRWeapons_RoundEnd()
  */
 public ZRWeapons_PlayerSpawn(client)
 {
-    #if defined PROJECT_GAME_CSS
-        if (!Util_IsClientOnTeam(client))
-            return;
+    if (!Util_IsClientOnTeam(client))
+        return;
+    
+    // H4x.  Unfortunately I can't disable this flag early enough for CS:S to give start USP/Glock.
+    // So I have to give BOOTLEG weapons.
+    if (g_bZRWeaponsBlockWeapon[client])
+    {
+        // Reset block weapons flag.
+        g_bZRWeaponsBlockWeapon[client] = false;
         
-        // H4x.  Unfortunately I can't disable this flag early enough for CS:S to give start USP/Glock.
-        // So I have to give BOOTLEG weapons.
-        if (g_bZRWeaponsBlockWeapon[client])
-        {
-            // Reset block weapons flag.
-            g_bZRWeaponsBlockWeapon[client] = false;
-            
-            new team = GetClientTeam(client);
-            if (team == CS_TEAM_T)
-                GivePlayerItem(client, WEAPONS_2_SPAWN_WEAPON);
-            else if (team == CS_TEAM_CT)
-                GivePlayerItem(client, WEAPONS_3_SPAWN_WEAPON);
-        }
-    #endif
+        new team = GetClientTeam(client);
+        if (team == TEAM_2)
+            GivePlayerItem(client, WEAPONS_2_SPAWN_WEAPON);
+        else if (team == TEAM_3)
+            GivePlayerItem(client, WEAPONS_3_SPAWN_WEAPON);
+    }
 }
+
+#endif
 
 /**
  * Called when a client is trying to pick up a weapon.

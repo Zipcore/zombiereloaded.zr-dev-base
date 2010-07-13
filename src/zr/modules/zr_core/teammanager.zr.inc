@@ -60,6 +60,7 @@ ZRTM_Register()
     
     #if defined PROJECT_GAME_CSS
     
+    EventMgr_RegisterEvent(g_moduleZRTM, "Event_RoundEnd",                  "ZRTM_RoundEnd");
     EventMgr_RegisterEvent(g_moduleZRTM, "Event_PlayerTeamPre",             "ZRTM_PlayerTeamPre");
     EventMgr_RegisterEvent(g_moduleZRTM, "Event_PlayerTeam",                "ZRTM_PlayerTeam");
     
@@ -106,7 +107,7 @@ public ZRTM_OnClientPutInServer(client)
 public ZRTM_OnClientInfect(client, attacker, bool:motherzombie)
 {
     #if defined PROJECT_GAME_CSS
-        CS_SwitchTeam(client, CS_TEAM_T);
+        CS_SwitchTeam(client, TEAM_2);
     #endif
 }
 
@@ -118,11 +119,19 @@ public ZRTM_OnClientInfect(client, attacker, bool:motherzombie)
 public ZRTM_OnClientHuman(client)
 {
     #if defined PROJECT_GAME_CSS
-        CS_SwitchTeam(client, CS_TEAM_CT);
+        CS_SwitchTeam(client, TEAM_2);
     #endif
 }
 
 #if defined PROJECT_GAME_CSS
+
+/**
+ * Round has ended.
+ */
+public ZRTM_RoundEnd()
+{
+    ZRTM_BalanceTeams();
+}
 
 /**
  * Client has joined a team. (pre)
@@ -150,15 +159,17 @@ public Action:ZRTM_PlayerTeamPre(client, team, oldteam, bool:disconnect)
  */
 public ZRTM_PlayerTeam(client, team, oldteam, bool:disconnect)
 {
-    if (team == CS_TEAM_SPECTATOR)
+    if (team == TEAM_1)
         TLib_SetClientTeam(client, ZTeam_Spectator);
     
     // If client isn't already in the game, then assign them to human by default.
-    if (!TLib_IsClientPlaying(client) && team > CS_TEAM_SPECTATOR)
+    if (!TLib_IsClientPlaying(client) && team > TEAM_1)
         TLib_SetClientTeam(client, ZTeam_Human);
 }
 
 #endif
+
+#if defined PROJECT_GAME_CSS
 
 /**
  * Move all clients to their respective game teams based off ZTeam.
@@ -173,11 +184,37 @@ stock ZRTM_UpdateClientTeams()
         
         team = TLib_GetClientTeam(client);
         
+        if (team == ZTeam_Zombie)
+            CS_SwitchTeam(client, TEAM_2);
+        else if (team == ZTeam_Human)
+            CS_SwitchTeam(client, TEAM_3);
+    }
+}
+
+#endif
+
+/**
+ * Randomly put an equal amount of clients on both teams.
+ */
+stock ZRTM_BalanceTeams()
+{
+    new bool:team1 = true;
+    
+    for (new client = 1; client <= MaxClients; client++)
+    {
+        if (!IsClientInGame(client))
+            continue;
+        
+        if (!TLib_IsClientPlaying(client))
+            continue;
+        
         #if defined PROJECT_GAME_CSS
-            if (team == ZTeam_Zombie)
-                CS_SwitchTeam(client, CS_TEAM_T);
-            else if (team == ZTeam_Human)
-                CS_SwitchTeam(client, CS_TEAM_CT);
+            if (team1)
+                CS_SwitchTeam(client, TEAM_2);
+            else
+                CS_SwitchTeam(client, TEAM_3);
         #endif
+        
+        team1 = !team1;
     }
 }

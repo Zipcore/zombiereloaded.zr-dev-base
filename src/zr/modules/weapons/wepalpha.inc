@@ -50,6 +50,15 @@ WepAlpha_Register()
     // Send this array of data to the module manager.
     g_moduleWepAlpha = ModuleMgr_Register(moduledata);
     
+    // Register the OnEventsRegister event to register all events in it.
+    EventMgr_RegisterEvent(g_moduleWepAlpha, "Event_OnEventsRegister",      "WepAlpha_OnEventsRegister");
+}
+
+/**
+ * Register all events here.
+ */
+public WepAlpha_OnEventsRegister()
+{
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleWepAlpha, "Event_OnClientPutInServer",       "WepAlpha_OnClientPutInServer");
     EventMgr_RegisterEvent(g_moduleWepAlpha, "Event_OnClientDisconnect",        "WepAlpha_OnClientDisconnect");

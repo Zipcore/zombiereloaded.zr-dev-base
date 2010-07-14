@@ -54,21 +54,30 @@ ZR_Register()
     // Send this array of data to the module manager.
     g_moduleZRRoot = ModuleMgr_Register(moduledata);
     
+    // Register the OnEventsRegister event to register all events in it.
+    EventMgr_RegisterEvent(g_moduleZRRoot, "Event_OnEventsRegister",        "ZR_OnEventsRegister");
+}
+
+/**
+ * Register all events here.
+ */
+public ZR_OnEventsRegister()
+{
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleZRRoot, "Event_OnMyModuleEnable",        "ZR_OnMyModuleEnable");
     
     #if defined PROJECT_GAME_CSS
     
-    EventMgr_RegisterEvent(g_moduleZRRoot, "Event_RoundStart",            "ZR_RoundStart");
+    EventMgr_RegisterEvent(g_moduleZRRoot, "Event_RoundStart",              "ZR_RoundStart");
     
     #endif
 }
 
 // Include sub-modules.
-#include "zr/modules/zr_core/weapons.zr.inc"
+#include "zr/modules/zr_core/damage.zr.inc"
 #include "zr/modules/zr_core/infection.zr.inc"
 #include "zr/modules/zr_core/teammanager.zr.inc"
-#include "zr/modules/zr_core/damage.zr.inc"
+#include "zr/modules/zr_core/weapons.zr.inc"
 
 /**
  * Plugin is loading.
@@ -79,10 +88,10 @@ ZR_OnPluginStart()
     ZR_Register();
     
     // Forward event to sub-modules.
-    ZRWeapons_OnPluginStart();  // This module's RoundEnd needs to fire before ZRGamePlay module's.
+    ZRDmg_OnPluginStart();
     ZRInfect_OnPluginStart();
     ZRTM_OnPluginStart();
-    ZRDmg_OnPluginStart();
+    ZRWeapons_OnPluginStart();
 }
 
 /**
@@ -99,6 +108,8 @@ public ZR_OnMyModuleEnable()
         ModuleMgr_Enable(dependentmodules[dmoduleindex]);
 }
 
+#if defined PROJECT_GAME_CSS
+
 /**
  * Round has started.
  */
@@ -107,3 +118,5 @@ public ZR_RoundStart()
     // Print ZR objective.
     TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, _, _, "ZR round objective");
 }
+
+#endif

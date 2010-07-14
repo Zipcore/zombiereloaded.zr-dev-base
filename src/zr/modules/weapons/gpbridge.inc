@@ -65,6 +65,15 @@ GPBridge_Register()
     // Send this array of data to the module manager.
     g_moduleGPBridge = ModuleMgr_Register(moduledata);
     
+    // Register the OnEventsRegister event to register all events in it.
+    EventMgr_RegisterEvent(g_moduleGPBridge, "Event_OnEventsRegister",      "GPBridge_OnEventsRegister");
+}
+
+/**
+ * Register all events here.
+ */
+public GPBridge_OnEventsRegister()
+{
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleGPBridge, "Event_OnAllPluginsLoaded",    "GPBridge_OnAllPluginsLoaded");
 }

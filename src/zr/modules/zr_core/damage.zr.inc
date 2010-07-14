@@ -59,8 +59,21 @@ ZRDmg_Register()
     // Send this array of data to the module manager.
     g_moduleZRDmg = ModuleMgr_Register(moduledata);
     
+    // Register the OnEventsRegister event to register all events in it.
+    EventMgr_RegisterEvent(g_moduleZRDmg, "Event_OnEventsRegister",         "ZRDmg_OnEventsRegister");
+}
+
+/**
+ * Register all events here.
+ */
+public ZRDmg_OnEventsRegister()
+{
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRDmg, "Event_OnAllModulesLoaded",       "ZRDmg_OnAllModulesLoaded");
+    
+    
+    // Register custom events.
+    EventMgr_RegisterEvent(g_moduleZRDmg, "Hook_TraceAttack",           "ZRDmg_TraceAttack");
+    EventMgr_RegisterEvent(g_moduleZRDmg, "Hook_OnTakeDamage",          "ZRDmg_OnTakeDamage");
 }
 
 /**
@@ -73,16 +86,6 @@ ZRDmg_OnPluginStart()
     
     // Create cvars.
     g_hCvarFF = CreateConVar("zr_ff", "0", "Allow humans on opposite teams to hurt each other.  mp_friendlyfire still controls same-team FF.  This might be used for \"pro\" zombie gameplay.");
-}
-
-/**
- * All modules have been registered.
- */
-public ZRDmg_OnAllModulesLoaded()
-{
-    // Register custom events.
-    EventMgr_RegisterEvent(g_moduleZRWeapons, "Hook_TraceAttack",           "ZRDmg_TraceAttack");
-    EventMgr_RegisterEvent(g_moduleZRWeapons, "Hook_OnTakeDamage",          "ZRDmg_OnTakeDamage");
 }
 
 /**

@@ -118,14 +118,23 @@ GameRules_Register()
     // Send this array of data to the module manager.
     g_moduleGameRules = ModuleMgr_Register(moduledata);
     
+    // Register the OnEventsRegister event to register all events in it.
+    EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnEventsRegister",         "GameRules_OnEventsRegister");
+    
+    // Register config file(s) that this module will use.
+    ConfigMgr_Register(g_moduleGameRules, "GameRules_OnConfigReload", "");
+}
+
+/**
+ * Register all events here.
+ */
+public GameRules_OnEventsRegister()
+{
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnModuleEnable",           "GameRules_OnModuleEnable");
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnModuleDisable",          "GameRules_OnModuleDisable");
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnMyModuleDisable",        "GameRules_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnConfigsExecuted",        "GameRules_OnConfigsExecuted");
-    
-    // Register config file(s) that this module will use.
-    ConfigMgr_Register(g_moduleGameRules, "GameRules_OnConfigReload", "");
 }
 
 /**

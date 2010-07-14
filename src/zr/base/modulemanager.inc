@@ -119,16 +119,11 @@ ModuleMgr_OnPluginStart()
  */
 ModuleMgr_OnPluginEnd()
 {
-    new Module:module;
-    
     // Loop through all the modules, and kill them.
     new count = MODULE_COUNT;
     for (new moduleindex = 0; moduleindex < count; moduleindex++)
     {
-        // Read moduleindex as a Module type.
-        module = Module:moduleindex;
-        
-        ModuleMgr_Unregister(module);
+        ModuleMgr_Unregister(Module:moduleindex);
     }
     
     // Destroy base command data.
@@ -216,12 +211,17 @@ stock ModuleToggleQuery:ModuleMgr_Disable(Module:module)
         eventdata[0][0] = module;
         
         new Action:result1 = EventMgr_Forward(g_EvOnModuleDisable, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+        new Action:result2 = Plugin_Continue;
         
-        // Send this event only to the module being disabled.
-        new Module:modules[2] = {INVALID_MODULE, ...};
-        modules[0] = module;
-        
-        new Action:result2 = EventMgr_Forward(g_EvOnMyModuleDisable, g_CommonEventData1, 0, 0, g_CommonDataType1, modules);
+        // If a module stops this module from disabling, then don't forward this event.
+        if (result1 == Plugin_Continue)
+        {
+            // Send this event only to the module being disabled.
+            new Module:modules[2] = {INVALID_MODULE, ...};
+            modules[0] = module;
+            
+            result2 = EventMgr_Forward(g_EvOnMyModuleDisable, g_CommonEventData1, 0, 0, g_CommonDataType1, modules);
+        }
         
         if (result1 == Plugin_Handled || result2 == Plugin_Handled)
             return ToggleQuery_Refuse;
@@ -281,12 +281,17 @@ stock ModuleToggleQuery:ModuleMgr_Enable(Module:module)
         eventdata[0][0] = module;
         
         new Action:result1 = EventMgr_Forward(g_EvOnModuleEnable, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+        new Action:result2 = Plugin_Continue;
         
-        // Send this event only to the module being enabled.
-        new Module:modules[2] = {INVALID_MODULE, ...};
-        modules[0] = module;
-        
-        new Action:result2 = EventMgr_Forward(g_EvOnMyModuleEnable, g_CommonEventData1, 0, 0, g_CommonDataType1, modules);
+        // If a module stops this module from enabling, then don't forward this event.
+        if (result1 == Plugin_Continue)
+        {
+            // Send this event only to the module being enabled.
+            new Module:modules[2] = {INVALID_MODULE, ...};
+            modules[0] = module;
+            
+            result2 = EventMgr_Forward(g_EvOnMyModuleEnable, g_CommonEventData1, 0, 0, g_CommonDataType1, modules);
+        }
         
         // Undo the enabling if it refuses.
         if (result1 == Plugin_Handled || result2 == Plugin_Handled)
@@ -473,29 +478,29 @@ stock ModuleMgr_ReadString(Module:module, ModuleData:data, String:output[], maxl
 /**
  * Returns a list of modules that depend on the given module.
  * 
- * @param module            The module to find dependencies for.
- * @param dependentmodules  A list of modules that depend on the given module.
+ * @param module        The module to find dependencies for.
+ * @param dependencies  A list of modules that depend on the given module.
  * 
- * @return                  The number of modules that depend on the given module.
+ * @return              The number of modules that depend on the given module.
  */
-stock ModuleMgr_FindDependentModules(Module:module, Module:dependentmodules[CM_DATA_DEPENDENCIES])
+stock ModuleMgr_FindDependentModules(Module:module, Module:dependencies[CM_DATA_DEPENDENCIES])
 {
     new dindex = 0;
-    new Module:_dependentmodules[CM_DATA_DEPENDENCIES];
+    new Module:_dependencies[CM_DATA_DEPENDENCIES];
     
     // Loop through all the modules.
     new count = MODULE_COUNT;
     for (new moduleindex = 0; moduleindex < count; moduleindex++)
     {
-        ModuleMgr_ReadArray(Module:moduleindex, ModuleData_Dependencies, _dependentmodules, sizeof(_dependentmodules));
-        for (new _dindex = 0; _dindex < sizeof(_dependentmodules); _dindex++)
+        ModuleMgr_ReadArray(Module:moduleindex, ModuleData_Dependencies, _dependencies, sizeof(_dependencies));
+        for (new _dindex = 0; _dindex < sizeof(_dependencies); _dindex++)
         {
-            if (_dependentmodules[_dindex] == INVALID_MODULE)
+            if (_dependencies[_dindex] == INVALID_MODULE)
                 break;
             
-            if (_dependentmodules[_dindex] == module)
+            if (_dependencies[_dindex] == module)
             {
-                dependentmodules[dindex++] = Module:moduleindex;
+                dependencies[dindex++] = Module:moduleindex;
                 break;
             }
         }

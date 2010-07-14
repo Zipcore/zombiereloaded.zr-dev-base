@@ -62,6 +62,15 @@ SDKHAdapt_Register()
     g_EvOnTakeDamage =      EventMgr_CreateEvent("Hook_OnTakeDamage");
     g_EvWeaponCanUse =      EventMgr_CreateEvent("Hook_WeaponCanUse");
     
+    // Register the OnEventsRegister event to register all events in it.
+    EventMgr_RegisterEvent(g_moduleSDKHAdapt, "Event_OnEventsRegister",      "SDKHAdapt_OnEventsRegister");
+}
+
+/**
+ * Register all events here.
+ */
+public SDKHAdapt_OnEventsRegister()
+{
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleSDKHAdapt, "Event_OnMyModuleEnable",         "SDKHAdapt_OnMyModuleEnable");
     EventMgr_RegisterEvent(g_moduleSDKHAdapt, "Event_OnMyModuleDisable",        "SDKHAdapt_OnMyModuleDisable");

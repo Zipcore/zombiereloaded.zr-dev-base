@@ -75,8 +75,17 @@ ZRWeapons_Register()
     // Send this array of data to the module manager.
     g_moduleZRWeapons = ModuleMgr_Register(moduledata);
     
+    // Register the OnEventsRegister event to register all events in it.
+    EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnEventsRegister",         "ZRWeapons_OnEventsRegister");
+}
+
+/**
+ * Register all events here.
+ */
+public ZRWeapons_OnEventsRegister()
+{
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnAllModulesLoaded",       "ZRWeapons_OnAllModulesLoaded");
+    EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnEventsReady",            "ZRWeapons_OnEventsReady");
     
     #if defined PROJECT_GAME_CSS
     
@@ -84,6 +93,19 @@ ZRWeapons_Register()
     EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_PlayerSpawn",              "ZRWeapons_PlayerSpawn");
     
     #endif
+    
+    // Register custom events.
+    EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnClientInfect",           "ZRWeapons_OnClientInfect");
+    EventMgr_RegisterEvent(g_moduleZRWeapons, "Hook_WeaponCanUse",              "ZRWeapons_CanUse");
+}
+
+/**
+ * All modules and events have been registered by this point.  Event priority can be changed here.
+ */
+public ZRWeapons_OnEventsReady()
+{
+    // Bump up priority for Event_RoundEnd to above zrinfect module.
+    EventMgr_GivePriority(g_EvRoundEnd, g_moduleZRWeapons, ZRInfect_GetIdentifier());
 }
 
 /**
@@ -106,16 +128,6 @@ ZRWeapons_OnPluginStart()
         AddCommandListener(ZRWeapons_BuyListener, "autobuy");
         AddCommandListener(ZRWeapons_BuyListener, "rebuy");
     #endif
-}
-
-/**
- * All modules have been registered.
- */
-public ZRWeapons_OnAllModulesLoaded()
-{
-    // Register custom events.
-    EventMgr_RegisterEvent(g_moduleZRWeapons, "Event_OnClientInfect",       "ZRWeapons_OnClientInfect");
-    EventMgr_RegisterEvent(g_moduleZRWeapons, "Hook_WeaponCanUse",          "ZRWeapons_CanUse");
 }
 
 /**

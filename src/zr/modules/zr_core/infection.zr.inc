@@ -85,21 +85,30 @@ ZRInfect_Register()
     g_EvOnClientInfect =    EventMgr_CreateEvent("Event_OnClientInfect");
     g_EvOnClientHuman =     EventMgr_CreateEvent("Event_OnClientHuman");
     
+    // Register the OnEventsRegister event to register all events in it.
+    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnEventsRegister",          "ZRInfect_OnEventsRegister");
+}
+
+/**
+ * Register all events here.
+ */
+public ZRInfect_OnEventsRegister()
+{
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnPluginEnd",              "ZRInfect_OnPluginEnd");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnMapStart",               "ZRInfect_OnMapStart");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnMapEnd",                 "ZRInfect_OnMapEnd");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnClientPutInServer",      "ZRInfect_OnClientPutInServer");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnClientDisconnect",       "ZRInfect_OnClientDisconnect");
+    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnPluginEnd",               "ZRInfect_OnPluginEnd");
+    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnMapStart",                "ZRInfect_OnMapStart");
+    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnMapEnd",                  "ZRInfect_OnMapEnd");
+    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnClientPutInServer",       "ZRInfect_OnClientPutInServer");
+    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnClientDisconnect",        "ZRInfect_OnClientDisconnect");
     
     #if defined PROJECT_GAME_CSS
     
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_RoundStart",               "ZRInfect_RoundStart");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_RoundFreezeEnd",           "ZRInfect_RoundFreezeEnd");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_RoundEnd",                 "ZRInfect_RoundEnd");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_PlayerSpawn",              "ZRInfect_PlayerSpawn");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_PlayerHurt",               "ZRInfect_PlayerHurt");
-    //EventMgr_RegisterEvent(g_moduleZRInfect, "Event_PlayerDeath",              "ZRInfect_PlayerDeath");
+    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_RoundStart",                "ZRInfect_RoundStart");
+    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_RoundFreezeEnd",            "ZRInfect_RoundFreezeEnd");
+    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_RoundEnd",                  "ZRInfect_RoundEnd");
+    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_PlayerSpawn",               "ZRInfect_PlayerSpawn");
+    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_PlayerHurt",                "ZRInfect_PlayerHurt");
+    //EventMgr_RegisterEvent(g_moduleZRInfect, "Event_PlayerDeath",               "ZRInfect_PlayerDeath");
     
     #endif
 }

@@ -5,9 +5,9 @@
  *
  *  File:          stripobjectives.inc
  *  Type:          Module
- *  Description:   
+ *  Description:   Strips objectives from all maps.
  *
- *  Copyright (C) 2009-2010  Greyscale
+ *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -65,6 +65,15 @@ StripObj_Register()
     // Send this array of data to the module manager.
     g_moduleStripObj = ModuleMgr_Register(moduledata);
     
+    // Register the OnEventsRegister event to register all events in it.
+    EventMgr_RegisterEvent(g_moduleStripObj, "Event_OnEventsRegister",      "StripObj_OnEventsRegister");
+}
+
+/**
+ * Register all events here.
+ */
+public StripObj_OnEventsRegister()
+{
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleStripObj, "Event_OnMyModuleDisable",     "StripObj_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleStripObj, "Event_RoundStart",            "StripObj_RoundStart");

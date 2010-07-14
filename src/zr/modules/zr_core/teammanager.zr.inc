@@ -54,8 +54,16 @@ ZRTM_Register()
     // Send this array of data to the module manager.
     g_moduleZRTM = ModuleMgr_Register(moduledata);
     
+    // Register the OnEventsRegister event to register all events in it.
+    EventMgr_RegisterEvent(g_moduleZRTM, "Event_OnEventsRegister",          "ZRTM_OnEventsRegister");
+}
+
+/**
+ * Register all events here.
+ */
+public ZRTM_OnEventsRegister()
+{
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRTM, "Event_OnAllModulesLoaded",        "ZRTM_OnAllModulesLoaded");
     EventMgr_RegisterEvent(g_moduleZRTM, "Event_OnClientPutInServer",       "ZRTM_OnClientPutInServer");
     
     #if defined PROJECT_GAME_CSS
@@ -65,6 +73,10 @@ ZRTM_Register()
     EventMgr_RegisterEvent(g_moduleZRTM, "Event_PlayerTeam",                "ZRTM_PlayerTeam");
     
     #endif
+    
+    // Register custom events.
+    EventMgr_RegisterEvent(g_moduleZRTM, "Event_OnClientInfect",            "ZRTM_OnClientInfect");
+    EventMgr_RegisterEvent(g_moduleZRTM, "Event_OnClientHuman",             "ZRTM_OnClientHuman");
 }
 
 /**
@@ -74,16 +86,6 @@ ZRTM_OnPluginStart()
 {
     // Register the module.
     ZRTM_Register();
-}
-
-/**
- * All modules have been registered.
- */
-public ZRTM_OnAllModulesLoaded()
-{
-    // Register custom events.
-    EventMgr_RegisterEvent(g_moduleZRTM, "Event_OnClientInfect",       "ZRTM_OnClientInfect");
-    EventMgr_RegisterEvent(g_moduleZRTM, "Event_OnClientHuman",        "ZRTM_OnClientHuman");
 }
 
 /**

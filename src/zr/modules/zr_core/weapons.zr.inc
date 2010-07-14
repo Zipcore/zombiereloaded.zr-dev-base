@@ -105,7 +105,7 @@ public ZRWeapons_OnEventsRegister()
 public ZRWeapons_OnEventsReady()
 {
     // Bump up priority for Event_RoundEnd to above zrinfect module.
-    EventMgr_GivePriority(g_EvRoundEnd, g_moduleZRWeapons, ZRInfect_GetIdentifier());
+    EventMgr_GivePriority("Event_RoundEnd", g_moduleZRWeapons, ZRInfect_GetIdentifier());
 }
 
 /**

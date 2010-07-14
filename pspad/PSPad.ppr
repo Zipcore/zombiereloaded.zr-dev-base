@@ -22,8 +22,10 @@ ZR
 			..\src\zr\base\versioninfo.inc
 			..\src\zr\base\wrappers.inc
 		-Libraries
+			..\src\zr\libraries\authcachelib.inc
 			..\src\zr\libraries\cookielib.inc
-			..\..\zr-dev-base\src\zr\libraries\menulib.inc
+			..\src\zr\libraries\cvarlib.inc
+			..\src\zr\libraries\menulib.inc
 			..\src\zr\libraries\offsetlib.inc
 			..\src\zr\libraries\overlaylib.inc
 			..\src\zr\libraries\shoppinglistlib.inc
@@ -39,6 +41,7 @@ ZR
 				..\src\zr\modules\weapons\zmarket.inc
 			-ZR Core
 				..\src\zr\modules\zr_core\damage.zr.inc
+				..\src\zr\modules\zr_core\gameplay.zr.inc
 				..\src\zr\modules\zr_core\infection.zr.inc
 				..\src\zr\modules\zr_core\root.zr.inc
 				..\src\zr\modules\zr_core\teammanager.zr.inc

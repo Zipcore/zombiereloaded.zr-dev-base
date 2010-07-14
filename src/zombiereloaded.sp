@@ -45,6 +45,7 @@
 // Library includes.
 #include "zr/libraries/authcachelib"
 #include "zr/libraries/cookielib"
+#include "zr/libraries/cvarlib"
 #include "zr/libraries/menulib"
 #include "zr/libraries/offsetlib"
 #include "zr/libraries/shoppinglistlib"

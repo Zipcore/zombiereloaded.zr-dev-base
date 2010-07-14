@@ -38,7 +38,9 @@ stock Module:ZRDmg_GetIdentifier() { return g_moduleZRDmg; }
 /**
  * Cvar handles.
  */
-new Handle:g_hCvarFF;
+#if defined PROJECT_GAME_CSS
+  new Handle:g_hCvarMPFF;
+#endif
 
 /**
  * Register this module.
@@ -84,8 +86,12 @@ ZRDmg_OnPluginStart()
     // Register the module.
     ZRDmg_Register();
     
-    // Create cvars.
-    g_hCvarFF = CreateConVar("zr_ff", "0", "Allow humans on opposite teams to hurt each other.  mp_friendlyfire still controls same-team FF.  This might be used for \"pro\" zombie gameplay.");
+    // Find existing cvars.
+    #if defined PROJECT_GAME_CSS
+        g_hCvarMPFF = FindConVar("mp_friendlyfire");
+        if (g_hCvarMPFF == INVALID_HANDLE)
+            LogMgr_Print(g_moduleZRDmg, LogType_Fatal_Plugin, "Can't find cvar", "Cvar \"mp_friendlyfire\" doesn't exist!  Either Valve renamed it or this isn't CS:S.");
+    #endif
 }
 
 /**
@@ -103,16 +109,12 @@ ZRDmg_OnPluginStart()
 public Action:ZRDmg_TraceAttack(victim, &attacker, &inflictor, &Float:damage, &damagetype, &ammotype, hitbox, hitgroup)
 {
     // If FF is enabled then don't do anything.
-    if (!GetConVarBool(g_hCvarFF))
+    if (!GetConVarBool(g_hCvarMPFF))
     {
-        // If they're on the same team then let mp_friendlyfire handle it.
-        if (GetClientTeam(victim) != GetClientTeam(attacker))
-        {
-            // Don't let same clients on the same ZTeam, damage each other.
-            // Ex: Terrorist human will not be able to shoot Counter-Terrorist human.
-            if (TLib_GetClientTeam(victim) == TLib_GetClientTeam(attacker))
-                return Plugin_Handled;
-        }
+        // Don't let clients on the same ZTeam, damage each other.
+        // Ex: Terrorist human will not be able to shoot Counter-Terrorist human.
+        if (TLib_GetClientTeam(victim) == TLib_GetClientTeam(attacker))
+            return Plugin_Handled;
     }
     
     return Plugin_Continue;

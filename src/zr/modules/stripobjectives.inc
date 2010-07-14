@@ -75,7 +75,6 @@ StripObj_Register()
 public StripObj_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleStripObj, "Event_OnMyModuleDisable",     "StripObj_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleStripObj, "Event_RoundStart",            "StripObj_RoundStart");
 }
 
@@ -89,14 +88,6 @@ StripObj_OnPluginStart()
     
     // Create cvars.
     g_hCvarStripObjectives = Project_CreateConVar("strip_objectives", "1", "Removes all objectives from the map.");
-}
-
-/**
- * The module that hooked this event callback has been disabled.
- */
-public StripObj_OnMyModuleDisable()
-{
-    TransMgr_PrintText(SERVER_INDEX, MsgFormat_Both, MsgType_Server, g_moduleStripObj, false, "ObjStrip disable");
 }
 
 /**

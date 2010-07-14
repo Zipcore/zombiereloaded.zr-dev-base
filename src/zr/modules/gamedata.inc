@@ -192,10 +192,10 @@ enum RoundEndReasons
  */
 stock RoundEndReasons:Util_TeamToReason(teamindex)
 {
-    if (teamindex == GAME_TEAM_1)
+    if (teamindex == TEAM_2)
         return ROUNDEND_TERRORISTS_WIN;
     
-    else if (teamindex == GAME_TEAM_2)
+    else if (teamindex == TEAM_3)
         return ROUNDEND_CTS_WIN;
     
     return ROUNDEND_GAME_COMMENCING;

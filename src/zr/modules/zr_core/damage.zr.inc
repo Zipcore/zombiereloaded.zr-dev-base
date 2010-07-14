@@ -86,11 +86,9 @@ ZRDmg_OnPluginStart()
     // Register the module.
     ZRDmg_Register();
     
-    // Find existing cvars.
+    // Cache game cvar handles for later.
     #if defined PROJECT_GAME_CSS
         g_hCvarMPFF = FindConVar("mp_friendlyfire");
-        if (g_hCvarMPFF == INVALID_HANDLE)
-            LogMgr_Print(g_moduleZRDmg, LogType_Fatal_Plugin, "Can't find cvar", "Cvar \"mp_friendlyfire\" doesn't exist!  Either Valve renamed it or this isn't CS:S.");
     #endif
 }
 

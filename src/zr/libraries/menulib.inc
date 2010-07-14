@@ -5,7 +5,7 @@
  *
  *  File:          menulib.inc
  *  Type:          Library
- *  Description:   
+ *  Description:   A library of useful menu API.
  *
  *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
  *

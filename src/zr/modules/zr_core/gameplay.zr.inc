@@ -131,11 +131,12 @@ public ZRGPlay_OnMyModuleDisable()
 public ZRGPlay_CvarHookMPRGame(Handle:convar, const String:oldValue[], const String:newValue[])
 {
     // If the value is 0 then ignore, game isn't restarting.
-    if (StringToInt(newValue) == 0)
+    new time = StringToInt(newValue);
+    if (time == 0)
         return;
     
     // End round with "Game commencing"
-    GameData_TerminateRound(0);
+    SDKToolsLib_TerminateRound(float(time), ROUNDEND_GAME_COMMENCING);
     
     // This basically makes mp_restartgame useless.
     SetConVarInt(convar, 0);

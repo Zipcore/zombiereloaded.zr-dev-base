@@ -87,7 +87,7 @@ ZRDmg_OnPluginStart()
     ZRDmg_Register();
     
     // Cache game cvar handles for later.
-    #if defined PROJECT_GAME_CSS
+    #if defined PROJECT_GAME_CSS || defined PROJECT_GAME_TF2
         g_hCvarMPFF = FindConVar("mp_friendlyfire");
     #endif
 }
@@ -106,6 +106,7 @@ ZRDmg_OnPluginStart()
  */
 public Action:ZRDmg_TraceAttack(victim, &attacker, &inflictor, &Float:damage, &damagetype, &ammotype, hitbox, hitgroup)
 {
+    #if defined PROJECT_GAME_CSS || defined PROJECT_GAME_TF2
     // If FF is enabled then don't do anything.
     if (!GetConVarBool(g_hCvarMPFF))
     {
@@ -114,6 +115,7 @@ public Action:ZRDmg_TraceAttack(victim, &attacker, &inflictor, &Float:damage, &d
         if (TLib_GetClientTeam(victim) == TLib_GetClientTeam(attacker))
             return Plugin_Handled;
     }
+    #endif
     
     return Plugin_Continue;
 }

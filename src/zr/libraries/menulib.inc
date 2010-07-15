@@ -1,13 +1,13 @@
 /*
  * ============================================================================
  *
- *  Zombie:Reloaded
+ *  <Project Name>
  *
  *  File:          menulib.inc
  *  Type:          Library
- *  Description:   A library of useful menu API.
+ *  Description:   
  *
- *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
+ *  Copyright (C) 2009-2010  Greyscale
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,6 +24,11 @@
  *
  * ============================================================================
  */
+
+#if defined _menulib_included
+ #endinput
+#endif
+#define _menulib_included
 
 /**
  * Shows a list of all clients to a client, different handlers can be used for this, as well as title.

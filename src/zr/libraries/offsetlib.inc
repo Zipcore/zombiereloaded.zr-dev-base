@@ -7,7 +7,7 @@
  *  Type:          Library
  *  Description:   A library of offset wrappers.
  *
- *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
+ *  Copyright (C) 2009-2010  Greyscale
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,6 +24,11 @@
  *
  * ============================================================================
  */
+
+#if defined _offsetlib_included
+ #endinput
+#endif
+#define _offsetlib_included
 
 /**
  * Gets an client's velocity.

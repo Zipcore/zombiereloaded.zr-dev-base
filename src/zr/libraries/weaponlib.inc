@@ -7,7 +7,7 @@
  *  Type:          Library
  *  Description:   Weapon-related API.
  *
- *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
+ *  Copyright (C) 2009-2010  Greyscale
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,10 +25,16 @@
  * ============================================================================
  */
 
+#if defined _weaponlib_included
+ #endinput
+#endif
+#define _weaponlib_included
+
 // This entire file is CS:S-specific.
 #if defined PROJECT_GAME_CSS
 
 #include <sdktools>
+#include <sdktoolslib>
 
 /**
  * The number of slots for weapons to be stored in.  (CS:S)

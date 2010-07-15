@@ -7,7 +7,7 @@
  *  Type:          Library
  *  Description:   Pre-defined sdktool hooks.
  *
- *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
+ *  Copyright (C) 2009-2010  Greyscale
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,6 +25,11 @@
  * ============================================================================
  */
 
+#if defined _sdktoolslib_included
+ #endinput
+#endif
+#define _sdktoolslib_included
+
 #include <sdktools>
 
 /**
@@ -41,7 +46,6 @@ enum SDKLibCalls
     SDKLibCall_FlashlightTurnOff,   /** Turn a client's flashlight off. */
     #endif
 }
-
 
 /**
  * Handles to all the pre-defined sdkcalls.

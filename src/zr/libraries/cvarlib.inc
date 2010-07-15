@@ -7,7 +7,7 @@
  *  Type:          Library
  *  Description:   Cvar-related API.
  *
- *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
+ *  Copyright (C) 2009-2010  Greyscale
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,6 +24,11 @@
  *
  * ============================================================================
  */
+
+#if defined _cvarlib_included
+ #endinput
+#endif
+#define _cvarlib_included
 
 /**
  * Sets a cvar to the given value and then locks it.

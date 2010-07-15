@@ -4,7 +4,7 @@
  *  Zombie:Reloaded
  *
  *  File:          utilities.inc
- *  Type:          Module
+ *  Type:          Utilities
  *  Description:   Place for various utility functions.
  *
  *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
@@ -24,6 +24,11 @@
  *
  * ============================================================================
  */
+
+#if defined _utilities_included
+ #endinput
+#endif
+#define _utilities_included
 
 /**
  * Filters.

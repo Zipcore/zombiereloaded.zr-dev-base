@@ -64,10 +64,11 @@ ZRGPlay_Register()
 public ZRGPlay_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    #if defined PROJECT_GAME_CSS
-    
     EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnMyModuleEnable",        "ZRGPlay_OnMyModuleEnable");
     EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnMyModuleDisable",       "ZRGPlay_OnMyModuleDisable");
+    
+    #if defined PROJECT_GAME_CSS
+    
     EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_RoundStart",              "ZRGPlay_RoundStart");
     
     #endif

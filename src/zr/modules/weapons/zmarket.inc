@@ -941,12 +941,12 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
         {
             // If there is already a weapon in the slot, then force client to drop it.
             if (weapons[slot] != -1)
-                GameData_CSDropWeapon(client, weapons[slot]);
+                SDKToolsLib_CSWeaponDrop(client, weapons[slot]);
         }
         #else
         // If there is already a weapon in the slot, then force client to drop it.
         if (weapons[slot] != -1)
-            GameData_CSDropWeapon(client, weapons[slot]);
+            SDKToolsLib_CSWeaponDrop(client, weapons[slot]);
         #endif
         
         // Give client the weapon.

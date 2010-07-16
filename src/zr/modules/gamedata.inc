@@ -25,6 +25,9 @@
  * ============================================================================
  */
 
+// Include libraries.
+#include "zr/libraries/sdktoolslib"
+
 /**
  * General module defines.
  */

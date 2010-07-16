@@ -42,19 +42,7 @@
 #include "zr/base/eventmanager"
 #include "zr/base/modulemanager"
 
-// Library includes.
-#include "zr/libraries/authcachelib"
-#include "zr/libraries/cookielib"
-#include "zr/libraries/cvarlib"
-#include "zr/libraries/menulib"
-#include "zr/libraries/offsetlib"
-#include "zr/libraries/sdktoolslib"
-#include "zr/libraries/shoppinglistlib"
-#include "zr/libraries/teamlib"
-#include "zr/libraries/weaponlib"
-
 // Non-module includes.
-#include "zr/utilities"
 
 // Module includes.
 #include "zr/modules/gamedata"

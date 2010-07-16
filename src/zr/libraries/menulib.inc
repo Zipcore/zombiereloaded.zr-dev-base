@@ -30,6 +30,9 @@
 #endif
 #define _menulib_included
 
+// Include libraries.
+#include "zr/libraries/utilities"
+
 /**
  * Shows a list of all clients to a client, different handlers can be used for this, as well as title.
  * 

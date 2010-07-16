@@ -25,6 +25,8 @@
  * ============================================================================
  */
 
+#include "zr/libraries/authcachelib"
+
 /**
  * TODO:
  * Identify and #if CS:S-only stuff.

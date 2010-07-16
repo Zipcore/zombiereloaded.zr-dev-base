@@ -25,6 +25,15 @@
  * ============================================================================
  */
 
+// Include libraries.
+#include "zr/libraries/cookielib"
+#include "zr/libraries/menulib"
+#include "zr/libraries/offsetlib"
+#include "zr/libraries/sdktoolslib"
+#include "zr/libraries/shoppinglistlib"
+#include "zr/libraries/teamlib"
+#include "zr/libraries/weaponlib"
+
 /**
  * This module's identifier.
  */

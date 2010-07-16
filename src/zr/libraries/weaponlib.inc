@@ -34,7 +34,9 @@
 #if defined PROJECT_GAME_CSS
 
 #include <sdktools>
-#include <sdktoolslib>
+
+// Include libraries.
+#include "zr/libraries/sdktoolslib"
 
 /**
  * The number of slots for weapons to be stored in.  (CS:S)

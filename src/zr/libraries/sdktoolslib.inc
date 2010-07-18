@@ -94,6 +94,7 @@ stock bool:SDKToolsLib_IsAvailable(SDKLibCalls:sdkcall)
 {
     return (g_hSDKCall[sdkcall] != INVALID_HANDLE);
 }
+
 /**
  * Prep a pre-defined SDKCall.
  * 

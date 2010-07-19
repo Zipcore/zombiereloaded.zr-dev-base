@@ -352,7 +352,7 @@ ZTele_StartTeleport(client, time)
         g_iZTeleTimeLeft[client] = time;
         
         // Tell client how much time is left until teleport.
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Center, _, _, "ZTele countdown", g_iZTeleTimeLeft[client]);
+        PrintCenterText(client, "%t", "ZTele countdown", g_iZTeleTimeLeft[client]);
         g_hZTeleTimer[client] = CreateTimer(1.0, ZTele_Timer, client, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
         
         // Forward event to all modules.
@@ -369,7 +369,7 @@ ZTele_StartTeleport(client, time)
         ZTele_TeleportClient(client);
         
         new ztelemax = TLib_IsClientZombie(client) ? GetConVarInt(g_hCvarZTeleMaxZombie) : GetConVarInt(g_hCvarZTeleMaxHuman);
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Center, _, _, "ZTele countdown end", g_iZTeleCount[client], ztelemax);
+        PrintCenterText(client, "%t", "ZTele countdown end", g_iZTeleCount[client], ztelemax);
     }
 }
 
@@ -568,7 +568,7 @@ public Action:ZTele_Timer(Handle:timer, any:client)
             g_hZTeleTimer[client] = INVALID_HANDLE;
             
             // Tell client teleport has been cancelled.
-            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Center, _, _, "ZTele cancel");
+            PrintCenterText(client, "%t", "ZTele cancel");
             TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZTele autocancel", strDistance);
             
             // Forward event to all modules.
@@ -593,13 +593,13 @@ public Action:ZTele_Timer(Handle:timer, any:client)
         g_iZTeleCount[client]++;
         
         new ztelemax = TLib_IsClientZombie(client) ? GetConVarInt(g_hCvarZTeleMaxZombie) : GetConVarInt(g_hCvarZTeleMaxHuman);
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Center, _, _, "ZTele countdown end", g_iZTeleCount[client], ztelemax);
+        PrintCenterText(client, "%t", "ZTele countdown end", g_iZTeleCount[client], ztelemax);
         
         // Stop repeating timer.
         g_hZTeleTimer[client] = INVALID_HANDLE;
         return Plugin_Stop;
     }
-    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Center, _, _, "ZTele countdown", g_iZTeleTimeLeft[client]);
+    PrintCenterText(client, "%t", "ZTele countdown", g_iZTeleTimeLeft[client]);
     
     // Allow timer to continue repeating.
     return Plugin_Continue;

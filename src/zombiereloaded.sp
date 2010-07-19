@@ -36,8 +36,8 @@
 // Base project includes.
 #include "zr/base/versioninfo"
 #include "zr/base/accessmanager"
-#include "zr/base/logmanager"
 #include "zr/base/translationsmanager"
+#include "zr/base/logmanager"     // Translations manager needs to be included before log manager.
 #include "zr/base/configmanager"
 #include "zr/base/eventmanager"
 #include "zr/base/modulemanager"

@@ -59,8 +59,10 @@ stock ForwardOnPluginStart()
     // Forward the OnPluginStart event to all modules here.
     GameData_OnPluginStart();
     GameRules_OnPluginStart();
+    MapConfig_OnPluginStart();
     ZR_OnPluginStart();
     SDKHAdapt_OnPluginStart();
+    ZTele_OnPluginStart();
     StripObj_OnPluginStart();
     
     #if defined PROJECT_GAME_CSS

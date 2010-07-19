@@ -23,14 +23,17 @@ ZR
 			..\src\zr\base\wrappers.inc
 		-Libraries
 			..\src\zr\libraries\authcachelib.inc
+			..\src\zr\libraries\conversionlib.inc
 			..\src\zr\libraries\cookielib.inc
 			..\src\zr\libraries\cvarlib.inc
+			..\src\zr\libraries\functionlib.inc
 			..\src\zr\libraries\menulib.inc
 			..\src\zr\libraries\offsetlib.inc
 			..\src\zr\libraries\overlaylib.inc
 			..\src\zr\libraries\sdktoolslib.inc
 			..\src\zr\libraries\shoppinglistlib.inc
 			..\src\zr\libraries\teamlib.inc
+			..\src\zr\libraries\utilities.inc
 			..\src\zr\libraries\weaponlib.inc
 		-Modules
 			-Weapons
@@ -49,12 +52,13 @@ ZR
 				..\src\zr\modules\zr_core\weapons.zr.inc
 			..\src\zr\modules\gamedata.inc
 			..\src\zr\modules\gamerules.inc
+			..\src\zr\modules\mapconfig.inc
 			..\src\zr\modules\moduletemplate.inc
 			..\src\zr\modules\sdkhooksadapter.inc
 			..\src\zr\modules\stripobjectives.inc
+			..\src\zr\modules\ztele.inc
 	..\src\zr\project.inc
 	..\src\zr\project_events.inc
-	..\src\zr\utilities.inc
 	..\src\zombiereloaded.sp
 	-Plugin Includes
 		-Classes

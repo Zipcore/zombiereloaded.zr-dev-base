@@ -157,6 +157,30 @@ stock Util_CloseHandle(&Handle:handle)
     }
 }
 
+/**
+ * Checks if a vector exists in a vector array.
+ * 
+ * @param vec       Vector to search for in array
+ * @param vecs      Array to search in.
+ * @param numvecs   Number of vectors in the array.
+ * 
+ * @return          Index in array that the vector is in, -1 if not found.
+ */
+stock Util_IsVecInArray(Float:vec[3], Float:vecs[][3], numvecs)
+{
+    for (new vindex; vindex < numvecs; vindex++)
+    {
+        if (vec[0] == vecs[vindex][0]
+            && vec[1] == vecs[vindex][1]
+            && vec[2] == vecs[vindex][2])
+        {
+            return vindex;
+        }
+    }
+    
+    return -1;
+}
+
 #if defined PROJECT_GAME_CSS
 
 /**

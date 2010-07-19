@@ -103,7 +103,7 @@ ZSpawn_OnPluginStart()
     g_hCvarZSpawnTimeLimitRules =   Project_CreateConVar("zspawn_timelimit_rules", "1", "How ZSpawn should work after the timelimit has expired. ['-1' = Block ZSpawn | '0' = Spawn as zombie | '1' = Spawn as human | Dependency: zspawn_team_zombie&zspawn_timelimit]");
     
     // Create commands.
-    RegConsoleCmd("zspawn", Command_ZSpawn, "Spawn into the game.");
+    RegConsoleCmd("zspawn", ZSpawn_SayCommand, "Spawn into the game.");
     Project_RegConsoleCmd("zspawn_force", Command_ZSpawnForce, "Respawn a player as zombie or human. Usage: zr_zspawn_force <client> ['0' = Spawn as zombie | '1' = Spawn as human]");
 }
 
@@ -227,7 +227,7 @@ public ZSpawn_PlayerDeath(victim, attacker, const String:weapon[], bool:headshot
  * @param client    The client index.
  * @param argc      Argument count.
  */
-public Action:Command_ZSpawn(client, argc)
+public Action:ZSpawn_SayCommand(client, argc)
 {
     // Check if the module is disabled.
     if (ModuleMgr_IsDisabled(g_moduleWepRestrict))

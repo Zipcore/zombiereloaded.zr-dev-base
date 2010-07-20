@@ -56,6 +56,7 @@ MapConfig_Register()
     // Create events.
     g_EvOnPostConfigsExecuted = EventMgr_CreateEvent("OnPostConfigsExecuted");
     
+    // Register the OnEventsRegister event to register all events in it.
     EventMgr_RegisterEvent(g_moduleMapConfig, "Event_OnEventsRegister",         "MapConfig_OnEventsRegister");
 }
 

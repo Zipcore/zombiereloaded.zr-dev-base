@@ -139,16 +139,16 @@ ZTele_OnPluginStart()
     ZTele_Register();
     
     // Create cvars.
-    g_hCvarZTeleRandom = Project_CreateConVar("ztele_random", "1", "Teleport back to a random spawnpoint on the map. ['0' = Teleports back to where you spawned during the round]");
-    g_hCvarZTeleZombie = Project_CreateConVar("ztele_zombie", "1", "Allow zombies to use ZTele.");
-    g_hCvarZTeleHumanBefore = Project_CreateConVar("ztele_human_before", "1", "Allow humans to use ZTele before the mother zombie has spawned.");
-    g_hCvarZTeleHumanAfter = Project_CreateConVar("ztele_human_after", "1", "Allow humans to use ZTele after the mother zombie has spawned.");
-    g_hCvarZTeleDelayZombie = Project_CreateConVar("ztele_delay_zombie", "3.0", "Time between using ZTele command and teleportation for zombies. [Dependency: <prefix>_ztele_zombie]");
-    g_hCvarZTeleDelayHuman = Project_CreateConVar("ztele_delay_human", "3.0", "Time between using ZTele command and teleportation for humans. [Dependency: <prefix>_ztele_human_(before)/(after)]");
-    g_hCvarZTeleMaxZombie = Project_CreateConVar("ztele_max_zombie", "3", "Max number of times a zombie is allowed to use ZTele per round. [Dependency: <prefix>_ztele_zombie]");
-    g_hCvarZTeleMaxHuman = Project_CreateConVar("ztele_max_human", "1", "Max number of times a human is allowed to use ZTele per round. [Dependency: <prefix>_ztele_human_(before)/(after)]");
-    g_hCvarZTeleAutoCancel = Project_CreateConVar("ztele_autocancel", "1", "Automatically cancel ZTele if player moves out of the set boundary.");
-    g_hCvarZTeleAutoCancelDistance = Project_CreateConVar("ztele_autocancel_distance", "6.1 m", "The radius the player can move without ZTele being auto-cancelled.  See top of file for supported units of measurement.");
+    g_hCvarZTeleRandom =                Project_CreateConVar("ztele_random", "1", "Teleport back to a random spawnpoint on the map. ['0' = Teleports back to where you spawned during the round]");
+    g_hCvarZTeleZombie =                Project_CreateConVar("ztele_zombie", "1", "Allow zombies to use ZTele.");
+    g_hCvarZTeleHumanBefore =           Project_CreateConVar("ztele_human_before", "1", "Allow humans to use ZTele before the mother zombie has spawned.");
+    g_hCvarZTeleHumanAfter =            Project_CreateConVar("ztele_human_after", "1", "Allow humans to use ZTele after the mother zombie has spawned.");
+    g_hCvarZTeleDelayZombie =           Project_CreateConVar("ztele_delay_zombie", "3.0", "Time between using ZTele command and teleportation for zombies. [Dependency: <prefix>_ztele_zombie]");
+    g_hCvarZTeleDelayHuman =            Project_CreateConVar("ztele_delay_human", "3.0", "Time between using ZTele command and teleportation for humans. [Dependency: <prefix>_ztele_human_(before)/(after)]");
+    g_hCvarZTeleMaxZombie =             Project_CreateConVar("ztele_max_zombie", "3", "Max number of times a zombie is allowed to use ZTele per round. [Dependency: <prefix>_ztele_zombie]");
+    g_hCvarZTeleMaxHuman =              Project_CreateConVar("ztele_max_human", "1", "Max number of times a human is allowed to use ZTele per round. [Dependency: <prefix>_ztele_human_(before)/(after)]");
+    g_hCvarZTeleAutoCancel =            Project_CreateConVar("ztele_autocancel", "1", "Automatically cancel ZTele if player moves out of the set boundary.");
+    g_hCvarZTeleAutoCancelDistance =    Project_CreateConVar("ztele_autocancel_distance", "6.1 m", "The radius the player can move without ZTele being auto-cancelled.  See top of file for supported units of measurement.");
     
     // Create commands
     RegConsoleCmd("ztele", ZTele_SayCommand, "Teleport to a known location by command.");

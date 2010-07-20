@@ -146,8 +146,8 @@ GameRules_OnPluginStart()
     GameRules_Register();
     
     // Create cvars.
-    g_hCvarGameRulesConfigFile  = Project_CreateConVar("gamerules_configfile",  "configs/zr/gamerules.txt",     "Path to game rules config file.  Path is relative to the SourceMod directory.");
-    g_hCvarGameRuleSet          = Project_CreateConVar("gamerules_ruleset",     "default",                      "Name of game rule set to use.");
+    g_hCvarGameRulesConfigFile  = Project_CreateConVar("gamerules_configfile", "configs/zr/gamerules.txt", "Path to game rules config file.  Path is relative to the SourceMod directory.");
+    g_hCvarGameRuleSet          = Project_CreateConVar("gamerules_ruleset", "default", "Name of game rule set to use.");
     
     // Create array.
     g_hGameRules = CreateArray(sizeof(GameRulesDummyArray));

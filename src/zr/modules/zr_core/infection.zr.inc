@@ -122,10 +122,10 @@ ZRInfect_OnPluginStart()
     ZRInfect_Register();
     
     // Create cvars.
-    g_hCvarMZombieMinTime = CreateConVar("zr_mzombie_min_time", "1.0", "Minimum time from the start of the round until picking the mother zombie(s).");
-    g_hCvarMZombieMaxTime = CreateConVar("zr_mzombie_max_time", "1.0", "Maximum time from the start of the round until picking the mother zombie(s).");
-    g_hCvarMZombieRatio = CreateConVar("zr_mzombie_ratio", "5", "Number of humans to infect as mother zombies in proportion to number of humans on the server. ['0' = Always one mother zombie]");
-    g_hCvarMZombieBlockConsecutive = CreateConVar("zr_mzombie_block_consecutive", "1", "Prevent a player from being chosen as mother zombie two rounds in a row.");
+    g_hCvarMZombieMinTime =             CreateConVar("zr_mzombie_min_time", "1.0", "Minimum time from the start of the round until picking the mother zombie(s).");
+    g_hCvarMZombieMaxTime =             CreateConVar("zr_mzombie_max_time", "1.0", "Maximum time from the start of the round until picking the mother zombie(s).");
+    g_hCvarMZombieRatio =               CreateConVar("zr_mzombie_ratio", "5", "Number of humans to infect as mother zombies in proportion to number of humans on the server. ['0' = Always one mother zombie]");
+    g_hCvarMZombieBlockConsecutive =    CreateConVar("zr_mzombie_block_consecutive", "1", "Prevent a player from being chosen as mother zombie two rounds in a row.");
 }
 
 /**

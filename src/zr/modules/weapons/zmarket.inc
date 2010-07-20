@@ -84,6 +84,19 @@ ZMarket_Register()
 }
 
 /**
+ * Register all events here.
+ */
+public ZMarket_OnEventsRegister()
+{
+    // Register all the events needed for this module.
+    EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnPluginEnd",            "ZMarket_OnPluginEnd");
+    EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnClientPutInServer",    "ZMarket_OnClientPutInServer");
+    EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnClientDisconnect",     "ZMarket_OnClientDisconnect");
+    EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnClientCookiesCached",  "ZMarket_OnClientCookiesCached");
+    EventMgr_RegisterEvent(g_moduleZMarket, "Event_PlayerSpawn",            "ZMarket_PlayerSpawn");
+}
+
+/**
  * Plugin is loading.
  */
 ZMarket_OnPluginStart()
@@ -110,19 +123,6 @@ ZMarket_OnPluginStart()
         Format(rebuycookiename, sizeof(rebuycookiename), "zr_zmarket_wepsetup_%d", wepslotindex);
         g_hZMarketWeaponSetupCookie[wepslotindex] = RegClientCookie(rebuycookiename, "", CookieAccess_Protected);
     }
-}
-
-/**
- * Register all events here.
- */
-public ZMarket_OnEventsRegister()
-{
-    // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnPluginEnd",            "ZMarket_OnPluginEnd");
-    EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnClientPutInServer",    "ZMarket_OnClientPutInServer");
-    EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnClientDisconnect",     "ZMarket_OnClientDisconnect");
-    EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnClientCookiesCached",  "ZMarket_OnClientCookiesCached");
-    EventMgr_RegisterEvent(g_moduleZMarket, "Event_PlayerSpawn",            "ZMarket_PlayerSpawn");
 }
 
 /**

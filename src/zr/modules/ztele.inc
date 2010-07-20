@@ -417,7 +417,7 @@ bool:ZTele_AutoCancelCheck(client)
     
     decl String:strDistance[16];
     GetConVarString(g_hCvarZTeleAutoCancelDistance, strDistance, sizeof(strDistance));
-    new Float:flDistance = ConvertLib_DetectAndConvert(strDistance, ConvertLibUnit_GameUnit, ConvertLibUnit_GameUnit);
+    new Float:flDistance = ConvertLib_DetectAndConvert(ConvLibMeasurement_Distance, strDistance, _:ConvLibDistance_GameUnit, _:ConvLibDistance_GameUnit);
     new Float:distance = GetVectorDistance(vecClient, g_vecAutoCancelBoundary[client]);
     
     // Check if distance has been surpassed.

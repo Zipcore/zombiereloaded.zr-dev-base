@@ -49,14 +49,6 @@ stock Module:ZRWeapons_GetIdentifier() { return g_moduleZRWeapons; }
 new bool:g_bZRWeaponsBlockWeapon[MAXPLAYERS + 1];
 
 /**
- * Spawn weapons for each team index. (CS:S)
- */
-#if defined PROJECT_GAME_CSS
-  #define WEAPONS_2_SPAWN_WEAPON "weapon_glock"
-  #define WEAPONS_3_SPAWN_WEAPON "weapon_usp"
-#endif
-
-/**
  * Register this module.
  */
 ZRWeapons_Register()
@@ -177,19 +169,8 @@ public ZRWeapons_PlayerSpawn(client)
     if (!Util_IsClientOnTeam(client))
         return;
     
-    // H4x.  Unfortunately I can't disable this flag early enough for CS:S to give start USP/Glock.
-    // So I have to give BOOTLEG weapons.
-    if (g_bZRWeaponsBlockWeapon[client])
-    {
-        // Reset block weapons flag.
-        g_bZRWeaponsBlockWeapon[client] = false;
-        
-        new team = GetClientTeam(client);
-        if (team == TEAM_2)
-            GivePlayerItem(client, WEAPONS_2_SPAWN_WEAPON);
-        else if (team == TEAM_3)
-            GivePlayerItem(client, WEAPONS_3_SPAWN_WEAPON);
-    }
+    // Reset block weapons flag.
+    g_bZRWeaponsBlockWeapon[client] = false;
 }
 
 #endif
@@ -241,7 +222,7 @@ public Action:ZRWeapons_BuyListener(client, const String:command[], argc)
     // Only humans can buy weapons.
     if (!TLib_IsClientHuman(client))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "Zombie cant use weapon");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZR weapons zombie cant use weapon");
         return Plugin_Handled;
     }
     

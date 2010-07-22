@@ -31,7 +31,7 @@
 #define VERSION_INFO
 
 #if defined PROJECT_MERCURIAL
-    #include "project/base/hgversion"
+  #include "zr/base/hgversion"
 #endif
 
 /**

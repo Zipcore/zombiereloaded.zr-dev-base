@@ -152,7 +152,7 @@ public ZRGPlay_CvarHookMPRGame(Handle:convar, const String:oldValue[], const Str
 public ZRGPlay_RoundStart()
 {
     // Print ZR objective.
-    TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, _, _, "ZR round objective");
+    TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, _, _, "ZR gameplay round objective");
 }
 
 #endif

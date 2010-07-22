@@ -84,16 +84,15 @@
 		"en"		"Human"
 	}
 
-	"Zombie cant use weapon"
-	{
-		"en"		"Zombies can't use weapons!"
-	}
-
 	// **********************************************
 	//            Zombie:Reloaded Core
 	// **********************************************
 
-	"ZR round objective"
+
+	//                  Gameplay		       //
+	/////////////////////////////////////////////////
+
+	"ZR gameplay round objective"
 	{
 		"en"		"The game is {green}Humans vs. Zombies{default}, the goal for zombies is to infect all humans by knifing them."
 	}
@@ -116,68 +115,58 @@
 		"en"		"The merciful gods (known as admins) have resurrected your soul, find some cover!"
 	}
 
-	// Center Text
-
-	"Infect countdown"
+	"ZR command infect syntax"
 	{
-		"#format"	"{1:d}"
-		"en"		"Time remaining until first infection: {1} seconds."
+		"en"		"Turn a player into a zombie.  Usage: zr_infect <#userid|name> [respawn - 1/0]"
 	}
 
-	"Infect countdown end"
+	"ZR command human syntax"
 	{
-		"en"		"Time remaining until first infection: None."
+		"en"		"Turn a player into a human.  Usage: zr_human <#userid|name> [respawn - 1/0] [protect - 1/0]"
 	}
 
-	// Menu
-
-	"Infect menu clients title"
+	// {1}: Name of the player.
+	"ZR command infect successful"
 	{
-		"en"		"Zombie Management\nToggle Infection:\n[] = Infected"
-	}
-
-	// Commands
-
-	"Infect command infect syntax"
-	{
-		"en"		"Infect a client. Usage: zr_infect <filter> [respawn - 1/0]"
-	}
-
-	"Infect command human syntax"
-	{
-		"en"		"Turn a client into a human. Usage: zr_human <filter> [respawn - 1/0] [protect - 1/0]"
-	}
-
-	"Infect command infect successful"
-	{
-		"#format"	"{1:s}"
+		"#format"	"{1:N}"
 		"en"		"Player {green}{1} {default}has been successfully infected."
 	}
 
-	"Infect command infect mother successful"
+	// {1}: Name of the player.
+	"ZR command infect mother successful"
 	{
-		"#format"	"{1:s}"
+		"#format"	"{1:N}"
 		"en"		"Player {green}{1} {default}has been successfully infected as the mother zombie."
 	}
 
-	"Infect command infect unsuccessful"
+	// {1}: Name of the player.
+	"ZR command infect unsuccessful"
 	{
-		"#format"	"{1:s}"
+		"#format"	"{1:N}"
 		"en"		"Player {green}{1} {default}is already a zombie."
 	}
 
-	"Infect command human successful"
+	// {1}: Name of the player.
+	"ZR command human successful"
 	{
-		"#format"	"{1:s}"
+		"#format"	"{1:N}"
 		"en"		"Player {green}{1} {default}has been successfully brought back as a human."
 	}
 
-	"Infect command human unsuccessful"
+	// {1}: Name of the player.
+	"ZR command human unsuccessful"
 	{
-		"#format"	"{1:s}"
+		"#format"	"{1:N}"
 		"en"		"Player {green}{1} {default}is already a human."
 	}
 
+	//                   Weapons		       //
+	/////////////////////////////////////////////////
+
+	"ZR weapons zombie cant use weapon"
+	{
+		"en"		"Zombies can't use weapons!"
+	}
 
 	// **********************************************
 	//              Weapons Module
@@ -555,6 +544,23 @@
 
 
 	// Below this line is "old" translations, aka un-reformatted.
+
+
+	"Infect countdown"
+	{
+		"#format"	"{1:d}"
+		"en"		"Time remaining until first infection: {1} seconds."
+	}
+
+	"Infect countdown end"
+	{
+		"en"		"Time remaining until first infection: None."
+	}
+
+	"Infect menu clients title"
+	{
+		"en"		"Zombie Management\nToggle Infection:\n[] = Infected"
+	}
 
 	// {1}: Public chat trigger.  (Most likely "!")
 	// {2}: The command to open the ZMenu (Most likely "zmenu")

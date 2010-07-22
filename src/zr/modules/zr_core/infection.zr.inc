@@ -143,6 +143,10 @@ ZRInfect_OnPluginStart()
     g_hCvarMZombieMaxTime =             CreateConVar("zr_mzombie_max_time", "1.0", "Maximum time from the start of the round until picking the mother zombie(s).");
     g_hCvarMZombieRatio =               CreateConVar("zr_mzombie_ratio", "5", "Number of humans to infect as mother zombies in proportion to number of humans on the server. ['0' = Always one mother zombie]");
     g_hCvarMZombieBlockConsecutive =    CreateConVar("zr_mzombie_block_consecutive", "1", "Prevent a player from being chosen as mother zombie two rounds in a row.");
+    
+    // Create commands.
+    RegConsoleCmd("zr_infect", ZRInfect_InfectCommand, "Turn a player into a zombie. Usage: zr_infect <#userid|name> [respawn - 1/0]");
+    RegConsoleCmd("zr_human", ZRInfect_HumanCommand, "Turn a player into a human. Usage: zr_human <#userid|name> [respawn - 1/0] [protect - 1/0]");
 }
 
 /**
@@ -226,25 +230,6 @@ public ZRInfect_RoundFreezeEnd()
     new randomtime = RoundToNearest(GetRandomFloat(mintime, maxtime));
     
     g_hMotherInfect = CreateTimer(float(randomtime), ZRInfect_InitMotherZombie, false, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-/**
- * Timer callback.
- * Choose a mother zombie. 
- * 
- * @param timer     The timer handle.
- */
-public Action:ZRInfect_InitMotherZombie(Handle:timer)
-{
-    g_hMotherInfect = INVALID_HANDLE;
-    
-    // Pick a random mother zombie.
-    ZRInfect_MotherZombie();
-    
-    #if defined PROJECT_GAME_CSS
-        // Move everyone to the correct team.
-        ZRTM_UpdateClientTeams();
-    #endif
 }
 
 /**
@@ -380,6 +365,13 @@ ZRInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
  */
 ZRInfect_ZombieToHuman(client)
 {
+    TLib_SetClientTeam(client, ZTeam_Human);
+    
+    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZR zombie to human");
+    
+    // If client was a mother zombie then set to false.
+    g_bMotherZombie[client] = false;
+    
     // Forward event to all modules.
     new any:eventdata[1][1];
     
@@ -466,4 +458,155 @@ ZRInfect_MotherZombie(override_count = 0)
     }
     
     CloseHandle(adtClients);
+}
+
+/**
+ * Timer callback.
+ * Choose a mother zombie. 
+ * 
+ * @param timer     The timer handle.
+ */
+public Action:ZRInfect_InitMotherZombie(Handle:timer)
+{
+    g_hMotherInfect = INVALID_HANDLE;
+    
+    // Pick a random mother zombie.
+    ZRInfect_MotherZombie();
+}
+
+/**
+ * Command callback: zr_infect
+ * Turn a player into a zombie.
+ * 
+ * @param client    The client index. 
+ * @param argc      The number of arguments that the server sent with the command.
+ */
+public Action:ZRInfect_InfectCommand(client, argc)
+{
+    // If not enough arguments given, then stop.
+    if (argc < 1)
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZR command infect syntax");
+        return Plugin_Handled;
+    }
+    
+    decl String:target[MAX_NAME_LENGTH], String:targetname[MAX_NAME_LENGTH];
+    new targets[MAXPLAYERS], bool:tn_is_ml, result;
+    
+    // Get targetname.
+    GetCmdArg(1, target, sizeof(target));
+    
+    // Find a target.
+    result = ProcessTargetString(target, client, targets, sizeof(targets), COMMAND_FILTER_ALIVE, targetname, sizeof(targetname), tn_is_ml);
+        
+    // Check if there was a problem finding a client.
+    if (result <= 0)
+    {
+        TransMgr_ReplyToTargetError(client, result);
+        return Plugin_Handled;
+    }
+    
+    // Check optional parameter.
+    decl String:strRespawn[4];
+    GetCmdArg(2, strRespawn, sizeof(strRespawn));
+    new bool:bRespawn = bool:StringToInt(strRespawn);
+    
+    for (new tindex = 0; tindex < result; tindex++)
+    {
+        // Can't infect a zombie.
+        if (TLib_IsClientHuman(targets[tindex]))
+        {
+            // If a human is infected, cancel the timer that infects a mother zombie.
+            if (g_bZombiesPresent)
+            {
+                ZRInfect_HumanToZombie(targets[tindex], _, false);
+                if (result == 1)
+                {
+                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZR command infect successful", targets[tindex]);
+                }
+            }
+            else
+            {
+                Util_CloseHandle(g_hMotherInfect);
+                ZRInfect_HumanToZombie(targets[tindex], _, true);
+                if (result == 1)
+                {
+                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZR command infect mother successful", targets[tindex]);
+                }
+            }
+        }
+        else
+        {
+            if (result == 1)
+            {
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZR command infect unsuccessful", targets[tindex]);
+            }
+        }
+    }
+    
+    return Plugin_Handled;
+}
+
+/**
+ * Command callback: zr_human
+ * Turn a player into a human.
+ * 
+ * @param client    The client index. 
+ * @param argc      The number of arguments that the server sent with the command.
+ */
+public Action:ZRInfect_HumanCommand(client, argc)
+{
+    // If not enough arguments given, then stop.
+    if (argc < 1)
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZR command infect syntax");
+        return Plugin_Handled;
+    }
+    
+    decl String:target[MAX_NAME_LENGTH], String:targetname[MAX_NAME_LENGTH];
+    new targets[MAXPLAYERS], bool:tn_is_ml, result;
+    
+    // Get targetname.
+    GetCmdArg(1, target, sizeof(target));
+    
+    // Find a target.
+    result = ProcessTargetString(target, client, targets, sizeof(targets), COMMAND_FILTER_ALIVE, targetname, sizeof(targetname), tn_is_ml);
+        
+    // Check if there was a problem finding a client.
+    if (result <= 0)
+    {
+        TransMgr_ReplyToTargetError(client, result);
+        return Plugin_Handled;
+    }
+    
+    // Check optional parameters.
+    decl String:strRespawn[4];
+    GetCmdArg(2, strRespawn, sizeof(strRespawn));
+    new bool:bRespawn = bool:StringToInt(strRespawn);
+    
+    decl String:strProtect[4];
+    GetCmdArg(3, strProtect, sizeof(strProtect));
+    new bool:bProtect = bool:StringToInt(strProtect);
+    
+    for (new tindex = 0; tindex < result; tindex++)
+    {
+        // Can't infect a zombie.
+        if (TLib_IsClientZombie(targets[tindex]))
+        {
+            ZRInfect_ZombieToHuman(targets[tindex]);
+            if (result == 1)
+            {
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZR command human successful", targets[tindex]);
+            }
+        }
+        else
+        {
+            if (result == 1)
+            {
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZR command human unsuccessful", targets[tindex]);
+            }
+        }
+    }
+    
+    return Plugin_Handled;
 }

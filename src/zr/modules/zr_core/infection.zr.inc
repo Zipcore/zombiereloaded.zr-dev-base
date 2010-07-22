@@ -69,6 +69,17 @@ new Handle:g_hMotherInfect;
 new Handle:g_hMotherInfectCountdown;
 
 /**
+ * Keeps track of who the mother zombies are for the current round.
+ */
+new bool:g_bMotherZombie[MAXPLAYERS + 1];
+
+/**
+ * Keeps track of if a client was mother zombie in the previous round.
+ * See cvar g_hCvarMZombieBlockConsecutive.
+ */
+new bool:g_bWasMotherZombie[MAXPLAYERS + 1];
+
+/**
  * Register this module.
  */
 ZRInfect_Register()
@@ -171,6 +182,8 @@ public ZRInfect_OnMapEnd()
  */
 public ZRInfect_OnClientPutInServer(client)
 {
+    g_bMotherZombie[client] = false;
+    g_bWasMotherZombie[client] = false;
 }
 
 /**
@@ -251,6 +264,10 @@ public ZRInfect_RoundEnd()
         // Only reset clients that are in the game to human.  Ignore unassigned/spectators.
         if (TLib_IsClientPlaying(client))
             TLib_SetClientTeam(client, ZTeam_Human);
+        
+        // Keep track of who was mother zombie this round for next round.
+        g_bWasMotherZombie[client] = g_bMotherZombie[client];
+        g_bMotherZombie[client] = false;
     }
     
     // No more zombies.
@@ -327,6 +344,11 @@ ZRInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
     // Definitely zombies present now.
     g_bZombiesPresent = true;
     
+    if (mzombie)
+    {
+        g_bMotherZombie[client] = true;
+    }
+    
     #if defined PROJECT_GAME_CSS
         // Only fire the event if there is an attacker.
         if (attacker != 0)
@@ -382,30 +404,25 @@ ZRInfect_MotherZombie()
         return;
     }
     
-    /**
     // Prune the list further.
+    new client;
+    new bool:blockconsinfect = GetConVarBool(g_hCvarMZombieBlockConsecutive);
     for (new cindex = 0; cindex < count; cindex++)
     {
-        // Stop pruning if there is only 1 player left.
+        // Don't pick a mother zombie if there is only 1 client left at this point.
         if (count <= 1)
             break;
         
         // Get client stored in array index.
-        client = GetArrayCell(arrayEligibleClients, x);
+        client = GetArrayCell(adtClients, cindex);
         
-        // If client is immune from being a mother zombie, then stop.
-        if (bInfectImmune[client][INFECT_TYPE_MOTHER])
+        // Prune out clients that were mother zombies last round to prevent double-infection.
+        if (blockconsinfect && g_bWasMotherZombie[client])
         {
-            // Take away immunity.
-            bInfectImmune[client][INFECT_TYPE_MOTHER] = false;
-            
             // Prune, subtract 1 from count, and backtrack one index.
-            RemoveFromArray(adtClients, cindex);
-            count--;
-            cindex--;
+            RemoveFromArray(adtClients, cindex); count--; cindex--;
         }
     }
-    */
     
     // Ratio of mother zombies to humans.
     new ratio = GetConVarInt(g_hCvarMZombieRatio);
@@ -418,18 +435,18 @@ ZRInfect_MotherZombie()
     new mzombiecount = (ratio > 0) ? RoundToNearest(float(humancount) / float(ratio)) : 1;
     
     // If mothercount is 0, then set to 1.
-    if (!mzombiecount)
+    if (mzombiecount == 0)
         mzombiecount = 1;
     
     new randindex; 
     for (new cindex = 0; cindex < mzombiecount; cindex++)
     {
+        // Should always leave at least one human.
+        if (TLib_CountTeam(ZTeam_Human, true) <= 1)
+            break;
+        
         // Recount clients
         count = GetArraySize(adtClients);
-        
-        // Should never infect all eligible clients, leave at least 1 human.
-        if (count <= 1)
-            break;
         
         // Get a random client from the array, infect, and remove from list.
         randindex = GetRandomInt(0, count - 1);

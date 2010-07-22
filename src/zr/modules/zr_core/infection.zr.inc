@@ -193,9 +193,9 @@ public ZRInfect_OnClientPutInServer(client)
  */
 public ZRInfect_OnClientDisconnect(client)
 {
-    /**
-     * TODO: Pick new zombie
-     */
+    // If there are no more zombies then pick a new one.
+    if (TLib_CountTeam(ZTeam_Zombie, true) <= 1)
+        ZRInfect_MotherZombie(1);
 }
 
 /**
@@ -390,8 +390,10 @@ ZRInfect_ZombieToHuman(client)
 
 /**
  * Choose a random mother zombie.
+ * 
+ * @param override_count    If this is set to something > 0 then this is how many mother zombies will be spawned.
  */
-ZRInfect_MotherZombie()
+ZRInfect_MotherZombie(override_count = 0)
 {
     // Create eligible player list.
     new Handle:adtClients;
@@ -424,19 +426,28 @@ ZRInfect_MotherZombie()
         }
     }
     
-    // Ratio of mother zombies to humans.
-    new ratio = GetConVarInt(g_hCvarMZombieRatio);
-    
-    // Count living clients on each team.
-    //new zombiecount = TLib_CountTeam(ZTeam_Zombie, true);
-    new humancount = TLib_CountTeam(ZTeam_Human, true);
-    
-    // Calculate mother zombie count.
-    new mzombiecount = (ratio > 0) ? RoundToNearest(float(humancount) / float(ratio)) : 1;
-    
-    // If mothercount is 0, then set to 1.
-    if (mzombiecount == 0)
-        mzombiecount = 1;
+    // Determine how many mother zombies to spawn.
+    new mzombiecount;
+    if (override_count > 0)
+    {
+        mzombiecount = override_count;
+    }
+    else
+    {
+        // Ratio of mother zombies to humans.
+        new ratio = GetConVarInt(g_hCvarMZombieRatio);
+        
+        // Count living clients on each team.
+        //new zombiecount = TLib_CountTeam(ZTeam_Zombie, true);
+        new humancount = TLib_CountTeam(ZTeam_Human, true);
+        
+        // Calculate mother zombie count.
+        mzombiecount = (ratio > 0) ? RoundToNearest(float(humancount) / float(ratio)) : 1;
+        
+        // If mothercount is 0, then set to 1.
+        if (mzombiecount == 0)
+            mzombiecount = 1;
+    }
     
     new randindex; 
     for (new cindex = 0; cindex < mzombiecount; cindex++)

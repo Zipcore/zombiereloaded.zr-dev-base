@@ -26,6 +26,12 @@
  */
 
 /**
+ * The weapon classname to fire player_death with.
+ * Default: "zombie_claws_of_death" for compatibility.
+ */
+#define ZOMBIE_WEAPON_CLASSNAME "zombie_claws_of_death"
+
+/**
  * This module's identifier.
  */
 new Module:g_moduleZRInfect;
@@ -320,6 +326,19 @@ ZRInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
     
     // Definitely zombies present now.
     g_bZombiesPresent = true;
+    
+    #if defined PROJECT_GAME_CSS
+        // Only fire the event if there is an attacker.
+        if (attacker != 0)
+        {
+            new Handle:hEventPlayerDeath = CreateEvent("player_death", true);
+            SetEventInt(hEventPlayerDeath, "userid", GetClientUserId(client));
+            SetEventInt(hEventPlayerDeath, "attacker", GetClientUserId(attacker));
+            SetEventString(hEventPlayerDeath, "weapon", ZOMBIE_WEAPON_CLASSNAME);
+            SetEventBool(hEventPlayerDeath, "headshot", false);
+            FireEvent(hEventPlayerDeath);
+        }
+    #endif
     
     // Forward event to all modules.
     static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell, DataType_Cell};

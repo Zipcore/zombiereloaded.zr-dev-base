@@ -104,12 +104,17 @@ public ZRTM_OnClientPutInServer(client)
  * 
  * @param client        The infected client.
  * @param attacker      The zombie that infected the client.
- * @param motherzombie  True if the client has been infected as a mother zombie.
+ * @param mzombie       True if the client has been infected as a mother zombie.
  */
-public ZRTM_OnClientInfect(client, attacker, bool:motherzombie)
+public ZRTM_OnClientInfect(client, attacker, bool:mzombie)
 {
     #if defined PROJECT_GAME_CSS
-        CS_SwitchTeam(client, TEAM_2);
+        // If a mother zombie is being infected then update all clients' teams.
+        // If not then just switch them to T.
+        if (mzombie)
+            ZRTM_UpdateClientTeams();
+        else
+            CS_SwitchTeam(client, TEAM_2);
     #endif
 }
 
@@ -121,7 +126,7 @@ public ZRTM_OnClientInfect(client, attacker, bool:motherzombie)
 public ZRTM_OnClientHuman(client)
 {
     #if defined PROJECT_GAME_CSS
-        CS_SwitchTeam(client, TEAM_2);
+        CS_SwitchTeam(client, TEAM_3);
     #endif
 }
 

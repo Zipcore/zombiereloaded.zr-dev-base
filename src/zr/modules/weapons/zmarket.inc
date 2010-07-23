@@ -319,11 +319,6 @@ stock bool:ZMarket_MenuMain(client)
     return true;
 }
 
-//TODO: Remove this
-stock ZMenuMain(client)
-{
-}
-
 /**
  * Called when client selects option in the main ZMarket menu, and handles it.
  * 
@@ -368,9 +363,10 @@ public ZMarket_MenuMainHandle(Handle:menu_zmarket_main, MenuAction:action, clien
     // Client closed the menu.
     else if (action == MenuAction_Cancel)
     {
+        // TODO: ZMenu
         // Client hit "Back" button.
-        if (slot == MenuCancel_ExitBack)
-            ZMenuMain(client);
+        //if (slot == MenuCancel_ExitBack)
+            //ZMenuMain(client);
     }
     // Client hit "Exit" button.
     else if (action == MenuAction_End)

@@ -26,6 +26,12 @@
  */
 
 /**
+ * TODO:
+ * Unhook cvar hooks when module is disabled.
+ * Waiting for SM to not error when i do this on OnPluginEnd
+ */
+
+/**
  * This module's identifier.
  */
 new Module:g_moduleZRGPlay;
@@ -65,7 +71,7 @@ public ZRGPlay_OnEventsRegister()
 {
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnMyModuleEnable",        "ZRGPlay_OnMyModuleEnable");
-    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnMyModuleDisable",       "ZRGPlay_OnMyModuleDisable");
+    //EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnMyModuleDisable",       "ZRGPlay_OnMyModuleDisable");
     
     #if defined PROJECT_GAME_CSS
     

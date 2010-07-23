@@ -174,7 +174,15 @@ public Action:SDKHAdapt_TraceAttack(victim, &attacker, &inflictor, &Float:damage
     eventdata[2][0] = damage;
     eventdata[3][0] = damagetype;
     
-    return EventMgr_Forward(g_EvTraceAttack, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    new Action:result = EventMgr_Forward(g_EvTraceAttack, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    
+    // Copy event data back to this hook's variables, to let the engine use the new values.
+    victim = eventdata[0][0];
+    attacker = eventdata[1][0];
+    damage = eventdata[2][0];
+    damagetype = eventdata[3][0];
+    
+    return result;
 }
 
 /**
@@ -201,7 +209,15 @@ public Action:SDKHAdapt_OnTakeDamage(victim, &attacker, &inflictor, &Float:damag
     eventdata[2][0] = damage;
     eventdata[3][0] = damagetype;
     
-    return EventMgr_Forward(g_EvOnTakeDamage, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    new Action:result = EventMgr_Forward(g_EvOnTakeDamage, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    
+    // Copy event data back to this hook's variables, to let the engine use the new values.
+    victim = eventdata[0][0];
+    attacker = eventdata[1][0];
+    damage = eventdata[2][0];
+    damagetype = eventdata[3][0];
+    
+    return result;
 }
 
 /**

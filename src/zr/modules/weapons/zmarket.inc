@@ -1001,7 +1001,7 @@ stock bool:ZMarket_SaveCurrentSetup(client)
         return false;
     }
     
-    if (!IsPlayerAlive(client))
+    if (TLib_GetClientTeam(client) != ZTeam_Human)
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Must be human");
         return false;

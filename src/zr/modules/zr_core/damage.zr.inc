@@ -97,14 +97,13 @@ ZRDmg_OnPluginStart()
  * 
  * @param victim        The client being attacked.
  * @param attacker      The client attacking the victim.
- * @param inflictor     The entity doing damage?
  * @param damage        The amount of damage inflicted.
  * @param damagetype    A bit indicating type of damage that was being inflicted.
  * ... 
  *  
  * @return              Hook action.  See include/core.inc.
  */
-public Action:ZRDmg_TraceAttack(victim, &attacker, &inflictor, &Float:damage, &damagetype, &ammotype, hitbox, hitgroup)
+public Action:ZRDmg_TraceAttack(victim, &attacker, &Float:damage, &damagetype)
 {
     #if defined PROJECT_GAME_CSS || defined PROJECT_GAME_TF2
     // If FF is enabled then don't do anything.
@@ -125,13 +124,12 @@ public Action:ZRDmg_TraceAttack(victim, &attacker, &inflictor, &Float:damage, &d
  * 
  * @param victim        The client being attacked.
  * @param attacker      The client attacking the victim.
- * @param inflictor     The entity doing damage?
  * @param damage        The amount of damage inflicted.
  * @param damagetype    A bit indicating type of damage that was being inflicted.
  *  
  * @return              Hook action.  See include/core.inc.
  */
-public Action:ZRDmg_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
+public Action:ZRDmg_OnTakeDamage(victim, &attacker, &Float:damage, &damagetype)
 {
     // Check if the victim and attacker are valid clients.
     if (!Util_IsClientInGame(victim) || !Util_IsClientInGame(attacker))
@@ -144,7 +142,7 @@ public Action:ZRDmg_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &
         // They couldn't just use DMG_SLASH because that would make sense.
         if (damagetype & DMG_BULLET)
         {
-            SetEntityHealth(victim, GetClientHealth(victim) + RoundToNearest(damage));
+            SetEntityHealth(victim, GetClientHealth(victim) + RoundToCeil(damage));
         }
     }
     

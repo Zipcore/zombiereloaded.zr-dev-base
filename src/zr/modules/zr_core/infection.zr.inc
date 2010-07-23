@@ -224,12 +224,15 @@ public ZRInfect_RoundFreezeEnd()
     Util_CloseHandle(g_hMotherInfect);
     Util_CloseHandle(g_hMotherInfectCountdown);
     
-    // Get min and max times and pick a random time inbetween.
-    new Float:mintime = GetConVarFloat(g_hCvarMZombieMinTime);
-    new Float:maxtime = GetConVarFloat(g_hCvarMZombieMaxTime);
-    new randomtime = RoundToNearest(GetRandomFloat(mintime, maxtime));
-    
-    g_hMotherInfect = CreateTimer(float(randomtime), ZRInfect_InitMotherZombie, false, TIMER_FLAG_NO_MAPCHANGE);
+    if (!g_bZombiesPresent)
+    {
+        // Get min and max times and pick a random time inbetween.
+        new Float:mintime = GetConVarFloat(g_hCvarMZombieMinTime);
+        new Float:maxtime = GetConVarFloat(g_hCvarMZombieMaxTime);
+        new randomtime = RoundToNearest(GetRandomFloat(mintime, maxtime));
+        
+        g_hMotherInfect = CreateTimer(float(randomtime), ZRInfect_InitMotherZombie, false, TIMER_FLAG_NO_MAPCHANGE);
+    }
 }
 
 /**
@@ -325,6 +328,14 @@ ZRInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
     TLib_SetClientTeam(client, ZTeam_Zombie);
     
     TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZR infected");
+    
+    #if defined PROJECT_GAME_CSS
+        // If this is the first zombie of the round then update the client teams.
+        if (!g_bZombiesPresent)
+        {
+            ZRTM_UpdateClientTeams();
+        }
+    #endif
     
     // Definitely zombies present now.
     g_bZombiesPresent = true;

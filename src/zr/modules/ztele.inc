@@ -196,9 +196,9 @@ public ZTele_OnClientDisconnect(client)
  */
 public ZTele_PlayerSpawn(client)
 {
-    // Check if the player is on a team. Spawning into the game is also a event in
+    // Check if the player is on a team. Spawning into the game is also an event in
     // the connection process where players get their observer camera.
-    if (!IsPlayerAlive(client))
+    if (!Util_IsClientOnTeam(client))
         return;
     
     // Check if the spawn point is in the array, if not then add it.

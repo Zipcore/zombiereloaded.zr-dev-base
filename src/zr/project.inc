@@ -62,7 +62,6 @@ stock ForwardOnPluginStart()
     MapConfig_OnPluginStart();
     ZR_OnPluginStart();
     SDKHAdapt_OnPluginStart();
-    ClassMgr_OnPluginStart();
     ZTele_OnPluginStart();
     StripObj_OnPluginStart();
     

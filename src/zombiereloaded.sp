@@ -50,7 +50,6 @@
 #include "zr/modules/mapconfig"
 #include "zr/modules/zr_core/root.zr"
 #include "zr/modules/sdkhooksadapter"
-#include "zr/modules/classes/classmanager"
 #include "zr/modules/ztele"
 #include "zr/modules/stripobjectives"
 

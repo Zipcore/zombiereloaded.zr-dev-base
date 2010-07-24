@@ -42,6 +42,11 @@ new Module:g_moduleZRGPlay;
 stock Module:ZRGPlay_GetIdentifier() { return g_moduleZRGPlay; }
 
 /**
+ * Timer handle for counting down the round time.
+ */
+new Handle:g_hRoundTimer;
+
+/**
  * Register this module.
  */
 ZRGPlay_Register()
@@ -70,15 +75,30 @@ ZRGPlay_Register()
 public ZRGPlay_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnMyModuleEnable",        "ZRGPlay_OnMyModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnMyModuleDisable",       "ZRGPlay_OnMyModuleDisable");
+    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnEventsReady",              "ZRGPlay_OnEventsReady");
+    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnMyModuleEnable",           "ZRGPlay_OnMyModuleEnable");
+    //EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnMyModuleDisable",          "ZRGPlay_OnMyModuleDisable");
+    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnMapStart",                 "ZRGPlay_OnMapStart");
+    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnClientInfect",             "ZRGPlay_OnClientInfect");
     
     #if defined PROJECT_GAME_CSS
     
-    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_RoundStart",              "ZRGPlay_RoundStart");
+    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_RoundStart",                 "ZRGPlay_RoundStart");
+    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_RoundFreezeEnd",             "ZRGPlay_RoundFreezeEnd");
+    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_RoundEnd",                   "ZRGPlay_RoundEnd");
     
     #endif
 }
+
+/**
+ * All modules and events have been registered by this point.  Event priority can be changed here.
+ */
+public ZRGPlay_OnEventsReady()
+{
+    // Push down priority for Event_OnClientInfect to below zrteammanager module.
+    EventMgr_TakePriority("Event_OnClientInfect", g_moduleZRGPlay, ZRTM_GetIdentifier());
+}
+
 
 /**
  * Plugin is loading.
@@ -121,6 +141,107 @@ public ZRGPlay_OnMyModuleDisable()
     #endif
 }
 
+/**
+ * The map has started.
+ */
+public ZRGPlay_OnMapStart()
+{
+    // Reset timer handle.
+    g_hRoundTimer = INVALID_HANDLE;
+}
+
+/**
+ * Client has been infected.
+ * 
+ * @param client        The infected client.
+ * @param attacker      The zombie that infected the client.
+ * @param mzombie       True if the client has been infected as a mother zombie.
+ */
+public ZRGPlay_OnClientInfect(client, attacker, bool:mzombie)
+{
+    // The core won't infect all clients as mother zombie so don't waste time checking.
+    // This could be a big performance boost if 10 mother zombies are being spawned simultaneously.
+    if (mzombie)
+        return;
+    
+    // If there are no more humans then zombies win.
+    if (TLib_CountTeam(ZTeam_Human, true) == 0)
+    {
+        SDKToolsLib_TerminateRound(3.0, ROUNDEND_TERRORISTS_WIN);
+    }
+}
+
+/**
+ * Client has turned back to human.
+ * 
+ * @param client        The client that became human.
+ */
+public ZRGPlay_OnClientHuman(client)
+{
+    // If there are no more humans then humans win.
+    if (TLib_CountTeam(ZTeam_Zombie, true) == 0)
+    {
+        SDKToolsLib_TerminateRound(3.0, ROUNDEND_CTS_WIN);
+    }
+}
+
+#if defined PROJECT_GAME_CSS
+
+/**
+ * Round has started.
+ */
+public ZRGPlay_RoundStart()
+{
+    // Print ZR objective.
+    TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, _, _, "ZR gameplay round objective");
+    
+    // Stop round timer.
+    Util_CloseHandle(g_hRoundTimer);
+}
+
+/**
+ * Pre-round freezetime has finished.
+ */
+public ZRGPlay_RoundFreezeEnd()
+{
+    // Stop round timer.
+    Util_CloseHandle(g_hRoundTimer);
+    
+    // Get the roundtime, and save it for future calls.
+    static Handle:hMPRoundTime;
+    if (hMPRoundTime == INVALID_HANDLE)
+    {
+        hMPRoundTime = FindConVar("mp_roundtime");
+    }
+    
+    g_hRoundTimer = CreateTimer(GetConVarFloat(hMPRoundTime) * 60.0, ZRGPlay_RoundEndTimer, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+/**
+ * Timer callback.
+ * End the round, humans win.
+ * 
+ * @param timer     The timer handle.
+ */
+public Action:ZRGPlay_RoundEndTimer(Handle:timer)
+{
+    g_hRoundTimer = INVALID_HANDLE;
+    
+    // Humans held out against the zombies, they win!
+    SDKToolsLib_TerminateRound(3.0, ROUNDEND_CTS_WIN);
+}
+
+/**
+ * Round has ended.
+ */
+public ZRGPlay_RoundEnd()
+{
+    // Stop round timer.
+    Util_CloseHandle(g_hRoundTimer);
+}
+
+#endif
+
 // **********************************************
 //            Cvar Hook Callbacks
 // **********************************************
@@ -146,19 +267,6 @@ public ZRGPlay_CvarHookMPRGame(Handle:convar, const String:oldValue[], const Str
     
     // This basically makes mp_restartgame useless.
     SetConVarInt(convar, 0);
-}
-
-#endif
-
-#if defined PROJECT_GAME_CSS
-
-/**
- * Round has started.
- */
-public ZRGPlay_RoundStart()
-{
-    // Print ZR objective.
-    TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, _, _, "ZR gameplay round objective");
 }
 
 #endif

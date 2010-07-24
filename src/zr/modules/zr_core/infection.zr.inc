@@ -231,7 +231,7 @@ public ZRInfect_RoundFreezeEnd()
         new Float:maxtime = GetConVarFloat(g_hCvarMZombieMaxTime);
         new randomtime = RoundToNearest(GetRandomFloat(mintime, maxtime));
         
-        g_hMotherInfect = CreateTimer(float(randomtime), ZRInfect_InitMotherZombie, false, TIMER_FLAG_NO_MAPCHANGE);
+        g_hMotherInfect = CreateTimer(float(randomtime), ZRInfect_InitMZombieTimer, false, TIMER_FLAG_NO_MAPCHANGE);
     }
 }
 
@@ -455,17 +455,14 @@ ZRInfect_MotherZombie(override_count = 0)
     new randindex; 
     for (new cindex = 0; cindex < mzombiecount; cindex++)
     {
-        // Should always leave at least one human.
-        if (TLib_CountTeam(ZTeam_Human, true) <= 1)
+        // Should always leave at least one human and stop if there are no more clients left.
+        if (TLib_CountTeam(ZTeam_Human, true) <= 1 || count <= 0)
             break;
-        
-        // Recount clients
-        count = GetArraySize(adtClients);
         
         // Get a random client from the array, infect, and remove from list.
         randindex = GetRandomInt(0, count - 1);
         ZRInfect_HumanToZombie(GetArrayCell(adtClients, randindex), _, true);
-        RemoveFromArray(adtClients, randindex);
+        RemoveFromArray(adtClients, randindex); count--;
     }
     
     CloseHandle(adtClients);
@@ -477,7 +474,7 @@ ZRInfect_MotherZombie(override_count = 0)
  * 
  * @param timer     The timer handle.
  */
-public Action:ZRInfect_InitMotherZombie(Handle:timer)
+public Action:ZRInfect_InitMZombieTimer(Handle:timer)
 {
     g_hMotherInfect = INVALID_HANDLE;
     

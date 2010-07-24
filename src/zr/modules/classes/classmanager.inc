@@ -342,7 +342,7 @@ public KvCache:ClassMgr_LoadClass(Handle:kv, sectionindex, const String:sectionn
         else
         {
             // Attribute wasn't registered.
-            LogMgr_Print(g_moduleClassMgr, LogType_Error, "Class Loading", "Class attribute in class \"%s\" not registered: %s", sectionname, attributeName);
+            LogMgr_Print(g_moduleClassMgr, LogType_Error, "Config Loading", "Class attribute in class \"%s\" not registered: %s", sectionname, attributeName);
         }
         
         // Jump back to the attribute again so the parser will find the next attribute.

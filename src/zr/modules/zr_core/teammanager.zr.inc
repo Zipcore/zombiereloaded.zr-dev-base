@@ -97,7 +97,7 @@ ZRTM_OnPluginStart()
 public ZRTM_OnClientPutInServer(client)
 {
     // Initialize the client's team.
-    TLib_SetClientTeam(client, ZTeam_Unassigned);
+    TLib_SetClientTeam(client, VTeam_Unassigned);
 }
 
 /**
@@ -110,7 +110,7 @@ public ZRTM_OnClientPutInServer(client)
 public ZRTM_OnClientInfect(client, attacker, bool:mzombie)
 {
     #if defined PROJECT_GAME_CSS
-        CS_SwitchTeam(client, TEAM_2);
+        CS_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Zombie));
     #endif
 }
 
@@ -122,7 +122,7 @@ public ZRTM_OnClientInfect(client, attacker, bool:mzombie)
 public ZRTM_OnClientHuman(client)
 {
     #if defined PROJECT_GAME_CSS
-        CS_SwitchTeam(client, TEAM_3);
+        CS_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Human));
     #endif
 }
 
@@ -163,10 +163,10 @@ public Action:ZRTM_PlayerTeamPre(client, team, oldteam, bool:disconnect)
 public ZRTM_PlayerTeam(client, team, oldteam, bool:disconnect)
 {
     if (team == TEAM_1)
-        TLib_SetClientTeam(client, ZTeam_Spectator);
+        TLib_SetClientTeam(client, VTeam_Spectator);
     // If client isn't already in the game, then assign them to human by default.
     else if (team > TEAM_1 && !TLib_IsClientPlaying(client))
-        TLib_SetClientTeam(client, ZTeam_Human);
+        TLib_SetClientTeam(client, VTeam_Human);
 }
 
 /**
@@ -181,50 +181,10 @@ public ZRTM_PlayerSpawn(client)
     if (!Util_IsClientOnTeam(client))
         return;
     
-    // Move client the right team for their ZTeam if there are zombies present.
+    // Move client the right team for their virtual team if there are zombies present.
     if (g_bZombiesPresent)
     {
-        ZRTM_UpdateClientTeam(client);
-    }
-}
-
-#endif
-
-#if defined PROJECT_GAME_CSS
-
-/**
- * Update a single client's team.
- * 
- * @param client    The client index.
- */
-stock ZRTM_UpdateClientTeam(client)
-{
-    new ZTeam:zteam = TLib_GetClientTeam(client);
-    new team = GetClientTeam(client);
-    
-    if (zteam == ZTeam_Zombie)
-    {
-        if (team != TEAM_2)
-            CS_SwitchTeam(client, TEAM_2);
-    }
-    else if (zteam == ZTeam_Human)
-    {
-        if (team != TEAM_3)
-            CS_SwitchTeam(client, TEAM_3);
-    }
-}
-
-/**
- * Move all clients to their respective game teams based off ZTeam.
- */
-stock ZRTM_UpdateClientTeams()
-{
-    for (new client = 1; client <= MaxClients; client++)
-    {
-        if (!IsClientInGame(client))
-            continue;
-        
-        ZRTM_UpdateClientTeam(client);
+        TLib_UpdateClientTeam(client);
     }
 }
 

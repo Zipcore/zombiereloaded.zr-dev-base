@@ -165,7 +165,6 @@ stock Handle:SDKToolsLib_SetupPredefined(Handle:gameconfig, SDKLibCalls:sdkcall)
 
 /**
  * All round end reasons.
- * Used an enum instead of defines so the include order doesn't matter.
  */
 enum RoundEndReasons
 {

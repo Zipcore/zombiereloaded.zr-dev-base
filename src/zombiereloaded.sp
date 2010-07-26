@@ -46,6 +46,7 @@
 
 // Module includes.
 #include "zr/modules/gamedata"
+#include "zr/modules/core"
 #include "zr/modules/gamerules"
 #include "zr/modules/mapconfig"
 #include "zr/modules/zr_core/root.zr"

@@ -10,18 +10,17 @@
 //
 // Valid actions:
 //
-// off          Enable the module.
-// force_off	Force the module to be disabled.  The module will be disabled after cvars are set, and this guarantees they will remain off.
-// on           Disable the module.
+// on           Enable the module.
 // force_on     Force the module to be enabled.  This guarantees that the module will be loaded at all times.
+// off          Disable the module.
+// force_off	Force the module to be disabled.  The module will be disabled after cvars are set, and this guarantees they will remain off.
 
 "gamerules"
 {
 	"default"
 	{
-		"gamedata"	"force_on"
 		"zr_root"	"force_on"
-		"weapons"	"on"
+		"zriot_root"	"force_off"
 		"objstripper"	"on"
 	}
 }

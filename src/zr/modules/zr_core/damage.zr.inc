@@ -109,7 +109,7 @@ public Action:ZRDmg_TraceAttack(victim, &attacker, &Float:damage, &damagetype)
     // If FF is enabled then don't do anything.
     if (!GetConVarBool(g_hCvarMPFF))
     {
-        // Don't let clients on the same ZTeam, damage each other.
+        // Don't let clients on the same virtual team, damage each other.
         // Ex: Terrorist human will not be able to shoot Counter-Terrorist human.
         if (TLib_GetClientTeam(victim) == TLib_GetClientTeam(attacker))
             return Plugin_Handled;

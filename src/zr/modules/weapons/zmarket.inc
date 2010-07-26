@@ -997,7 +997,7 @@ stock bool:ZMarket_SaveCurrentSetup(client)
         return false;
     }
     
-    if (TLib_GetClientTeam(client) != ZTeam_Human)
+    if (TLib_GetClientTeam(client) != VTeam_Human)
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Must be human");
         return false;

@@ -144,6 +144,18 @@ stock bool:Util_IsClientOnTeam(client)
 }
 
 /**
+ * Fully remove a weapon from a client's inventory and the world.
+ * 
+ * @param client        The client whose weapon to remove.
+ * @param weaponindex   The weapon index.
+ */
+stock Util_RemovePlayerItem(client, weaponindex)
+{
+    RemovePlayerItem(client, weaponindex);
+    RemoveEdict(weaponindex);
+}
+
+/**
  * Closes a handle and sets it to invalid handle.
  * 
  * @param handle    The handle to close.

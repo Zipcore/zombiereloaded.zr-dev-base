@@ -31,11 +31,6 @@
 new Module:g_moduleMapConfig;
 
 /**
- * Events created by this module.
- */
-new ProjectEvent:g_EvOnPostConfigsExecuted;
-
-/**
  * Register this module.
  */
 MapConfig_Register()
@@ -52,9 +47,6 @@ MapConfig_Register()
     
     // Send this array of data to the module manager.
     g_moduleMapConfig = ModuleMgr_Register(moduledata);
-    
-    // Create events.
-    g_EvOnPostConfigsExecuted = EventMgr_CreateEvent("OnPostConfigsExecuted");
     
     // Register the OnEventsRegister event to register all events in it.
     EventMgr_RegisterEvent(g_moduleMapConfig, "Event_OnEventsRegister",         "MapConfig_OnEventsRegister");
@@ -125,8 +117,5 @@ public MapConfig_OnConfigsExecuted()
     {
         ServerCommand("exec %s", mapconfig);
         LogMgr_Print(g_moduleMapConfig, LogType_Normal, "Map Configs", "Executed post map config file: %s", path);
-        
-        // Forward custom event.
-        EventMgr_Forward(g_EvOnPostConfigsExecuted, g_CommonEventData1, 0, 0, g_CommonDataType1);
     }
 }

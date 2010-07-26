@@ -99,8 +99,8 @@ ZRDmg_OnPluginStart()
  * @param attacker      The client attacking the victim.
  * @param damage        The amount of damage inflicted.
  * @param damagetype    A bit indicating type of damage that was being inflicted.
- * ... 
- *  
+ * ...
+ * 
  * @return              Hook action.  See include/core.inc.
  */
 public Action:ZRDmg_TraceAttack(victim, &attacker, &Float:damage, &damagetype)
@@ -126,7 +126,7 @@ public Action:ZRDmg_TraceAttack(victim, &attacker, &Float:damage, &damagetype)
  * @param attacker      The client attacking the victim.
  * @param damage        The amount of damage inflicted.
  * @param damagetype    A bit indicating type of damage that was being inflicted.
- *  
+ * 
  * @return              Hook action.  See include/core.inc.
  */
 public Action:ZRDmg_OnTakeDamage(victim, &attacker, &Float:damage, &damagetype)

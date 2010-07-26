@@ -60,9 +60,9 @@ WepAlpha_Register()
 public WepAlpha_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleWepAlpha, "Event_OnClientPutInServer",       "WepAlpha_OnClientPutInServer");
-    EventMgr_RegisterEvent(g_moduleWepAlpha, "Event_OnClientDisconnect",        "WepAlpha_OnClientDisconnect");
     EventMgr_RegisterEvent(g_moduleWepAlpha, "Event_OnClientAlphaChanged",      "WepAlpha_OnClientAlphaChanged");
+    EventMgr_RegisterEvent(g_moduleWepAlpha, "Hook_WeaponEquip",                "WepAlpha_WeaponEquip");
+    EventMgr_RegisterEvent(g_moduleWepAlpha, "Hook_WeaponDrop",                 "WepAlpha_WeaponDrop");
 }
 
 /**
@@ -75,98 +75,6 @@ WepAlpha_OnPluginStart()
 }
 
 /**
- * The module that hooked this event callback has been enabled.
- * 
- * @return      Return Plugin_Handled to stop load, and Plugin_Continue to allow it.
- */
-public WepAlpha_OnMyModuleEnable()
-{
-    // Hook all clients in the server.
-    for (new client = 1; client <= MaxClients; client++)
-    {
-        if (!IsClientInGame(client))
-            continue;
-        
-        SDKHook(client, SDKHook_WeaponEquip, WepAlpha_Equip);
-        SDKHook(client, SDKHook_WeaponDrop, WepAlpha_Drop);
-    }
-}
-
-/**
- * The module that hooked this event callback has been disabled.
- */
-public WepAlpha_OnMyModuleDisable()
-{
-    // Unhook all clients in the server.
-    for (new client = 1; client <= MaxClients; client++)
-    {
-        if (!IsClientInGame(client))
-            continue;
-        
-        SDKUnhook(client, SDKHook_WeaponEquip, WepAlpha_Equip);
-        SDKUnhook(client, SDKHook_WeaponDrop, WepAlpha_Drop);
-    }
-}
-
-/**
- * Client has joined the server.
- * 
- * @param client    The client index.
- */
-public WepAlpha_OnClientPutInServer(client)
-{
-    SDKHook(client, SDKHook_WeaponEquip, WepAlpha_Equip);
-    SDKHook(client, SDKHook_WeaponDrop, WepAlpha_Drop);
-}
-
-/**
- * Client is disconnecting from the server.
- * 
- * @param client    The client index.
- */
-public WepAlpha_OnClientDisconnect(client)
-{
-    SDKUnhook(client, SDKHook_WeaponEquip, WepAlpha_Equip);
-    SDKUnhook(client, SDKHook_WeaponDrop, WepAlpha_Drop);
-}
-
-/**
- * Client has just picked up a weapon.
- * 
- * @param client    The client index.
- * @param weapon    The weapon index.
- */
-public Action:WepAlpha_Equip(client, weapon)
-{
-    // Get the client's color.
-    new color[4];
-    OffsLib_GetEntityColor(client, color);
-    
-    // Set new alpha on weapon.
-    SetEntityRenderMode(client, RENDER_TRANSALPHA);
-    SetEntityRenderColor(client, _, _, _, color[3]);
-}
-
-/**
- * Called when a client drops their weapon.
- * 
- * @param client    The client index.
- * @param weapon    The weapon index.
- */
-public Action:WepAlpha_Drop(client, weapon)
-{
-    // If weapon isn't a valid entity, then stop.
-    if (weapon < MaxClients)
-    {
-        return;
-    }
-    
-    // Reset alpha to default on the dropped weapon.
-    SetEntityRenderMode(client, RENDER_TRANSALPHA);
-    SetEntityRenderColor(client, _, _, _, 255);
-}
-
-/**
  * A client's alpha has changed.
  * 
  * @param client    The client index.
@@ -176,6 +84,48 @@ public WepAlpha_OnClientAlphaChanged(client, newalpha)
 {
     // Set new alpha on weapons.
     WepAlpha_Apply(client, newalpha);
+}
+
+/**
+ * Called when a client equips a weapon.
+ * 
+ * @param client    The client index.
+ * @param weapon    The weapon index.
+ * 
+ * @return          Hook action.  See include/core.inc.
+ */
+public WepAlpha_WeaponEquip(client, weapon)
+{
+    // If weapon isn't a valid entity, then stop.
+    if (!IsValidEntity(weapon))
+        return;
+    
+    // Get the client's color.
+    new color[4];
+    OffsLib_GetEntityColor(client, color);
+    
+    // Set new alpha on weapon.
+    SetEntityRenderMode(weapon, RENDER_TRANSALPHA);
+    SetEntityRenderColor(weapon, _, _, _, color[3]);
+}
+
+/**
+ * Called when a client drops a weapon.
+ * 
+ * @param client    The client index.
+ * @param weapon    The weapon index.
+ * 
+ * @return          Hook action.  See include/core.inc.
+ */
+public WepAlpha_WeaponDrop(client, weapon)
+{
+    // If weapon isn't a valid entity, then stop.
+    if (!IsValidEntity(weapon))
+        return;
+    
+    // Reset alpha to default on the dropped weapon.
+    SetEntityRenderMode(weapon, RENDER_TRANSALPHA);
+    SetEntityRenderColor(weapon, _, _, _, 255);
 }
 
 /**

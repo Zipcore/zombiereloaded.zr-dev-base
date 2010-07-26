@@ -43,11 +43,6 @@
 new Module:g_moduleStripObj;
 
 /**
- * Cvar handles.
- */
-new Handle:g_hCvarStripObjectives;
-
-/**
  * Register this module.
  */
 StripObj_Register()
@@ -85,9 +80,6 @@ StripObj_OnPluginStart()
 {
     // Register the module.
     StripObj_Register();
-    
-    // Create cvars.
-    g_hCvarStripObjectives = Project_CreateConVar("strip_objectives", "1", "Removes all objectives from the map.");
 }
 
 /**
@@ -95,10 +87,6 @@ StripObj_OnPluginStart()
  */
 public StripObj_RoundStart()
 {
-    // Don't strip objectives if the cvar is disabled.
-    if (!GetConVarBool(g_hCvarStripObjectives))
-        return;
-    
     // Get max entity count.
     decl String:classname[64];
     new maxentities = GetMaxEntities();

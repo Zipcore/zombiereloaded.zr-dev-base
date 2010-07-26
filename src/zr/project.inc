@@ -63,7 +63,7 @@ stock ForwardOnPluginStart()
     MapConfig_OnPluginStart();
     ZR_OnPluginStart();
     SDKHAdapt_OnPluginStart();
-    ZTele_OnPluginStart();
+    //ZTele_OnPluginStart();
     StripObj_OnPluginStart();
     
     #if defined PROJECT_GAME_CSS

@@ -165,9 +165,9 @@ public ZRGPlay_OnClientInfect(client, attacker, bool:mzombie)
         return;
     
     // If there are no more humans then zombies win.
-    if (TLib_CountTeam(ZTeam_Human, true) == 0)
+    if (TLib_CountTeam(VTeam_Human, true) == 0)
     {
-        SDKToolsLib_TerminateRound(3.0, ROUNDEND_TERRORISTS_WIN);
+        SDKToolsLib_TerminateRound(3.0, TLib_VTeamRoundEndReason(VTeam_Zombie));
     }
 }
 
@@ -179,9 +179,9 @@ public ZRGPlay_OnClientInfect(client, attacker, bool:mzombie)
 public ZRGPlay_OnClientHuman(client)
 {
     // If there are no more humans then humans win.
-    if (TLib_CountTeam(ZTeam_Zombie, true) == 0)
+    if (TLib_CountTeam(VTeam_Zombie, true) == 0)
     {
-        SDKToolsLib_TerminateRound(3.0, ROUNDEND_CTS_WIN);
+        SDKToolsLib_TerminateRound(3.0, TLib_VTeamRoundEndReason(VTeam_Human));
     }
 }
 
@@ -228,7 +228,7 @@ public Action:ZRGPlay_RoundEndTimer(Handle:timer)
     g_hRoundTimer = INVALID_HANDLE;
     
     // Humans held out against the zombies, they win!
-    SDKToolsLib_TerminateRound(3.0, ROUNDEND_CTS_WIN);
+    SDKToolsLib_TerminateRound(3.0, TLib_VTeamRoundEndReason(VTeam_Human));
 }
 
 /**

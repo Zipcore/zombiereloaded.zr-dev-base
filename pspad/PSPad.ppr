@@ -50,6 +50,7 @@ ZR
 				..\src\zr\modules\zr_core\root.zr.inc
 				..\src\zr\modules\zr_core\teammanager.zr.inc
 				..\src\zr\modules\zr_core\weapons.zr.inc
+			..\src\zr\modules\core.inc
 			..\src\zr\modules\gamedata.inc
 			..\src\zr\modules\gamerules.inc
 			..\src\zr\modules\mapconfig.inc

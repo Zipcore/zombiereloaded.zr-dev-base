@@ -198,7 +198,7 @@ public ZRInfect_OnClientPutInServer(client)
 public ZRInfect_OnClientDisconnect(client)
 {
     // If there are no more zombies then pick a new one.
-    if (TLib_CountTeam(ZTeam_Zombie, true) <= 1)
+    if (TLib_CountTeam(VTeam_Zombie, true) <= 1)
         ZRInfect_MotherZombie(1);
 }
 
@@ -251,7 +251,7 @@ public ZRInfect_RoundEnd()
         
         // Only reset clients that are in the game to human.  Ignore unassigned/spectators.
         if (TLib_IsClientPlaying(client))
-            TLib_SetClientTeam(client, ZTeam_Human);
+            TLib_SetClientTeam(client, VTeam_Human);
         
         // Keep track of who was mother zombie this round for next round.
         g_bWasMotherZombie[client] = g_bMotherZombie[client];
@@ -325,7 +325,7 @@ public ZRInfect_PlayerDeath(victim, attacker, const String:weapon[], bool:headsh
 ZRInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
 {
     PrintToChatAll("INFECT %N infected %N", attacker, client);
-    TLib_SetClientTeam(client, ZTeam_Zombie);
+    TLib_SetClientTeam(client, VTeam_Zombie);
     
     TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZR infected");
     
@@ -333,7 +333,7 @@ ZRInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
         // If this is the first zombie of the round then update the client teams.
         if (!g_bZombiesPresent)
         {
-            ZRTM_UpdateClientTeams();
+            TLib_UpdateClientTeams();
         }
     #endif
     
@@ -376,7 +376,7 @@ ZRInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
  */
 ZRInfect_ZombieToHuman(client)
 {
-    TLib_SetClientTeam(client, ZTeam_Human);
+    TLib_SetClientTeam(client, VTeam_Human);
     
     TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZR zombie to human");
     
@@ -440,9 +440,8 @@ ZRInfect_MotherZombie(override_count = 0)
         // Ratio of mother zombies to humans.
         new ratio = GetConVarInt(g_hCvarMZombieRatio);
         
-        // Count living clients on each team.
-        //new zombiecount = TLib_CountTeam(ZTeam_Zombie, true);
-        new humancount = TLib_CountTeam(ZTeam_Human, true);
+        // Count living clients on the human team.
+        new humancount = TLib_CountTeam(VTeam_Human, true);
         
         // Calculate mother zombie count.
         mzombiecount = (ratio > 0) ? RoundToNearest(float(humancount) / float(ratio)) : 1;
@@ -456,7 +455,7 @@ ZRInfect_MotherZombie(override_count = 0)
     for (new cindex = 0; cindex < mzombiecount; cindex++)
     {
         // Should always leave at least one human and stop if there are no more clients left.
-        if (TLib_CountTeam(ZTeam_Human, true) <= 1 || count <= 0)
+        if (TLib_CountTeam(VTeam_Human, true) <= 1 || count <= 0)
             break;
         
         // Get a random client from the array, infect, and remove from list.

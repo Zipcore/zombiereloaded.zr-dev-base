@@ -57,7 +57,7 @@ enum VTeam
 }
 
 /**
- * Global array to store if a client is zombie or human.
+ * Global array to store each client's virtual team.
  */
 new VTeam:g_TLibClientTeam[MAXPLAYERS + 1];
 
@@ -95,7 +95,7 @@ stock bool:TLib_IsClientPlaying(client)
 stock TLib_SetClientTeam(client, VTeam:team) { g_TLibClientTeam[client] = team; }
 
 /**
- * Count clients on a specific team.
+ * Count clients on a specific virtual team.
  * 
  * @param team  The team to count clients of.
  * @param alive Only count client if they're alive. 

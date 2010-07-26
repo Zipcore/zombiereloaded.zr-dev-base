@@ -110,7 +110,7 @@ ZRWeapons_OnPluginStart()
     
     // Create cvars.
     #if defined PROJECT_GAME_CSS
-        g_hCvarZRWeaponsDrop =      CreateConVar("zr_weapons_drop", "0", "Force player to drop all weapons when infected.  Disabling this will strip weapons instead.");
+        g_hCvarZRWeaponsDrop =      CreateConVar("zr_weapons_drop", "1", "Force player to drop all weapons when infected.  Disabling this will strip weapons instead.");
         g_hCvarZRWeaponsEndEquip =  CreateConVar("zr_weapons_endequip", "1", "Restricts zombies from picking up weapons after the round has ended but before the next round has begun.");
     #endif
     
@@ -132,8 +132,16 @@ ZRWeapons_OnPluginStart()
 public ZRWeapons_OnClientInfect(client, attacker, bool:motherzombie)
 {
     #if defined PROJECT_GAME_CSS
-        WepLib_RemoveAllWeapons(client, GetConVarBool(g_hCvarZRWeaponsDrop));
-        GivePlayerItem(client, "weapon_knife");
+        new bool:weapons[WEPLIB_SLOT_COUNT] = {true, ...};
+        weapons[_:Slot_Melee] = false;
+        if (GetConVarBool(g_hCvarZRWeaponsDrop))
+        {
+            WepLib_DropAllWeapons(client, weapons);
+        }
+        else
+        {
+            WepLib_RemoveAllWeapons(client, weapons);
+        }
     #endif
 }
 

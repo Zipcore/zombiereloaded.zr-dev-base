@@ -38,6 +38,8 @@ new Module:g_moduleSDKHAdapt;
 new ProjectEvent:g_EvTraceAttack;
 new ProjectEvent:g_EvOnTakeDamage;
 new ProjectEvent:g_EvWeaponCanUse;
+new ProjectEvent:g_EvWeaponEquip;
+new ProjectEvent:g_EvWeaponDrop;
 
 /**
  * Register this module.
@@ -61,6 +63,8 @@ SDKHAdapt_Register()
     g_EvTraceAttack =       EventMgr_CreateEvent("Hook_TraceAttack");
     g_EvOnTakeDamage =      EventMgr_CreateEvent("Hook_OnTakeDamage");
     g_EvWeaponCanUse =      EventMgr_CreateEvent("Hook_WeaponCanUse");
+    g_EvWeaponEquip =       EventMgr_CreateEvent("Hook_WeaponEquip");
+    g_EvWeaponDrop =        EventMgr_CreateEvent("Hook_WeaponDrop");
     
     // Register the OnEventsRegister event to register all events in it.
     EventMgr_RegisterEvent(g_moduleSDKHAdapt, "Event_OnEventsRegister",      "SDKHAdapt_OnEventsRegister");
@@ -103,6 +107,8 @@ public SDKHAdapt_OnMyModuleEnable()
         SDKHook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
         SDKHook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
         SDKHook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
+        SDKHook(client, SDKHook_WeaponEquip, SDKHAdapt_WeaponEquip);
+        SDKHook(client, SDKHook_WeaponDrop, SDKHAdapt_WeaponDrop);
     }
 }
 
@@ -120,6 +126,8 @@ public SDKHAdapt_OnMyModuleDisable()
         SDKUnhook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
         SDKUnhook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
         SDKUnhook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
+        SDKUnhook(client, SDKHook_WeaponEquip, SDKHAdapt_WeaponEquip);
+        SDKUnhook(client, SDKHook_WeaponDrop, SDKHAdapt_WeaponDrop);
     }
 }
 
@@ -133,6 +141,8 @@ public SDKHAdapt_OnClientPutInServer(client)
     SDKHook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
     SDKHook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
     SDKHook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
+    SDKHook(client, SDKHook_WeaponEquip, SDKHAdapt_WeaponEquip);
+    SDKHook(client, SDKHook_WeaponDrop, SDKHAdapt_WeaponDrop);
 }
 
 /**
@@ -145,6 +155,8 @@ public SDKHAdapt_OnClientDisconnect(client)
     SDKUnhook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
     SDKUnhook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
     SDKUnhook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
+    SDKUnhook(client, SDKHook_WeaponEquip, SDKHAdapt_WeaponEquip);
+    SDKUnhook(client, SDKHook_WeaponDrop, SDKHAdapt_WeaponDrop);
 }
 
 /**
@@ -157,7 +169,7 @@ public SDKHAdapt_OnClientDisconnect(client)
  * @param damagetype    A bit indicating type of damage that was being inflicted.
  * @param ammotype      The type of ammo used.
  * @param hitbox        The hitbox being shot.
- * @param hotgroup      The hitgroup being shot.
+ * @param hitgroup      The hitgroup being shot.
  * 
  * @return              Hook action.  See include/core.inc.
  */
@@ -238,4 +250,44 @@ public Action:SDKHAdapt_WeaponCanUse(client, weapon)
     eventdata[1][0] = weapon;
     
     return EventMgr_Forward(g_EvWeaponCanUse, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+}
+
+/**
+ * Called when a client equips a weapon.
+ * 
+ * @param client    The client index.
+ * @param weapon    The weapon index.
+ * 
+ * @return          Hook action.  See include/core.inc.
+ */
+public Action:SDKHAdapt_WeaponEquip(client, weapon)
+{
+    // Forward event to all modules.
+    static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell};
+    new any:eventdata[sizeof(eventdatatypes)][32];
+    
+    eventdata[0][0] = client;
+    eventdata[1][0] = weapon;
+    
+    return EventMgr_Forward(g_EvWeaponEquip, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+}
+
+/**
+ * Called when a client drops a weapon.
+ * 
+ * @param client    The client index.
+ * @param weapon    The weapon index.
+ * 
+ * @return          Hook action.  See include/core.inc.
+ */
+public Action:SDKHAdapt_WeaponDrop(client, weapon)
+{
+    // Forward event to all modules.
+    static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell};
+    new any:eventdata[sizeof(eventdatatypes)][32];
+    
+    eventdata[0][0] = client;
+    eventdata[1][0] = weapon;
+    
+    return EventMgr_Forward(g_EvWeaponDrop, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
 }

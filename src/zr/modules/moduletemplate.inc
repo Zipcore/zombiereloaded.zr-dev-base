@@ -66,7 +66,7 @@ new Module:g_module<ModuleVarName>;
     g_module<ModuleVarName> = ModuleMgr_Register(moduledata);
     
     // Register the OnEventsRegister event to register all events in it.
-    //EventMgr_RegisterEvent(g_module<ModuleVarName>, Event_OnEventsRegister,       "<FuncPrefix>_OnEventsRegister");
+    EventMgr_RegisterEvent(g_module<ModuleVarName>, Event_OnEventsRegister,     "<FuncPrefix>_OnEventsRegister");
     
     // Register config file(s) that this module will use.
     // ConfigMgr_Register(g_module<ModuleVarName>, "<FuncPrefix>_OnConfigReload", "configs/<projectshortname>/<config>.txt");
@@ -264,6 +264,99 @@ public <FuncPrefix>_OnClientDisconnect(client)
 }
 
 /**
+ * A client's cookies have been cached from the database.
+ * 
+ * @param client    The client index.
+ */
+public <FuncPrefix>_OnClientCookiesCached(client)
+{
+}
+
+/**
+ * Client has been infected.
+ * 
+ * @param client        The infected client.
+ * @param attacker      The zombie that infected the client.
+ * @param mzombie       True if the client has been infected as a mother zombie.
+ */
+public <FuncPrefix>_OnClientInfect(client)
+{
+}
+
+/**
+ * Client has turned back to human.
+ * 
+ * @param client        The client that became human.
+ */
+public <FuncPrefix>_OnClientHuman(client)
+{
+}
+
+/**
+ * A client's alpha has changed.
+ * 
+ * @param client    The client index.
+ * @param newalpha  The client's new alpha. 
+ */
+public <FuncPrefix>_OnClientAlphaChanged(client, newalpha)
+
+/**
+ * Client is just about to get shot.
+ * 
+ * @param victim        The client being attacked.
+ * @param attacker      The client attacking the victim.
+ * @param damage        The amount of damage inflicted.
+ * @param damagetype    A bit indicating type of damage that was being inflicted.
+ * 
+ * @return              Hook action.  See include/core.inc.
+ */
+public Action:<FuncPrefix>_TraceAttack(victim, &attacker, &Float:damage, &damagetype)
+{
+}
+
+/**
+ * Client is being shot.  Damage is not inflicted yet, but blood is emitted from the victim at this point.
+ * 
+ * @param victim        The client being attacked.
+ * @param attacker      The client attacking the victim.
+ * @param damage        The amount of damage inflicted.
+ * @param damagetype    A bit indicating type of damage that was being inflicted.
+ * 
+ * @return              Hook action.  See include/core.inc.
+ */
+public Action:<FuncPrefix>_OnTakeDamage(victim, &attacker, &Float:damage, &damagetype)
+{
+}
+
+/**
+ * Called when a client is about to pick up a weapon.
+ * 
+ * @param client    The client index.
+ * @param weapon    The weapon index.
+ * 
+ * @return          Hook action.  See include/core.inc.
+ */
+public Action:<FuncPrefix>_WeaponCanUse(client, weapon)
+{
+}
+
+/**
+ * Called when a clients movement buttons are being processed.
+ * 
+ * @param client	Index of the client.
+ * @param buttons	Copyback buffer containing the current commands (as bitflags - see entity_prop_stocks.inc).
+ * @param impulse	Copyback buffer containing the current impulse command.
+ * @param vel		Players desired velocity.
+ * @param angles	Players desired view angles.
+ * @param weapon	Entity index of the new weapon if player switches weapon, 0 otherwise.
+ * 
+ * @return 			Plugin_Handled to block the commands from being processed, Plugin_Continue otherwise.
+ */
+public Action:<FuncPrefix>_OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon)
+{
+}
+
+/**
  * Round has started.
  */
 public <FuncPrefix>_RoundStart()
@@ -351,3 +444,5 @@ public <FuncPrefix>_PlayerJump(client)
 public <FuncPrefix>_WeaponFire(client, const String:weapon[])
 {
 }
+
+

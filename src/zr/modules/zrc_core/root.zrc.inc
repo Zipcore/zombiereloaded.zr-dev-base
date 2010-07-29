@@ -3,9 +3,9 @@
  *
  *  Zombie:Reloaded
  *
- *  File:          root.zr.inc
+ *  File:          root.zrc.inc
  *  Type:          Module
- *  Description:   Root module for the ZR core.  All ZR-specific modules depend on this.
+ *  Description:   Root module for the ZR core.  All ZR core modules depend on this.
  *
  *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
  *
@@ -35,17 +35,17 @@
 /**
  * This module's identifier.
  */
-new Module:g_moduleZRRoot;
+new Module:g_moduleZRCRoot;
 
 /**
  * Function for outside files to use to return the module's identifier.
  */
-stock Module:ZR_GetIdentifier() { return g_moduleZRRoot; }
+stock Module:ZRC_GetIdentifier() { return g_moduleZRCRoot; }
 
 /**
  * Register this module.
  */
-ZR_Register()
+ZRC_Register()
 {
     // Define all the module's data as layed out by enum ModuleData in project.inc.
     new moduledata[ModuleData];
@@ -54,47 +54,47 @@ ZR_Register()
     moduledata[ModuleData_Hidden] = false;
     strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "ZR Root");
     strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "zr_root");
-    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Top of the chain module for ZR's set of core modules.  Disabling this will end ZR gameplay.");
+    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Top of the chain module for ZR's set of core modules.  This can not be enabled/disabled by anything other than game rules.");
     moduledata[ModuleData_Dependencies][0] = INVALID_MODULE;
     moduledata[ModuleData_Root] = true;
     
     // Send this array of data to the module manager.
-    g_moduleZRRoot = ModuleMgr_Register(moduledata);
+    g_moduleZRCRoot = ModuleMgr_Register(moduledata);
     
     // Register the OnEventsRegister event to register all events in it.
-    EventMgr_RegisterEvent(g_moduleZRRoot, "Event_OnEventsRegister",        "ZR_OnEventsRegister");
+    EventMgr_RegisterEvent(g_moduleZRCRoot, "Event_OnEventsRegister",           "ZRC_OnEventsRegister");
 }
 
 /**
  * Register all events here.
  */
-public ZR_OnEventsRegister()
+public ZRC_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRRoot, "Event_OnMyModuleEnable",        "ZR_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleZRCRoot, "Event_OnMyModuleEnable",           "ZRC_OnMyModuleEnable");
 }
 
 // Include sub-modules.
-#include "zr/modules/zr_core/damage.zr.inc"
-#include "zr/modules/zr_core/gameplay.zr.inc"
-#include "zr/modules/zr_core/infection.zr.inc"
-#include "zr/modules/zr_core/teammanager.zr.inc"
-#include "zr/modules/zr_core/weapons.zr.inc"
+#include "zr/modules/zrc_core/damage.zrc.inc"
+#include "zr/modules/zrc_core/gameplay.zrc.inc"
+#include "zr/modules/zrc_core/infection.zrc.inc"
+#include "zr/modules/zrc_core/teammanager.zrc.inc"
+#include "zr/modules/zrc_core/weapons.zrc.inc"
 
 /**
  * Plugin is loading.
  */
-ZR_OnPluginStart()
+ZRC_OnPluginStart()
 {
     // Register the module.
-    ZR_Register();
+    ZRC_Register();
     
     // Forward event to sub-modules.
-    ZRDmg_OnPluginStart();
-    ZRGPlay_OnPluginStart();
-    ZRInfect_OnPluginStart();
-    ZRTM_OnPluginStart();
-    ZRWeapons_OnPluginStart();
+    ZRCDmg_OnPluginStart();
+    ZRCGPlay_OnPluginStart();
+    ZRCInfect_OnPluginStart();
+    ZRCTM_OnPluginStart();
+    ZRCWeps_OnPluginStart();
 }
 
 /**
@@ -102,11 +102,11 @@ ZR_OnPluginStart()
  * 
  * @return      Return Plugin_Handled to stop load, and Plugin_Continue to allow it.
  */
-public ZR_OnMyModuleEnable()
+public ZRC_OnMyModuleEnable()
 {
     // Enable core ZR modules.
     new Module:dependentmodules[CM_DATA_DEPENDENCIES];
-    new count = ModuleMgr_FindDependentModules(g_moduleZRRoot, dependentmodules);
+    new count = ModuleMgr_FindDependentModules(g_moduleZRCRoot, dependentmodules);
     for (new dmoduleindex = 0; dmoduleindex < count; dmoduleindex++)
         ModuleMgr_Enable(dependentmodules[dmoduleindex]);
 }

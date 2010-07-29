@@ -3,9 +3,9 @@
  *
  *  Zombie:Reloaded
  *
- *  File:          gameplay.zr.inc
+ *  File:          gameplay.zrc.inc
  *  Type:          Module
- *  Description:   Modifies game behaviors to fit classic ZR gameplay.
+ *  Description:   Modifies game behaviors to fit ZRClassic gameplay.
  *
  *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
  *
@@ -34,12 +34,12 @@
 /**
  * This module's identifier.
  */
-new Module:g_moduleZRGPlay;
+new Module:g_moduleZRCGPlay;
 
 /**
  * Function for outside files to use to return the module's identifier.
  */
-stock Module:ZRGPlay_GetIdentifier() { return g_moduleZRGPlay; }
+stock Module:ZRCGPlay_GetIdentifier() { return g_moduleZRCGPlay; }
 
 /**
  * Timer handle for counting down the round time.
@@ -49,7 +49,7 @@ new Handle:g_hRoundTimer;
 /**
  * Register this module.
  */
-ZRGPlay_Register()
+ZRCGPlay_Register()
 {
     // Define all the module's data as layed out by enum ModuleData in project.inc.
     new moduledata[ModuleData];
@@ -58,34 +58,34 @@ ZRGPlay_Register()
     moduledata[ModuleData_Hidden] = false;
     strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "ZR Gameplay Modifier");
     strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "zrgameplay");
-    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Modifies game behaviors to fit classic ZR gameplay.");
-    moduledata[ModuleData_Dependencies][0] = ZR_GetIdentifier();
+    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Modifies game behaviors to fit classic ZRClassic gameplay.");
+    moduledata[ModuleData_Dependencies][0] = ZRC_GetIdentifier();
     moduledata[ModuleData_Dependencies][1] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
-    g_moduleZRGPlay = ModuleMgr_Register(moduledata);
+    g_moduleZRCGPlay = ModuleMgr_Register(moduledata);
     
     // Register the OnEventsRegister event to register all events in it.
-    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnEventsRegister",         "ZRGPlay_OnEventsRegister");
+    EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnEventsRegister",          "ZRCGPlay_OnEventsRegister");
 }
 
 /**
  * Register all events here.
  */
-public ZRGPlay_OnEventsRegister()
+public ZRCGPlay_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnEventsReady",              "ZRGPlay_OnEventsReady");
-    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnMyModuleEnable",           "ZRGPlay_OnMyModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnMyModuleDisable",          "ZRGPlay_OnMyModuleDisable");
-    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnMapStart",                 "ZRGPlay_OnMapStart");
-    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_OnClientInfect",             "ZRGPlay_OnClientInfect");
+    EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnEventsReady",             "ZRCGPlay_OnEventsReady");
+    EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnMyModuleEnable",          "ZRCGPlay_OnMyModuleEnable");
+    //EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnMyModuleDisable",         "ZRCGPlay_OnMyModuleDisable");
+    EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnMapStart",                "ZRCGPlay_OnMapStart");
+    EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnClientInfect",            "ZRCGPlay_OnClientInfect");
     
     #if defined PROJECT_GAME_CSS
     
-    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_RoundStart",                 "ZRGPlay_RoundStart");
-    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_RoundFreezeEnd",             "ZRGPlay_RoundFreezeEnd");
-    EventMgr_RegisterEvent(g_moduleZRGPlay, "Event_RoundEnd",                   "ZRGPlay_RoundEnd");
+    EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_RoundStart",                "ZRCGPlay_RoundStart");
+    EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_RoundFreezeEnd",            "ZRCGPlay_RoundFreezeEnd");
+    EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_RoundEnd",                  "ZRCGPlay_RoundEnd");
     
     #endif
 }
@@ -93,23 +93,23 @@ public ZRGPlay_OnEventsRegister()
 /**
  * All modules and events have been registered by this point.  Event priority can be changed here.
  */
-public ZRGPlay_OnEventsReady()
+public ZRCGPlay_OnEventsReady()
 {
     // Push down priority for Event_OnClientInfect to below zrteammanager module.
-    EventMgr_TakePriority("Event_OnClientInfect", g_moduleZRGPlay, ZRTM_GetIdentifier());
+    EventMgr_TakePriority("Event_OnClientInfect", g_moduleZRCGPlay, ZRCTM_GetIdentifier());
 }
 
 
 /**
  * Plugin is loading.
  */
-ZRGPlay_OnPluginStart()
+ZRCGPlay_OnPluginStart()
 {
     // Register the module.
-    ZRGPlay_Register();
+    ZRCGPlay_Register();
     
     #if defined PROJECT_GAME_CSS
-        HookConVarChange(FindConVar("mp_restartgame"), ZRGPlay_CvarHookMPRGame);
+        HookConVarChange(FindConVar("mp_restartgame"), ZRCGPlay_CvarHookMPRGame);
         CvarLib_LockCvar("mp_limitteams", "0");
         CvarLib_LockCvar("mp_autoteambalance", "0");
     #endif
@@ -118,10 +118,10 @@ ZRGPlay_OnPluginStart()
 /**
  * The module that hooked this event callback has been enabled.
  */
-public ZRGPlay_OnMyModuleEnable()
+public ZRCGPlay_OnMyModuleEnable()
 {
     #if defined PROJECT_GAME_CSS
-        HookConVarChange(FindConVar("mp_restartgame"), ZRGPlay_CvarHookMPRGame);
+        HookConVarChange(FindConVar("mp_restartgame"), ZRCGPlay_CvarHookMPRGame);
         CvarLib_LockCvar("mp_limitteams", "0");
         CvarLib_LockCvar("mp_autoteambalance", "0");
     #endif
@@ -132,10 +132,10 @@ public ZRGPlay_OnMyModuleEnable()
  * 
  * @return      Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
  */
-public ZRGPlay_OnMyModuleDisable()
+public ZRCGPlay_OnMyModuleDisable()
 {
     #if defined PROJECT_GAME_CSS
-        UnhookConVarChange(FindConVar("mp_restartgame"), ZRGPlay_CvarHookMPRGame);
+        UnhookConVarChange(FindConVar("mp_restartgame"), ZRCGPlay_CvarHookMPRGame);
         CvarLib_UnlockCvar("mp_limitteams");
         CvarLib_UnlockCvar("mp_autoteambalance");
     #endif
@@ -144,7 +144,7 @@ public ZRGPlay_OnMyModuleDisable()
 /**
  * The map has started.
  */
-public ZRGPlay_OnMapStart()
+public ZRCGPlay_OnMapStart()
 {
     // Reset timer handle.
     g_hRoundTimer = INVALID_HANDLE;
@@ -157,7 +157,7 @@ public ZRGPlay_OnMapStart()
  * @param attacker      The zombie that infected the client.
  * @param mzombie       True if the client has been infected as a mother zombie.
  */
-public ZRGPlay_OnClientInfect(client, attacker, bool:mzombie)
+public ZRCGPlay_OnClientInfect(client, attacker, bool:mzombie)
 {
     // The core won't infect all clients as mother zombie so don't waste time checking.
     // This could be a big performance boost if 10 mother zombies are being spawned simultaneously.
@@ -176,7 +176,7 @@ public ZRGPlay_OnClientInfect(client, attacker, bool:mzombie)
  * 
  * @param client        The client that became human.
  */
-public ZRGPlay_OnClientHuman(client)
+public ZRCGPlay_OnClientHuman(client)
 {
     // If there are no more humans then humans win.
     if (TLib_CountTeam(VTeam_Zombie, true) == 0)
@@ -190,10 +190,10 @@ public ZRGPlay_OnClientHuman(client)
 /**
  * Round has started.
  */
-public ZRGPlay_RoundStart()
+public ZRCGPlay_RoundStart()
 {
     // Print ZR objective.
-    TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, _, _, "ZR gameplay round objective");
+    TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC gameplay round objective");
     
     // Stop round timer.
     Util_CloseHandle(g_hRoundTimer);
@@ -202,7 +202,7 @@ public ZRGPlay_RoundStart()
 /**
  * Pre-round freezetime has finished.
  */
-public ZRGPlay_RoundFreezeEnd()
+public ZRCGPlay_RoundFreezeEnd()
 {
     // Stop round timer.
     Util_CloseHandle(g_hRoundTimer);
@@ -214,7 +214,7 @@ public ZRGPlay_RoundFreezeEnd()
         hMPRoundTime = FindConVar("mp_roundtime");
     }
     
-    g_hRoundTimer = CreateTimer(GetConVarFloat(hMPRoundTime) * 60.0, ZRGPlay_RoundEndTimer, _, TIMER_FLAG_NO_MAPCHANGE);
+    g_hRoundTimer = CreateTimer(GetConVarFloat(hMPRoundTime) * 60.0, ZRCGPlay_RoundEndTimer, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 /**
@@ -223,7 +223,7 @@ public ZRGPlay_RoundFreezeEnd()
  * 
  * @param timer     The timer handle.
  */
-public Action:ZRGPlay_RoundEndTimer(Handle:timer)
+public Action:ZRCGPlay_RoundEndTimer(Handle:timer)
 {
     g_hRoundTimer = INVALID_HANDLE;
     
@@ -234,7 +234,7 @@ public Action:ZRGPlay_RoundEndTimer(Handle:timer)
 /**
  * Round has ended.
  */
-public ZRGPlay_RoundEnd()
+public ZRCGPlay_RoundEnd()
 {
     // Stop round timer.
     Util_CloseHandle(g_hRoundTimer);
@@ -255,7 +255,7 @@ public ZRGPlay_RoundEnd()
  * @param oldValue		String containing the value of the convar before it was changed.
  * @param newValue		String containing the new value of the convar.
  */
-public ZRGPlay_CvarHookMPRGame(Handle:convar, const String:oldValue[], const String:newValue[])
+public ZRCGPlay_CvarHookMPRGame(Handle:convar, const String:oldValue[], const String:newValue[])
 {
     // If the value is 0 then ignore, game isn't restarting.
     new time = StringToInt(newValue);

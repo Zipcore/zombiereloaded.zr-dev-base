@@ -43,13 +43,15 @@ ZR
 				..\src\zr\modules\weapons\wepmenus.inc
 				..\src\zr\modules\weapons\weprestrict.inc
 				..\src\zr\modules\weapons\zmarket.inc
-			-ZR Core
-				..\src\zr\modules\zr_core\damage.zr.inc
-				..\src\zr\modules\zr_core\gameplay.zr.inc
-				..\src\zr\modules\zr_core\infection.zr.inc
-				..\src\zr\modules\zr_core\root.zr.inc
-				..\src\zr\modules\zr_core\teammanager.zr.inc
-				..\src\zr\modules\zr_core\weapons.zr.inc
+			-ZRC Core
+				..\src\zr\modules\zrc_core\damage.zrc.inc
+				..\src\zr\modules\zrc_core\gameplay.zrc.inc
+				..\src\zr\modules\zrc_core\infection.zrc.inc
+				..\src\zr\modules\zrc_core\root.zrc.inc
+				..\src\zr\modules\zrc_core\teammanager.zrc.inc
+				..\src\zr\modules\zrc_core\weapons.zrc.inc
+			-ZRiot Core
+				..\src\zr\modules\zriot_core\root.zriot.inc
 			..\src\zr\modules\core.inc
 			..\src\zr\modules\gamedata.inc
 			..\src\zr\modules\gamerules.inc
@@ -89,11 +91,14 @@ ZR
 		..\src\include\zr\tools.zr.inc
 	-Config Files
 		..\cstrike\addons\sourcemod\configs\zr\downloads.txt
+		..\cstrike\addons\sourcemod\configs\zr\gamerules.txt
 		..\cstrike\addons\sourcemod\configs\zr\hitgroups.txt
 		..\cstrike\addons\sourcemod\configs\zr\models.txt
-		..\cstrike\addons\sourcemod\configs\zr\playerclasses.txt
+		..\cstrike\addons\sourcemod\configs\zr\classes.txt
 		..\cstrike\addons\sourcemod\configs\zr\weapons.txt
 		..\cstrike\cfg\sourcemod\zombiereloaded\zombiereloaded.cfg
+		..\cstrike\cfg\sourcemod\zombiereloaded\zrclassic.cfg
+		..\cstrike\cfg\sourcemod\zombiereloaded\zriot.cfg
 	-SM Includes
 		..\env\include\admin.inc
 		..\env\include\adminmenu.inc

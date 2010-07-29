@@ -3,9 +3,9 @@
  *
  *  Zombie:Reloaded
  *
- *  File:          damage.zr.inc
+ *  File:          damage.zrc.inc
  *  Type:          Module
- *  Description:   Handles damage rules for classic ZR.
+ *  Description:   Handles damage rules for ZRClassic.
  *
  *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
  *
@@ -28,12 +28,12 @@
 /**
  * This module's identifier.
  */
-new Module:g_moduleZRDmg;
+new Module:g_moduleZRCDmg;
 
 /**
  * Function for outside files to use to return the module's identifier.
  */
-stock Module:ZRDmg_GetIdentifier() { return g_moduleZRDmg; }
+stock Module:ZRCDmg_GetIdentifier() { return g_moduleZRCDmg; }
 
 /**
  * Cvar handles.
@@ -45,7 +45,7 @@ stock Module:ZRDmg_GetIdentifier() { return g_moduleZRDmg; }
 /**
  * Register this module.
  */
-ZRDmg_Register()
+ZRCDmg_Register()
 {
     // Define all the module's data as layed out by enum ModuleData in project.inc.
     new moduledata[ModuleData];
@@ -54,37 +54,37 @@ ZRDmg_Register()
     moduledata[ModuleData_Hidden] = false;
     strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "ZR Damage Control");
     strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "zrdamage");
-    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Handles damage rules for classic ZR.");
-    moduledata[ModuleData_Dependencies][0] = ZR_GetIdentifier();
+    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Handles damage rules for ZRClassic gameplay.");
+    moduledata[ModuleData_Dependencies][0] = ZRC_GetIdentifier();
     moduledata[ModuleData_Dependencies][1] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
-    g_moduleZRDmg = ModuleMgr_Register(moduledata);
+    g_moduleZRCDmg = ModuleMgr_Register(moduledata);
     
     // Register the OnEventsRegister event to register all events in it.
-    EventMgr_RegisterEvent(g_moduleZRDmg, "Event_OnEventsRegister",         "ZRDmg_OnEventsRegister");
+    EventMgr_RegisterEvent(g_moduleZRCDmg, "Event_OnEventsRegister",            "ZRCDmg_OnEventsRegister");
 }
 
 /**
  * Register all events here.
  */
-public ZRDmg_OnEventsRegister()
+public ZRCDmg_OnEventsRegister()
 {
     // Register all the events needed for this module.
     
     
     // Register custom events.
-    EventMgr_RegisterEvent(g_moduleZRDmg, "Hook_TraceAttack",           "ZRDmg_TraceAttack");
-    EventMgr_RegisterEvent(g_moduleZRDmg, "Hook_OnTakeDamage",          "ZRDmg_OnTakeDamage");
+    EventMgr_RegisterEvent(g_moduleZRCDmg, "Hook_TraceAttack",                  "ZRCDmg_TraceAttack");
+    EventMgr_RegisterEvent(g_moduleZRCDmg, "Hook_OnTakeDamage",                 "ZRCDmg_OnTakeDamage");
 }
 
 /**
  * Plugin is loading.
  */
-ZRDmg_OnPluginStart()
+ZRCDmg_OnPluginStart()
 {
     // Register the module.
-    ZRDmg_Register();
+    ZRCDmg_Register();
     
     // Cache game cvar handles for later.
     #if defined PROJECT_GAME_CSS || defined PROJECT_GAME_TF2
@@ -103,7 +103,7 @@ ZRDmg_OnPluginStart()
  * 
  * @return              Hook action.  See include/core.inc.
  */
-public Action:ZRDmg_TraceAttack(victim, &attacker, &Float:damage, &damagetype)
+public Action:ZRCDmg_TraceAttack(victim, &attacker, &Float:damage, &damagetype)
 {
     #if defined PROJECT_GAME_CSS || defined PROJECT_GAME_TF2
     // If FF is enabled then don't do anything.
@@ -129,7 +129,7 @@ public Action:ZRDmg_TraceAttack(victim, &attacker, &Float:damage, &damagetype)
  * 
  * @return              Hook action.  See include/core.inc.
  */
-public Action:ZRDmg_OnTakeDamage(victim, &attacker, &Float:damage, &damagetype)
+public Action:ZRCDmg_OnTakeDamage(victim, &attacker, &Float:damage, &damagetype)
 {
     // Check if the victim and attacker are valid clients.
     if (!Util_IsClientInGame(victim) || !Util_IsClientInGame(attacker))
@@ -142,7 +142,7 @@ public Action:ZRDmg_OnTakeDamage(victim, &attacker, &Float:damage, &damagetype)
         // They couldn't just use DMG_SLASH because that would make sense.
         if (damagetype & DMG_BULLET)
         {
-            SetEntityHealth(victim, GetClientHealth(victim) + RoundToCeil(damage));
+            SetEntityHealth(victim, GetClientHealth(victim) + RoundToNearest(damage));
         }
     }
     

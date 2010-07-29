@@ -31,6 +31,11 @@
 new Module:g_moduleMapConfig;
 
 /**
+ * Function for outside files to use to return the module's identifier.
+ */
+stock Module:MapConfig_GetIdentifier() { return g_moduleMapConfig; }
+
+/**
  * Register this module.
  */
 MapConfig_Register()

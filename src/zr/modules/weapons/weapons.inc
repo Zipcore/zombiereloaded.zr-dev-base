@@ -175,7 +175,7 @@ Weapons_OnPluginStart()
     Weapons_Register();
     
     // Create cvars.
-    g_hCvarWeaponsConfigFile = Project_CreateConVar("weapons_configfile",  "configs/zr/weapons.txt",   "Path to weapons config file.  Path is relative to the SourceMod directory.");
+    g_hCvarWeaponsConfigFile = Project_CreateConVar("weapons_configfile",  "configs/zr/weapons.txt",   "Path to weapons config file.  Path is relative to the \"sourcemod/\" directory.");
     
     // Create dynamic arrays to store weapon data.
     g_hWeapons[WEAPONS_GLOBAL] = CreateArray(sizeof(g_WeaponsDummyArray));

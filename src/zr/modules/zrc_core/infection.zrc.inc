@@ -89,9 +89,9 @@ ZRCInfect_Register()
     
     moduledata[ModuleData_Disabled] = false;
     moduledata[ModuleData_Hidden] = false;
-    strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "ZR Infection Handler");
-    strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "zrinfection");
-    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Handles infection for ZRClassic.");
+    strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "ZR Infection Handler");
+    strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "zrinfection");
+    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Handles infection for ZRClassic.");
     moduledata[ModuleData_Dependencies][0] = ZRC_GetIdentifier();
     moduledata[ModuleData_Dependencies][1] = INVALID_MODULE;
     

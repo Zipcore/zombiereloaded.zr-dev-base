@@ -122,9 +122,9 @@ GameRules_Register()
     
     moduledata[ModuleData_Disabled] = false;
     moduledata[ModuleData_Hidden] = false;
-    strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "Game Rules");
-    strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "gamerules");
-    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Manipulates modules and configs to create unique game modes via rule sets.");
+    strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "Game Rules");
+    strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "gamerules");
+    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Manipulates modules and configs to create unique game modes via rule sets.");
     moduledata[ModuleData_Dependencies][0] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
@@ -266,7 +266,7 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
     // Store data from known key names.
     
     // Get value and validate for "core"
-    decl String:rootmodulename[CM_DATA_SHORTNAME];
+    decl String:rootmodulename[MM_DATA_SHORTNAME];
     KvGetString(kv, "core", rootmodulename, sizeof(rootmodulename));
     new Module:rootmodule = ModuleMgr_FindByString(ModuleData_ShortName, rootmodulename);
     if (rootmodule != INVALID_MODULE)
@@ -285,7 +285,7 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
     // Go down a level and store module command data.
     if (KvJumpToKey(kv, "modulecmds"))
     {
-        decl String:moduleshortname[CM_DATA_SHORTNAME];
+        decl String:moduleshortname[MM_DATA_SHORTNAME];
         decl String:strModuleCmd[64];
         new numModules;
         new Module:module;

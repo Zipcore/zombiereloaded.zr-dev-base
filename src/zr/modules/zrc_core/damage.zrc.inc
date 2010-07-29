@@ -52,9 +52,9 @@ ZRCDmg_Register()
     
     moduledata[ModuleData_Disabled] = false;
     moduledata[ModuleData_Hidden] = false;
-    strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "ZR Damage Control");
-    strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "zrdamage");
-    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Handles damage rules for ZRClassic gameplay.");
+    strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "ZR Damage Control");
+    strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "zrdamage");
+    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Handles damage rules for ZRClassic gameplay.");
     moduledata[ModuleData_Dependencies][0] = ZRC_GetIdentifier();
     moduledata[ModuleData_Dependencies][1] = INVALID_MODULE;
     

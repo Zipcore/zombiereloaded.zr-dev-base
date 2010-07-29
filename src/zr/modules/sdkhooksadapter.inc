@@ -51,9 +51,9 @@ SDKHAdapt_Register()
     
     moduledata[ModuleData_Disabled] = false;
     moduledata[ModuleData_Hidden] = false;
-    strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "SDKHooks Adapter");
-    strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "sdkhooksadapter");
-    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Establishes hooks via sdkhooks extension and forwards them as project events.");
+    strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "SDKHooks Adapter");
+    strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "sdkhooksadapter");
+    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Establishes hooks via sdkhooks extension and forwards them as project events.");
     moduledata[ModuleData_Dependencies][0] = INVALID_MODULE;
     
     // Send this array of data to the module manager.

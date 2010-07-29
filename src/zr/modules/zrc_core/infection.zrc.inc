@@ -3,9 +3,9 @@
  *
  *  Zombie:Reloaded
  *
- *  File:          infection.zr.inc
+ *  File:          infection.zrc.inc
  *  Type:          Module
- *  Description:   Handles infection for classic ZR.
+ *  Description:   Handles infection for ZRClassic.
  *
  *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
  *
@@ -34,12 +34,12 @@
 /**
  * This module's identifier.
  */
-new Module:g_moduleZRInfect;
+new Module:g_moduleZRCInfect;
 
 /**
  * Function for outside files to use to return the module's identifier.
  */
-stock Module:ZRInfect_GetIdentifier() { return g_moduleZRInfect; }
+stock Module:ZRCInfect_GetIdentifier() { return g_moduleZRCInfect; }
 
 /**
  * Event ID variables.
@@ -59,8 +59,8 @@ new Handle:g_hCvarMZombieBlockConsecutive;
  * Variable/function set to check/set if zombies are present.
  */
 new bool:g_bZombiesPresent;
-stock bool:ZRInfect_AreZombiesPresent() { return g_bZombiesPresent; }
-stock ZRInfect_SetZombiesPresent(bool:zombiespresent) { g_bZombiesPresent = zombiespresent; }
+stock bool:ZRCInfect_AreZombiesPresent() { return g_bZombiesPresent; }
+stock ZRCInfect_SetZombiesPresent(bool:zombiespresent) { g_bZombiesPresent = zombiespresent; }
 
 /**
  * Timer handles for mother zombie selection and round timer.
@@ -82,7 +82,7 @@ new bool:g_bWasMotherZombie[MAXPLAYERS + 1];
 /**
  * Register this module.
  */
-ZRInfect_Register()
+ZRCInfect_Register()
 {
     // Define all the module's data as layed out by enum ModuleData in project.inc.
     new moduledata[ModuleData];
@@ -91,41 +91,41 @@ ZRInfect_Register()
     moduledata[ModuleData_Hidden] = false;
     strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "ZR Infection Handler");
     strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "zrinfection");
-    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Handles infection for classic ZR.");
-    moduledata[ModuleData_Dependencies][0] = ZR_GetIdentifier();
+    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Handles infection for ZRClassic.");
+    moduledata[ModuleData_Dependencies][0] = ZRC_GetIdentifier();
     moduledata[ModuleData_Dependencies][1] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
-    g_moduleZRInfect = ModuleMgr_Register(moduledata);
+    g_moduleZRCInfect = ModuleMgr_Register(moduledata);
     
     // Create custom events.
     g_EvOnClientInfect =    EventMgr_CreateEvent("Event_OnClientInfect");
     g_EvOnClientHuman =     EventMgr_CreateEvent("Event_OnClientHuman");
     
     // Register the OnEventsRegister event to register all events in it.
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnEventsRegister",          "ZRInfect_OnEventsRegister");
+    EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnEventsRegister",         "ZRCInfect_OnEventsRegister");
 }
 
 /**
  * Register all events here.
  */
-public ZRInfect_OnEventsRegister()
+public ZRCInfect_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnPluginEnd",               "ZRInfect_OnPluginEnd");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnMapStart",                "ZRInfect_OnMapStart");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnMapEnd",                  "ZRInfect_OnMapEnd");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnClientPutInServer",       "ZRInfect_OnClientPutInServer");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_OnClientDisconnect",        "ZRInfect_OnClientDisconnect");
+    EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnPluginEnd",              "ZRCInfect_OnPluginEnd");
+    EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnMapStart",               "ZRCInfect_OnMapStart");
+    EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnMapEnd",                 "ZRCInfect_OnMapEnd");
+    EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnClientPutInServer",      "ZRCInfect_OnClientPutInServer");
+    EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnClientDisconnect",       "ZRCInfect_OnClientDisconnect");
     
     #if defined PROJECT_GAME_CSS
     
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_RoundStart",                "ZRInfect_RoundStart");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_RoundFreezeEnd",            "ZRInfect_RoundFreezeEnd");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_RoundEnd",                  "ZRInfect_RoundEnd");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_PlayerSpawn",               "ZRInfect_PlayerSpawn");
-    EventMgr_RegisterEvent(g_moduleZRInfect, "Event_PlayerHurt",                "ZRInfect_PlayerHurt");
-    //EventMgr_RegisterEvent(g_moduleZRInfect, "Event_PlayerDeath",               "ZRInfect_PlayerDeath");
+    EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_RoundStart",               "ZRCInfect_RoundStart");
+    EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_RoundFreezeEnd",           "ZRCInfect_RoundFreezeEnd");
+    EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_RoundEnd",                 "ZRCInfect_RoundEnd");
+    EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_PlayerSpawn",              "ZRCInfect_PlayerSpawn");
+    EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_PlayerHurt",               "ZRCInfect_PlayerHurt");
+    //EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_PlayerDeath",              "ZRCInfect_PlayerDeath");
     
     #endif
 }
@@ -133,10 +133,10 @@ public ZRInfect_OnEventsRegister()
 /**
  * Plugin is loading.
  */
-ZRInfect_OnPluginStart()
+ZRCInfect_OnPluginStart()
 {
     // Register the module.
-    ZRInfect_Register();
+    ZRCInfect_Register();
     
     // Create cvars.
     g_hCvarMZombieMinTime =             CreateConVar("zr_mzombie_min_time", "1.0", "Minimum time from the start of the round until picking the mother zombie(s).");
@@ -145,14 +145,14 @@ ZRInfect_OnPluginStart()
     g_hCvarMZombieBlockConsecutive =    CreateConVar("zr_mzombie_block_consecutive", "1", "Prevent a player from being chosen as mother zombie two rounds in a row.");
     
     // Create commands.
-    RegConsoleCmd("zr_infect", ZRInfect_InfectCommand, "Turn a player into a zombie. Usage: zr_infect <#userid|name> [respawn - 1/0]");
-    RegConsoleCmd("zr_human", ZRInfect_HumanCommand, "Turn a player into a human. Usage: zr_human <#userid|name> [respawn - 1/0] [protect - 1/0]");
+    RegConsoleCmd("zr_infect", ZRCInfect_InfectCommand, "Turn a player into a zombie. Usage: zr_infect <#userid|name> [respawn - 1/0]");
+    RegConsoleCmd("zr_human", ZRCInfect_HumanCommand, "Turn a player into a human. Usage: zr_human <#userid|name> [respawn - 1/0] [protect - 1/0]");
 }
 
 /**
  * Plugin is ending.
  */
-public ZRInfect_OnPluginEnd()
+public ZRCInfect_OnPluginEnd()
 {
     // Stop timers.
     Util_CloseHandle(g_hMotherInfect);
@@ -162,7 +162,7 @@ public ZRInfect_OnPluginEnd()
 /**
  * The map has started.
  */
-public ZRInfect_OnMapStart()
+public ZRCInfect_OnMapStart()
 {
     // Stop timers.
     Util_CloseHandle(g_hMotherInfect);
@@ -172,7 +172,7 @@ public ZRInfect_OnMapStart()
 /**
  * The map has ended.
  */
-public ZRInfect_OnMapEnd()
+public ZRCInfect_OnMapEnd()
 {
     // Stop timers.
     Util_CloseHandle(g_hMotherInfect);
@@ -184,7 +184,7 @@ public ZRInfect_OnMapEnd()
  * 
  * @param client    The client index.
  */
-public ZRInfect_OnClientPutInServer(client)
+public ZRCInfect_OnClientPutInServer(client)
 {
     g_bMotherZombie[client] = false;
     g_bWasMotherZombie[client] = false;
@@ -195,17 +195,17 @@ public ZRInfect_OnClientPutInServer(client)
  * 
  * @param client    The client index.
  */
-public ZRInfect_OnClientDisconnect(client)
+public ZRCInfect_OnClientDisconnect(client)
 {
     // If there are no more zombies then pick a new one.
     if (TLib_CountTeam(VTeam_Zombie, true) <= 1)
-        ZRInfect_MotherZombie(1);
+        ZRCInfect_MotherZombie(1);
 }
 
 /**
  * Round has started.
  */
-public ZRInfect_RoundStart()
+public ZRCInfect_RoundStart()
 {
     // Stop timers.
     Util_CloseHandle(g_hMotherInfect);
@@ -218,7 +218,7 @@ public ZRInfect_RoundStart()
 /**
  * Pre-round freezetime has finished.
  */
-public ZRInfect_RoundFreezeEnd()
+public ZRCInfect_RoundFreezeEnd()
 {
     // Stop timers.
     Util_CloseHandle(g_hMotherInfect);
@@ -231,14 +231,14 @@ public ZRInfect_RoundFreezeEnd()
         new Float:maxtime = GetConVarFloat(g_hCvarMZombieMaxTime);
         new randomtime = RoundToNearest(GetRandomFloat(mintime, maxtime));
         
-        g_hMotherInfect = CreateTimer(float(randomtime), ZRInfect_InitMZombieTimer, false, TIMER_FLAG_NO_MAPCHANGE);
+        g_hMotherInfect = CreateTimer(float(randomtime), ZRCInfect_InitMZombieTimer, false, TIMER_FLAG_NO_MAPCHANGE);
     }
 }
 
 /**
  * Round has ended.
  */
-public ZRInfect_RoundEnd()
+public ZRCInfect_RoundEnd()
 {
     // Stop timers.
     Util_CloseHandle(g_hMotherInfect);
@@ -268,7 +268,7 @@ public ZRInfect_RoundEnd()
  * @param client    The client index.
  * 
  */
-public ZRInfect_PlayerSpawn(client)
+public ZRCInfect_PlayerSpawn(client)
 {
 }
 
@@ -285,7 +285,7 @@ public ZRInfect_PlayerSpawn(client)
  * @param dmg_armor     The amount of armor the victim lost.
  * @param hitgroup      The hitgroup index of the victim that was damaged.
  */
-public ZRInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon[], dmg_health, dmg_armor, hitgroup)
+public ZRCInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon[], dmg_health, dmg_armor, hitgroup)
 {
     // Check if the victim and attacker are valid clients.
     if (!Util_IsClientInGame(victim) || !Util_IsClientInGame(attacker))
@@ -297,7 +297,7 @@ public ZRInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon[
         #if defined PROJECT_GAME_CSS
             if (StrEqual(weapon, "knife"))
             {
-                ZRInfect_HumanToZombie(victim, attacker, false);
+                ZRCInfect_HumanToZombie(victim, attacker, false);
             }
         #endif
     }
@@ -311,7 +311,7 @@ public ZRInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon[
  * @param weapon    The weapon classname used to kill the victim. (No weapon_ prefix)
  * @param headshot  True if the death was by headshot, false if not.
  */
-public ZRInfect_PlayerDeath(victim, attacker, const String:weapon[], bool:headshot)
+public ZRCInfect_PlayerDeath(victim, attacker, const String:weapon[], bool:headshot)
 {
 }
 
@@ -322,12 +322,12 @@ public ZRInfect_PlayerDeath(victim, attacker, const String:weapon[], bool:headsh
  * @param attacker  The client doing the infecting.
  * @param mzombie   True to make a mother zombie, false for normal zombie. 
  */
-ZRInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
+ZRCInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
 {
     PrintToChatAll("INFECT %N infected %N", attacker, client);
     TLib_SetClientTeam(client, VTeam_Zombie);
     
-    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZR infected");
+    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC infected");
     
     #if defined PROJECT_GAME_CSS
         // If this is the first zombie of the round then update the client teams.
@@ -374,11 +374,11 @@ ZRInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
  * 
  * @param client    The zombie client to turn human.
  */
-ZRInfect_ZombieToHuman(client)
+ZRCInfect_ZombieToHuman(client)
 {
     TLib_SetClientTeam(client, VTeam_Human);
     
-    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZR zombie to human");
+    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC zombie to human");
     
     // If client was a mother zombie then set to false.
     g_bMotherZombie[client] = false;
@@ -396,7 +396,7 @@ ZRInfect_ZombieToHuman(client)
  * 
  * @param override_count    If this is set to something > 0 then this is how many mother zombies will be spawned.
  */
-ZRInfect_MotherZombie(override_count = 0)
+ZRCInfect_MotherZombie(override_count = 0)
 {
     // Create eligible player list.
     new Handle:adtClients;
@@ -460,7 +460,7 @@ ZRInfect_MotherZombie(override_count = 0)
         
         // Get a random client from the array, infect, and remove from list.
         randindex = GetRandomInt(0, count - 1);
-        ZRInfect_HumanToZombie(GetArrayCell(adtClients, randindex), _, true);
+        ZRCInfect_HumanToZombie(GetArrayCell(adtClients, randindex), _, true);
         RemoveFromArray(adtClients, randindex); count--;
     }
     
@@ -473,12 +473,12 @@ ZRInfect_MotherZombie(override_count = 0)
  * 
  * @param timer     The timer handle.
  */
-public Action:ZRInfect_InitMZombieTimer(Handle:timer)
+public Action:ZRCInfect_InitMZombieTimer(Handle:timer)
 {
     g_hMotherInfect = INVALID_HANDLE;
     
     // Pick a random mother zombie.
-    ZRInfect_MotherZombie();
+    ZRCInfect_MotherZombie();
 }
 
 /**
@@ -488,12 +488,12 @@ public Action:ZRInfect_InitMZombieTimer(Handle:timer)
  * @param client    The client index. 
  * @param argc      The number of arguments that the server sent with the command.
  */
-public Action:ZRInfect_InfectCommand(client, argc)
+public Action:ZRCInfect_InfectCommand(client, argc)
 {
     // If not enough arguments given, then stop.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZR command infect syntax");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command infect syntax");
         return Plugin_Handled;
     }
     
@@ -526,19 +526,19 @@ public Action:ZRInfect_InfectCommand(client, argc)
             // If a human is infected, cancel the timer that infects a mother zombie.
             if (g_bZombiesPresent)
             {
-                ZRInfect_HumanToZombie(targets[tindex], _, false);
+                ZRCInfect_HumanToZombie(targets[tindex], _, false);
                 if (result == 1)
                 {
-                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZR command infect successful", targets[tindex]);
+                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command infect successful", targets[tindex]);
                 }
             }
             else
             {
                 Util_CloseHandle(g_hMotherInfect);
-                ZRInfect_HumanToZombie(targets[tindex], _, true);
+                ZRCInfect_HumanToZombie(targets[tindex], _, true);
                 if (result == 1)
                 {
-                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZR command infect mother successful", targets[tindex]);
+                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command infect mother successful", targets[tindex]);
                 }
             }
         }
@@ -546,7 +546,7 @@ public Action:ZRInfect_InfectCommand(client, argc)
         {
             if (result == 1)
             {
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZR command infect unsuccessful", targets[tindex]);
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command infect unsuccessful", targets[tindex]);
             }
         }
     }
@@ -561,12 +561,12 @@ public Action:ZRInfect_InfectCommand(client, argc)
  * @param client    The client index. 
  * @param argc      The number of arguments that the server sent with the command.
  */
-public Action:ZRInfect_HumanCommand(client, argc)
+public Action:ZRCInfect_HumanCommand(client, argc)
 {
     // If not enough arguments given, then stop.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZR command infect syntax");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command infect syntax");
         return Plugin_Handled;
     }
     
@@ -600,17 +600,17 @@ public Action:ZRInfect_HumanCommand(client, argc)
         // Can't infect a zombie.
         if (TLib_IsClientZombie(targets[tindex]))
         {
-            ZRInfect_ZombieToHuman(targets[tindex]);
+            ZRCInfect_ZombieToHuman(targets[tindex]);
             if (result == 1)
             {
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZR command human successful", targets[tindex]);
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command human successful", targets[tindex]);
             }
         }
         else
         {
             if (result == 1)
             {
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZR command human unsuccessful", targets[tindex]);
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command human unsuccessful", targets[tindex]);
             }
         }
     }

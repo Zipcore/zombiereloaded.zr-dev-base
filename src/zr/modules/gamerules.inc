@@ -41,36 +41,41 @@ stock Module:GameRules_GetIdentifier() { return g_moduleGameRules; }
 new Handle:g_hCvarGameRulesConfigFile;
 new Handle:g_hCvarGameRuleSet;
 
-#define GAMERULES_NAME_LEN 64
-#define GAMERULES_MAX_MODULES 64
-
 /**
  * Available game rule actions.
  */
-enum GameRuleAction
+enum GRuleModuleCmds
 {
-    GameRuleAction_Invalid = -1,
-    GameRuleAction_On,
-    GameRuleAction_ForceOn,
-    GameRuleAction_Off,
-    GameRuleAction_ForceOff
+    GRuleModuleCmd_Invalid = -1,
+    GRuleModuleCmd_On,
+    GRuleModuleCmd_ForceOn,
+    GRuleModuleCmd_Off,
+    GRuleModuleCmd_ForceOff
 }
+
+/**
+ * Array/string sizes for the enum members below.
+ */
+#define GAMERULES_NAME_LEN 64
+#define GAMERULES_MAX_MODULES 128
 
 /**
  * Game rule data structure.
  */
 enum GameRuleSet
 {
-    String:GameRuleSet_Name[GAMERULES_NAME_LEN],                /** Name of rule */
-    Module:GameRuleSet_Module[GAMERULES_MAX_MODULES],           /** Modules that's listed in the rule set */
-    GameRuleAction:GameRuleSet_Action[GAMERULES_MAX_MODULES],   /** Action to apply on the modules */
-    GameRuleSet_NumModules                                      /** Number of modules in the rule set */
+    String:GameRuleSet_Name[GAMERULES_NAME_LEN],                            /** Name of rule set. */
+    Module:GameRuleSet_Core,                                                /** The root module for the game mode. */
+    String:GameRuleSet_Cfg[PLATFORM_MAX_PATH],                              /** The cfg file to execute for this rule set. */
+    Module:GameRuleSet_Module[GAMERULES_MAX_MODULES],                       /** Modules that are listed in the rule set. */
+    GRuleModuleCmds:GameRuleSet_ModuleCmd[GAMERULES_MAX_MODULES],   /** The command for each module. */
+    GameRuleSet_NumModules                                                  /** Number of modules in the rule set. */
 }
 
 /**
  * Dummy array used to see how many cells are required to store all game rules.
  */
-stock GameRulesDummyArray[GameRuleSet];
+stock g_DummyGameRulesData[GameRuleSet];
 
 /**
  * Array handle for game rule sets.
@@ -78,17 +83,24 @@ stock GameRulesDummyArray[GameRuleSet];
 new Handle:g_hGameRules;
 
 /**
+ * Fallback game rule set.
+ */
+#define GRULESET_FALLBACK "zrclassic"
+
+/**
  * Cache for the current rule set that's loaded.
  */
 new g_RuleSetCache[GameRuleSet];
 
 /**
- * Readability macros for reading data from the above array.
+ * Readability macros for reading data from the game rule set cache.
  */
-#define GAMERULESET_NAME(%1)    g_RuleSetCache[GameRuleSet_Name][%1]
-#define GAMERULESET_MODULE(%1)  g_RuleSetCache[GameRuleSet_Module][%1]
-#define GAMERULESET_ACTION(%1)  g_RuleSetCache[GameRuleSet_Action][%1]
-#define GAMERULESET_NUMMODULES  g_RuleSetCache[GameRuleSet_NumModules]
+#define GRULESET_NAME           g_RuleSetCache[GameRuleSet_Name]
+#define GRULESET_CORE           g_RuleSetCache[GameRuleSet_Core]
+#define GRULESET_CFG            g_RuleSetCache[GameRuleSet_Cfg]
+#define GRULESET_MODULE(%1)     g_RuleSetCache[GameRuleSet_Module][%1]
+#define GRULESET_MODULECMD(%1)  g_RuleSetCache[GameRuleSet_ModuleCmd][%1]
+#define GRULESET_NUMMODULES     g_RuleSetCache[GameRuleSet_NumModules]
 
 /**
  * The number of game rule sets that are configured in the game rules config file.
@@ -112,7 +124,7 @@ GameRules_Register()
     moduledata[ModuleData_Hidden] = false;
     strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "Game Rules");
     strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "gamerules");
-    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Manages and controls events to modules.");
+    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Manipulates modules and configs to create unique game modes via rule sets.");
     moduledata[ModuleData_Dependencies][0] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
@@ -131,10 +143,20 @@ GameRules_Register()
 public GameRules_OnEventsRegister()
 {
     // Register all the events needed for this module.
+    EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnEventsReady",            "GameRules_OnEventsReady");
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnModuleEnable",           "GameRules_OnModuleEnable");
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnModuleDisable",          "GameRules_OnModuleDisable");
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnMyModuleDisable",        "GameRules_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnConfigsExecuted",        "GameRules_OnConfigsExecuted");
+}
+
+/**
+ * All modules and events have been registered by this point.  Event priority can be changed here.
+ */
+public GameRules_OnEventsReady()
+{
+    // Bump up priority for Event_OnConfigsExecuted to above mapconfig the module to ensure game rule set cfgs are executed before map configs.
+    EventMgr_GivePriority("Event_OnConfigsExecuted", g_moduleGameRules, MapConfig_GetIdentifier());
 }
 
 /**
@@ -146,11 +168,11 @@ GameRules_OnPluginStart()
     GameRules_Register();
     
     // Create cvars.
-    g_hCvarGameRulesConfigFile  = Project_CreateConVar("gamerules_configfile", "configs/zr/gamerules.txt", "Path to game rules config file.  Path is relative to the SourceMod directory.");
-    g_hCvarGameRuleSet          = Project_CreateConVar("gamerules_ruleset", "default", "Name of game rule set to use.");
+    g_hCvarGameRulesConfigFile  = Project_CreateConVar("gamerules_configfile", "configs/zr/gamerules.txt", "Path to game rules config file.  Path is relative to the \"sourcemod/\" directory.");
+    g_hCvarGameRuleSet          = Project_CreateConVar("gamerules_ruleset", "zrclassic", "Name of game rule set to use.");
     
     // Create array.
-    g_hGameRules = CreateArray(sizeof(GameRulesDummyArray));
+    g_hGameRules = CreateArray(sizeof(g_DummyGameRulesData));
 }
 
 /**
@@ -168,13 +190,17 @@ public Action:GameRules_OnModuleEnable(Module:module)
     if (g_iCurGameRuleSet == -1)
         return Plugin_Continue;
     
+    // Don't allow a root module that isn't defined by the current game mode be enabled.
+    if (ModuleMgr_ReadCell(module, ModuleData_Root) && module != GRULESET_CORE)
+        return Plugin_Handled;
+    
     // Find module in current game rule set.
     new moduleindex = GameRules_FindModuleInRuleSet(g_iCurGameRuleSet, module);
     if (moduleindex == -1)
         return Plugin_Continue;
     
     // If this module is forced off then don't let it enable.
-    if (GAMERULESET_ACTION(moduleindex) == GameRuleAction_ForceOff)
+    if (GRULESET_MODULECMD(moduleindex) == GRuleModuleCmd_ForceOff)
         return Plugin_Handled;
     
     return Plugin_Continue;
@@ -195,13 +221,17 @@ public Action:GameRules_OnModuleDisable(Module:module)
     if (g_iCurGameRuleSet == -1)
         return Plugin_Continue;
     
+    // Don't allow a root module defined by the current game mode be disabled.
+    if (module == GRULESET_CORE)
+        return Plugin_Handled;
+    
     // Find module in current game rule set.
     new moduleindex = GameRules_FindModuleInRuleSet(g_iCurGameRuleSet, module);
     if (moduleindex == -1)
         return Plugin_Continue;
     
     // If this module is forced on then don't let it disable.
-    if (GAMERULESET_ACTION(moduleindex) == GameRuleAction_ForceOn)
+    if (GRULESET_MODULECMD(moduleindex) == GRuleModuleCmd_ForceOn)
         return Plugin_Handled;
     
     return Plugin_Continue;
@@ -229,62 +259,92 @@ public Action:GameRules_OnMyModuleDisable()
 public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname[])
 {
     new gameRuleSet[GameRuleSet];
-    new numModules;
-    new Module:module;
-    new GameRuleAction:action;
     
-    // Section name.
+    // Section name = game rule set name.
     strcopy(gameRuleSet[GameRuleSet_Name], GAMERULES_NAME_LEN, sectionname);
     
-    decl String:keyName[64];
-    decl String:keyValue[64];
+    // Store data from known key names.
     
-    KvGotoFirstSubKey(kv, false);
-    do
+    // Get value and validate for "core"
+    decl String:rootmodulename[CM_DATA_SHORTNAME];
+    KvGetString(kv, "core", rootmodulename, sizeof(rootmodulename));
+    new Module:rootmodule = ModuleMgr_FindByString(ModuleData_ShortName, rootmodulename);
+    if (rootmodule != INVALID_MODULE)
     {
-        // Check if the module limit is reached.
-        if (numModules >= GAMERULES_MAX_MODULES)
+        gameRuleSet[GameRuleSet_Core] = rootmodule;
+    }
+    else
+    {
+        gameRuleSet[GameRuleSet_Core] = INVALID_MODULE;
+        LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "No core specified for game rule set \"%s\"!");
+    }
+    
+    // Get value for "cfg"
+    KvGetString(kv, "cfg", gameRuleSet[GameRuleSet_Cfg], sizeof(gameRuleSet[GameRuleSet_Cfg]));
+    
+    // Go down a level and store module command data.
+    if (KvJumpToKey(kv, "modulecmds"))
+    {
+        decl String:moduleshortname[CM_DATA_SHORTNAME];
+        decl String:strModuleCmd[64];
+        new numModules;
+        new Module:module;
+        new GRuleModuleCmds:modulecmd;
+        KvGotoFirstSubKey(kv, false);
+        do
         {
-            // Log a warning. Too many modules.
-            LogMgr_Print(g_moduleGameRules, LogType_Error, "Config validation", "Too many modules in game rule: \"%s\".", sectionname);
-            break;
-        }
-        
-        KvGetSectionName(kv, keyName, sizeof(keyName));
-        KvGoBack(kv);
-        KvGetString(kv, keyName, keyValue, sizeof(keyValue));
-        KvJumpToKey(kv, keyName);
-        
-        // Get the module ID.
-        module =  ModuleMgr_FindByString(ModuleData_ShortName, keyName);
-        
-        // Check if module is valid.
-        if (module != INVALID_MODULE)
-        {
-            gameRuleSet[GameRuleSet_Module][numModules] = module;
-            
-            // Validate and set rule action.
-            action = StringToGameRuleAction(keyValue);
-            if (action != GameRuleAction_Invalid)
+            // Check if the module limit is reached.
+            if (numModules >= GAMERULES_MAX_MODULES)
             {
-                gameRuleSet[GameRuleSet_Action][numModules] = action;
-                numModules++;
+                // Log a warning. Too many modules.
+                LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Not enough memory allocated to store more than %d modules from the \"%s\" game rule set.  Contact a plugin developer.", GAMERULES_MAX_MODULES, sectionname);
+                break;
+            }
+            
+            KvGetSectionName(kv, moduleshortname, sizeof(moduleshortname));
+            KvGoBack(kv);
+            KvGetString(kv, moduleshortname, strModuleCmd, sizeof(strModuleCmd));
+            KvJumpToKey(kv, moduleshortname);
+            
+            // Get the module identifier.
+            module =  ModuleMgr_FindByString(ModuleData_ShortName, moduleshortname);
+            
+            // Check if module is valid.
+            if (module != INVALID_MODULE)
+            {
+                // Validate and set rule action.
+                modulecmd = GameRules_ModuleCmdToSymbol(strModuleCmd);
+                if (modulecmd != GRuleModuleCmd_Invalid)
+                {
+                    gameRuleSet[GameRuleSet_Module][numModules] = module;
+                    gameRuleSet[GameRuleSet_ModuleCmd][numModules] = modulecmd;
+                    numModules++;
+                }
+                else
+                {
+                    LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Invalid module command in rule set \"%s\": \"%s\".", sectionname, strModuleCmd);
+                }
             }
             else
             {
-                // Log a warning. Invalid action.
-                LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Invalid action in rule \"%s\": \"%s\".", sectionname, keyValue);
+                LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Invalid module in rule \"%s\": \"%s\".", sectionname, moduleshortname);
             }
-        }
-        else
-        {
-            // Log a warning. Invalid module.
-            LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Invalid module in rule \"%s\": \"%s\".", sectionname, keyName);
-        }
+            
+        } while (KvGotoNextKey(kv, false));
+        KvGoBack(kv);   // Go back to 2nd level.
         
-    } while (KvGotoNextKey(kv, false));
+        gameRuleSet[GameRuleSet_NumModules] = numModules;
+        
+        // Go back to 1st level.
+        KvGoBack(kv);
+    }
+    else
+    {
+        // Set the first one to INVALID_MODULE so the plugin knows there are no module commands.
+        gameRuleSet[GameRuleSet_Module][0] = INVALID_MODULE;
+    }
     
-    gameRuleSet[GameRuleSet_NumModules] = numModules;
+    // Push all this collected data to an array.
     PushArrayArray(g_hGameRules, gameRuleSet[0], sizeof(gameRuleSet));
     
     return KvCache_Continue;
@@ -300,7 +360,9 @@ GameRules_CacheGameRulesData()
     GetConVarString(g_hCvarGameRulesConfigFile, configfile, sizeof(configfile));
     
     if (ConfigMgr_ValidateFile(configfile))
+    {
         ConfigMgr_WriteString(g_moduleGameRules, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);
+    }
     else
     {
         LogMgr_Print(g_moduleGameRules, LogType_Fatal_Module, "Config Validation", "Error: Invalid config file path in cvar zr_gamerules_configfile: \"%s\"", configfile);
@@ -334,32 +396,32 @@ public GameRules_OnConfigReload(configindex)
 }
 
 /**
- * Converts a string value to a game rule action.
- *
- * @param action    String value to convert.
+ * Converts a string value to a module cmd symbol.
  * 
- * @return          Game rule action, or GameRuleAction_Invalid on error.
+ * @param modulecmd     String value to convert to the appropriate GRuleModuleCmds symbol.
+ * 
+ * @return              A member of enum GRuleModuleCmds, GRuleModuleCmd_Invalid if no symbol matches.
  */
-GameRuleAction:StringToGameRuleAction(const String:action[])
+GRuleModuleCmds:GameRules_ModuleCmdToSymbol(const String:modulecmd[])
 {
-    if (StrEqual(action, "on", false))
+    if (StrEqual(modulecmd, "on", false))
     {
-        return GameRuleAction_On;
+        return GRuleModuleCmd_On;
     }
-    else if (StrEqual(action, "force_on", false))
+    else if (StrEqual(modulecmd, "force_on", false))
     {
-        return GameRuleAction_ForceOn;
+        return GRuleModuleCmd_ForceOn;
     }
-    else if (StrEqual(action, "off", false))
+    else if (StrEqual(modulecmd, "off", false))
     {
-        return GameRuleAction_Off;
+        return GRuleModuleCmd_Off;
     }
-    else if (StrEqual(action, "force_off", false))
+    else if (StrEqual(modulecmd, "force_off", false))
     {
-        return GameRuleAction_ForceOff;
+        return GRuleModuleCmd_ForceOff;
     }
     
-    return GameRuleAction_Invalid;
+    return GRuleModuleCmd_Invalid;
 }
 
 /**
@@ -382,18 +444,19 @@ stock GameRules_LoadRuleSet(const String:ruleset[])
 {
     // Find the index of the named ruleset.  -1 is returned if invalid.
     new rulesetindex = GameRules_FindRuleSet(ruleset);
-    new defaultruleindex = GameRules_FindRuleSet("default");
+    new fallbackrulesetindex = GameRules_FindRuleSet(GRULESET_FALLBACK);
     if (rulesetindex > -1)
     {
         GameRules_ApplyRuleSet(rulesetindex);
     }
-    else if (defaultruleindex > -1)
+    else if (fallbackrulesetindex > -1)
     {
-        GameRules_ApplyRuleSet(defaultruleindex);
+        LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Invalid rule set name \"%s\", falling back to rule set \"%s\".", ruleset, GRULESET_FALLBACK);
+        GameRules_ApplyRuleSet(fallbackrulesetindex);
     }
     else
     {
-        LogMgr_Print(g_moduleGameRules, LogType_Fatal_Plugin, "Config Validation", "Invalid rule set name \"%s\" and failed to fall back to default, unloading plugin.", ruleset);
+        LogMgr_Print(g_moduleGameRules, LogType_Fatal_Plugin, "Config Validation", "Invalid rule set name \"%s\" and failed to fall back to \"%s\", unloading plugin.", ruleset, GRULESET_FALLBACK);
     }
 }
 
@@ -427,9 +490,9 @@ stock GameRules_FindRuleSet(const String:name[])
  */
 stock GameRules_FindModuleInRuleSet(ruleset, Module:module)
 {
-    for (new moduleindex = 0; moduleindex < GAMERULESET_NUMMODULES; moduleindex++)
+    for (new moduleindex = 0; moduleindex < GRULESET_NUMMODULES; moduleindex++)
     {
-        if (module == GAMERULESET_MODULE(moduleindex))
+        if (module == GRULESET_MODULE(moduleindex))
             return moduleindex;
     }
     
@@ -447,15 +510,31 @@ stock GameRules_ApplyRuleSet(ruleSet)
     GetArrayArray(g_hGameRules, ruleSet, g_RuleSetCache[0], sizeof(g_RuleSetCache));
     g_iCurGameRuleSet = ruleSet;    // Hiding behind this line above in case ruleSet is invalid.
     
+    // Enable the core's root module.
+    if (GRULESET_CORE != INVALID_MODULE)
+        ModuleMgr_Enable(GRULESET_CORE);
+    
+    // Disable all other cores.
+    new count = MODULE_COUNT;
+    for (new moduleindex = 0; moduleindex < count; moduleindex++)
+    {
+        if (ModuleMgr_ReadCell(Module:moduleindex, ModuleData_Root) && Module:moduleindex != GRULESET_CORE)
+            ModuleMgr_Disable(Module:moduleindex);
+    }
+    
+    // Execute this rule set's cfg file.
+    ServerCommand("exec sourcemod/zombiereloaded/%s", GRULESET_CFG);
+    LogMgr_Print(g_moduleGameRules, LogType_Normal, "Game Rule Configs", "Executed game rule set file: sourcemod/zombiereloaded/%s", GRULESET_CFG);
+    
     // Loop through each module and apply its action.
-    for (new moduleindex = 0; moduleindex < GAMERULESET_NUMMODULES; moduleindex++)
+    for (new moduleindex = 0; moduleindex < GRULESET_NUMMODULES; moduleindex++)
     {
         // Apply action.
-        switch (GAMERULESET_ACTION(moduleindex))
+        switch (GRULESET_MODULECMD(moduleindex))
         {
-            case GameRuleAction_ForceOn:    ModuleMgr_Enable(GAMERULESET_MODULE(moduleindex));
-            case GameRuleAction_Off:        ModuleMgr_Disable(GAMERULESET_MODULE(moduleindex));
-            case GameRuleAction_ForceOff:   ModuleMgr_Disable(GAMERULESET_MODULE(moduleindex));
+            case GRuleModuleCmd_ForceOn:    ModuleMgr_Enable(GRULESET_MODULE(moduleindex));
+            case GRuleModuleCmd_Off:        ModuleMgr_Disable(GRULESET_MODULE(moduleindex));
+            case GRuleModuleCmd_ForceOff:   ModuleMgr_Disable(GRULESET_MODULE(moduleindex));
         }
     }
 }

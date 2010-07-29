@@ -61,7 +61,8 @@ stock ForwardOnPluginStart()
     Core_OnPluginStart();
     GameRules_OnPluginStart();
     MapConfig_OnPluginStart();
-    ZR_OnPluginStart();
+    ZRC_OnPluginStart();
+    ZRiot_OnPluginStart();
     SDKHAdapt_OnPluginStart();
     //ZTele_OnPluginStart();
     StripObj_OnPluginStart();
@@ -250,7 +251,7 @@ enum ModuleToggleQuery
  * 
  * Note: This only used if translationsmanager.inc is included.
  */
-//#define TM_BASE_DIR PROJECT_SHORTNAME
+#define TM_BASE_DIR "zombiereloaded"
 
 /**
  * The formatting string for each option in enum MsgFormatting.
@@ -262,12 +263,12 @@ enum ModuleToggleQuery
  * 
  * Color chars vary from game to game.
  */
-#define TM_MSGFORMAT_PLUGIN_COLOR      "\x04[%s] \x01%s", PROJECT_FULLNAME, translated
-#define TM_MSGFORMAT_PLUGIN_NOCOLOR    "[%s] %s", PROJECT_FULLNAME, translated
+#define TM_MSGFORMAT_PLUGIN_COLOR      "\x04[%s] \x01%s", "ZR", translated
+#define TM_MSGFORMAT_PLUGIN_NOCOLOR    "[%s] %s", "ZR", translated
 #define TM_MSGFORMAT_MODULE_COLOR      "\x03[%s] \x01%s", modulefullname, translated
 #define TM_MSGFORMAT_MODULE_NOCOLOR    "[%s] %s", modulefullname, translated
-#define TM_MSGFORMAT_BOTH_COLOR        "\x04[%s::\x03%s] \x01%s", PROJECT_FULLNAME, modulefullname, translated
-#define TM_MSGFORMAT_BOTH_NOCOLOR      "[%s::%s] %s", PROJECT_FULLNAME, modulefullname, translated
+#define TM_MSGFORMAT_BOTH_COLOR        "\x04[%s::\x03%s] \x01%s", "ZR", modulefullname, translated
+#define TM_MSGFORMAT_BOTH_NOCOLOR      "[%s::%s] %s", "ZR", modulefullname, translated
 
 /**
  * Load any extra translation files here.
@@ -282,19 +283,7 @@ enum ModuleToggleQuery
  */
 stock Project_LoadExtraTranslations(bool:transmanagerloaded)
 {
-    // Load project base translations.
-    LoadTranslations("projectbase.phrases");
-    #if defined PROJECT_BASE_CMD
-        LoadTranslations("basecmd.phrases");
-    #endif
-    
-    // Load plugin translations.
-    LoadTranslations("zombiereloaded.phrases");
-    
-    // Standard phrases provided by SM.
-    LoadTranslations("common.phrases");
 }
-
 
 // **********************************************
 //                 Log Manager
@@ -334,7 +323,7 @@ stock Project_LoadExtraTranslations(bool:transmanagerloaded)
 #define PROJECT_MERCURIAL
 
 // Name of the Mercurial branch this is being developed in.
-#define PROJECT_BRANCH "zr-dev"
+#define PROJECT_BRANCH "zr-dev-base"
 
 /**
  * Name of the public cvar for the plugin.

@@ -3,9 +3,9 @@
  *
  *  Zombie:Reloaded
  *
- *  File:          teammanager.zr.inc
+ *  File:          teammanager.zrc.inc
  *  Type:          Module
- *  Description:   Manages zombie-based teams for classic zombie gameplay.
+ *  Description:   Manages zombie-based teams for ZRClassic gameplay.
  *
  *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
  *
@@ -28,17 +28,17 @@
 /**
  * This module's identifier.
  */
-new Module:g_moduleZRTM;
+new Module:g_moduleZRCTM;
 
 /**
  * Function for outside files to use to return the module's identifier.
  */
-stock Module:ZRTM_GetIdentifier() { return g_moduleZRTM; }
+stock Module:ZRCTM_GetIdentifier() { return g_moduleZRCTM; }
 
 /**
  * Register this module.
  */
-ZRTM_Register()
+ZRCTM_Register()
 {
     // Define all the module's data as layed out by enum ModuleData in project.inc.
     new moduledata[ModuleData];
@@ -47,46 +47,46 @@ ZRTM_Register()
     moduledata[ModuleData_Hidden] = false;
     strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "ZR Team Manager");
     strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "zrteammanager");
-    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Manages zombie-based teams for classic zombie gameplay.");
-    moduledata[ModuleData_Dependencies][0] = ZR_GetIdentifier();
+    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Manages zombie-based teams for ZRClassic gameplay.");
+    moduledata[ModuleData_Dependencies][0] = ZRC_GetIdentifier();
     moduledata[ModuleData_Dependencies][1] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
-    g_moduleZRTM = ModuleMgr_Register(moduledata);
+    g_moduleZRCTM = ModuleMgr_Register(moduledata);
     
     // Register the OnEventsRegister event to register all events in it.
-    EventMgr_RegisterEvent(g_moduleZRTM, "Event_OnEventsRegister",          "ZRTM_OnEventsRegister");
+    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnEventsRegister",             "ZRCTM_OnEventsRegister");
 }
 
 /**
  * Register all events here.
  */
-public ZRTM_OnEventsRegister()
+public ZRCTM_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRTM, "Event_OnClientPutInServer",       "ZRTM_OnClientPutInServer");
+    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnClientPutInServer",          "ZRCTM_OnClientPutInServer");
     
     #if defined PROJECT_GAME_CSS
     
-    EventMgr_RegisterEvent(g_moduleZRTM, "Event_RoundEnd",                  "ZRTM_RoundEnd");
-    EventMgr_RegisterEvent(g_moduleZRTM, "Event_PlayerTeamPre",             "ZRTM_PlayerTeamPre");
-    EventMgr_RegisterEvent(g_moduleZRTM, "Event_PlayerTeam",                "ZRTM_PlayerTeam");
-    EventMgr_RegisterEvent(g_moduleZRTM, "Event_PlayerSpawn",               "ZRTM_PlayerSpawn");
+    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_RoundEnd",                     "ZRCTM_RoundEnd");
+    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_PlayerTeamPre",                "ZRCTM_PlayerTeamPre");
+    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_PlayerTeam",                   "ZRCTM_PlayerTeam");
+    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_PlayerSpawn",                  "ZRCTM_PlayerSpawn");
     
     #endif
     
     // Register custom events.
-    EventMgr_RegisterEvent(g_moduleZRTM, "Event_OnClientInfect",            "ZRTM_OnClientInfect");
-    EventMgr_RegisterEvent(g_moduleZRTM, "Event_OnClientHuman",             "ZRTM_OnClientHuman");
+    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnClientInfect",            "ZRCTM_OnClientInfect");
+    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnClientHuman",             "ZRCTM_OnClientHuman");
 }
 
 /**
  * Plugin is loading.
  */
-ZRTM_OnPluginStart()
+ZRCTM_OnPluginStart()
 {
     // Register the module.
-    ZRTM_Register();
+    ZRCTM_Register();
 }
 
 /**
@@ -94,7 +94,7 @@ ZRTM_OnPluginStart()
  * 
  * @param client    The client index.
  */
-public ZRTM_OnClientPutInServer(client)
+public ZRCTM_OnClientPutInServer(client)
 {
     // Initialize the client's team.
     TLib_SetClientTeam(client, VTeam_Unassigned);
@@ -107,7 +107,7 @@ public ZRTM_OnClientPutInServer(client)
  * @param attacker      The zombie that infected the client.
  * @param mzombie       True if the client has been infected as a mother zombie.
  */
-public ZRTM_OnClientInfect(client, attacker, bool:mzombie)
+public ZRCTM_OnClientInfect(client, attacker, bool:mzombie)
 {
     #if defined PROJECT_GAME_CSS
         CS_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Zombie));
@@ -119,7 +119,7 @@ public ZRTM_OnClientInfect(client, attacker, bool:mzombie)
  * 
  * @param client        The client that became human.
  */
-public ZRTM_OnClientHuman(client)
+public ZRCTM_OnClientHuman(client)
 {
     #if defined PROJECT_GAME_CSS
         CS_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Human));
@@ -131,9 +131,9 @@ public ZRTM_OnClientHuman(client)
 /**
  * Round has ended.
  */
-public ZRTM_RoundEnd()
+public ZRCTM_RoundEnd()
 {
-    ZRTM_BalanceTeams();
+    ZRCTM_BalanceTeams();
 }
 
 /**
@@ -146,7 +146,7 @@ public ZRTM_RoundEnd()
  * 
  * @return              Plugin_Handled to stop the event from being broadcasted to clients.  Plugin_Continue to let it continue like normal.  
  */
-public Action:ZRTM_PlayerTeamPre(client, team, oldteam, bool:disconnect)
+public Action:ZRCTM_PlayerTeamPre(client, team, oldteam, bool:disconnect)
 {
     // Prevent this from being broadcasted to clients.
     return Plugin_Handled;
@@ -160,7 +160,7 @@ public Action:ZRTM_PlayerTeamPre(client, team, oldteam, bool:disconnect)
  * @param oldteam       The team the client is switching from.
  * @param disconnect    True if the client is disconnecting, false if switching to a team.
  */
-public ZRTM_PlayerTeam(client, team, oldteam, bool:disconnect)
+public ZRCTM_PlayerTeam(client, team, oldteam, bool:disconnect)
 {
     if (team == TEAM_1)
         TLib_SetClientTeam(client, VTeam_Spectator);
@@ -175,7 +175,7 @@ public ZRTM_PlayerTeam(client, team, oldteam, bool:disconnect)
  * @param client    The client index.
  * 
  */
-public ZRTM_PlayerSpawn(client)
+public ZRCTM_PlayerSpawn(client)
 {
     // player_spawn is fired during the connection process, this is how we filter it out.
     if (!Util_IsClientOnTeam(client))
@@ -193,7 +193,7 @@ public ZRTM_PlayerSpawn(client)
 /**
  * Randomly put an equal amount of clients on both teams.
  */
-stock ZRTM_BalanceTeams()
+stock ZRCTM_BalanceTeams()
 {
     new bool:team1 = true;
     

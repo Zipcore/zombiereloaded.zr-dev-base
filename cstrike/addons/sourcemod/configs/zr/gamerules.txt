@@ -8,7 +8,7 @@
 //
 // ============================================================================
 //
-// Valid actions:
+// Valid module cmds:
 //
 // on           Enable the module.
 // force_on     Force the module to be enabled.  This guarantees that the module will be loaded at all times.
@@ -17,10 +17,25 @@
 
 "gamerules"
 {
-	"default"
+	"zrclassic"
 	{
-		"zr_root"	"force_on"
-		"zriot_root"	"force_off"
-		"objstripper"	"on"
+		"core"		"zr_root"
+		"cfg"		"zrclassic.cfg"
+
+		"modulecmds"
+		{
+			"objstripper"	"on"
+		}
+	}
+
+	"zriot"
+	{
+		"core"		"zriot_root"
+		"cfg"		"zriot.cfg"
+
+		"modulecmds"
+		{
+			"objstripper"	"on"
+		}
 	}
 }

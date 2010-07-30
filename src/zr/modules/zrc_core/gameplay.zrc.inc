@@ -78,6 +78,7 @@ public ZRCGPlay_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnEventsReady",             "ZRCGPlay_OnEventsReady");
     EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnMyModuleEnable",          "ZRCGPlay_OnMyModuleEnable");
     //EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnMyModuleDisable",         "ZRCGPlay_OnMyModuleDisable");
+    EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnClientDisconnect",        "ZRCGPlay_OnClientDisconnect");
     EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnMapStart",                "ZRCGPlay_OnMapStart");
     EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnClientInfect",            "ZRCGPlay_OnClientInfect");
     
@@ -96,6 +97,7 @@ public ZRCGPlay_OnEventsRegister()
 public ZRCGPlay_OnEventsReady()
 {
     // Push down priority for Event_OnClientInfect to below zrteammanager module.
+    EventMgr_TakePriority("Event_OnClientDisconnect", g_moduleZRCGPlay, ZRCInfect_GetIdentifier());
     EventMgr_TakePriority("Event_OnClientInfect", g_moduleZRCGPlay, ZRCTM_GetIdentifier());
 }
 
@@ -151,6 +153,27 @@ public ZRCGPlay_OnMapStart()
 }
 
 /**
+ * Client is disconnecting from the server.
+ * 
+ * @param client    The client index.
+ */
+public ZRCGPlay_OnClientDisconnect(client)
+{
+    // End the round if the last human leaves.
+    if (TLib_IsClientHuman(client))
+    {
+        if (TLib_CountTeam(VTeam_Human, true) <= 1)
+        {
+            static roundend_reason = -1;
+            if (roundend_reason == -1)
+                roundend_reason = _:Util_TeamToReason(TLib_GetGameTeamIndex(VTeam_Zombie));
+            
+            SDKToolsLib_TerminateRound(3.0, RoundEndReasons:roundend_reason);
+        }
+    }
+}
+
+/**
  * Client has been infected.
  * 
  * @param client        The infected client.
@@ -167,7 +190,11 @@ public ZRCGPlay_OnClientInfect(client, attacker, bool:mzombie)
     // If there are no more humans then zombies win.
     if (TLib_CountTeam(VTeam_Human, true) == 0)
     {
-        SDKToolsLib_TerminateRound(3.0, Util_TeamToReason(TLib_GetGameTeamIndex(VTeam_Zombie)));
+        static roundend_reason = -1;
+        if (roundend_reason == -1)
+            roundend_reason = _:Util_TeamToReason(TLib_GetGameTeamIndex(VTeam_Zombie));
+        
+        SDKToolsLib_TerminateRound(3.0, RoundEndReasons:roundend_reason);
     }
 }
 
@@ -181,7 +208,11 @@ public ZRCGPlay_OnClientHuman(client)
     // If there are no more humans then humans win.
     if (TLib_CountTeam(VTeam_Zombie, true) == 0)
     {
-        SDKToolsLib_TerminateRound(3.0, Util_TeamToReason(TLib_GetGameTeamIndex(VTeam_Human)));
+        static roundend_reason = -1;
+        if (roundend_reason == -1)
+            roundend_reason = _:Util_TeamToReason(TLib_GetGameTeamIndex(VTeam_Human));
+        
+        SDKToolsLib_TerminateRound(3.0, RoundEndReasons:roundend_reason);
     }
 }
 

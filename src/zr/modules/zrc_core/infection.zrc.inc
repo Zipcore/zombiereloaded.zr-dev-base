@@ -197,9 +197,19 @@ public ZRCInfect_OnClientPutInServer(client)
  */
 public ZRCInfect_OnClientDisconnect(client)
 {
-    // If there are no more zombies then pick a new one.
-    if (TLib_CountTeam(VTeam_Zombie, true) <= 1)
-        ZRCInfect_MotherZombie(1);
+    // Infect a new zombie if the last one leaves.
+    if (TLib_IsClientZombie(client))
+    {
+        // If there are no more zombies then pick a new one.
+        if (TLib_CountTeam(VTeam_Zombie, true) <= 1)
+        {
+            new newzombie = ZRCInfect_MotherZombie(1);
+            if (newzombie != -1)
+            {
+                TransMgr_PrintText(newzombie, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC infect disconnect");
+            }
+        }
+    }
 }
 
 /**
@@ -395,6 +405,8 @@ ZRCInfect_ZombieToHuman(client)
  * Choose a random mother zombie.
  * 
  * @param override_count    If this is set to something > 0 then this is how many mother zombies will be spawned.
+ * 
+ * @return                  The first mother zombie infected, -1 if none were infected.
  */
 ZRCInfect_MotherZombie(override_count = 0)
 {
@@ -406,7 +418,7 @@ ZRCInfect_MotherZombie(override_count = 0)
     if (count == 0)
     {
         CloseHandle(adtClients);
-        return;
+        return -1;
     }
     
     // Prune the list further.
@@ -451,7 +463,9 @@ ZRCInfect_MotherZombie(override_count = 0)
             mzombiecount = 1;
     }
     
-    new randindex; 
+    new randindex;
+    new randclient;
+    new firstinfected = -1;
     for (new cindex = 0; cindex < mzombiecount; cindex++)
     {
         // Should always leave at least one human and stop if there are no more clients left.
@@ -460,11 +474,18 @@ ZRCInfect_MotherZombie(override_count = 0)
         
         // Get a random client from the array, infect, and remove from list.
         randindex = GetRandomInt(0, count - 1);
-        ZRCInfect_HumanToZombie(GetArrayCell(adtClients, randindex), _, true);
+        randclient = GetArrayCell(adtClients, randindex);
+        ZRCInfect_HumanToZombie(randclient, _, true);
         RemoveFromArray(adtClients, randindex); count--;
+        
+        // Store first infected client.
+        if (cindex == 0)
+            firstinfected = randclient;
     }
     
     CloseHandle(adtClients);
+    
+    return firstinfected;
 }
 
 /**

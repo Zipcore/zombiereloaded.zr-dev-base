@@ -58,7 +58,7 @@ stock ForwardOnPluginStart()
 {
     // Forward the OnPluginStart event to all modules here.
     GameData_OnPluginStart();
-    Core_OnPluginStart();
+    ZRCore_OnPluginStart();
     GameRules_OnPluginStart();
     MapConfig_OnPluginStart();
     ZRC_OnPluginStart();

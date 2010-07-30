@@ -217,7 +217,7 @@ public ZTele_PlayerSpawn(client)
                 for (new i = 0; i < 3; i++)
                     g_vecZTeleSpawnPoints[g_iZTeleNumSpawnPoints][i] = vecLoc[i];
                 
-                LogMgr_Print(g_moduleZTele, LogType_Normal, "Debug", "New ZTele point (%f, %f, %f) being added to array index %d.", vecLoc[0], vecLoc[1], vecLoc[2], g_iZTeleNumSpawnPoints);
+                LogMgr_Print(g_moduleZTele, LogType_Debug, "Spawnpoints", "New ZTele point (%f, %f, %f) being added to array index %d.", vecLoc[0], vecLoc[1], vecLoc[2], g_iZTeleNumSpawnPoints);
                 
                 g_iZTeleNumSpawnPoints++;
             }

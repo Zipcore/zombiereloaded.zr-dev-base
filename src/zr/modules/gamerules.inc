@@ -524,7 +524,7 @@ stock GameRules_ApplyRuleSet(ruleSet)
     
     // Execute this rule set's cfg file.
     ServerCommand("exec sourcemod/zombiereloaded/%s", GRULESET_CFG);
-    LogMgr_Print(g_moduleGameRules, LogType_Normal, "Game Rule Configs", "Executed game rule set file: sourcemod/zombiereloaded/%s", GRULESET_CFG);
+    LogMgr_Print(g_moduleGameRules, LogType_Debug, "Game Rule Configs", "Executed game rule set file: sourcemod/zombiereloaded/%s", GRULESET_CFG);
     
     // Loop through each module and apply its action.
     for (new moduleindex = 0; moduleindex < GRULESET_NUMMODULES; moduleindex++)

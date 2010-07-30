@@ -97,7 +97,7 @@ public MapConfig_OnAutoConfigsBuffered()
     if (FileExists(path))
     {
         ServerCommand("exec %s", mapconfig);
-        LogMgr_Print(g_moduleMapConfig, LogType_Normal, "Map Configs", "Executed map config file: %s", path);
+        LogMgr_Print(g_moduleMapConfig, LogType_Debug, "Map Configs", "Executed map config file: %s", path);
     }
 }
 
@@ -121,6 +121,6 @@ public MapConfig_OnConfigsExecuted()
     if (FileExists(path))
     {
         ServerCommand("exec %s", mapconfig);
-        LogMgr_Print(g_moduleMapConfig, LogType_Normal, "Map Configs", "Executed post map config file: %s", path);
+        LogMgr_Print(g_moduleMapConfig, LogType_Debug, "Map Configs", "Executed post map config file: %s", path);
     }
 }

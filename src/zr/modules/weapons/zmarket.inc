@@ -823,12 +823,18 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
         new bool:set = true;
     #endif
     
+    // Check if the client is alive.
+    if (!IsPlayerAlive(client))
+    {
+        ZMarket_AddWeaponToSlot(client, slot, windex, set);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Weapons zmarket updated weapon setup");
+    }
+    
     decl String:weaponentity[64];
     Weapons_ReadString(windex, WepConfig_Entity, weaponentity, sizeof(weaponentity));
     
     // Check if the client is not a human or not in a buyzone.
-    if (!TLib_IsClientHuman(client)
-        || (!autorebuy && GetConVarBool(g_hCvarZMarketBuyzone) && !WepLib_InBuyZone(client)))
+    if (!TLib_IsClientHuman(client) || (!autorebuy && GetConVarBool(g_hCvarZMarketBuyzone) && !WepLib_InBuyZone(client)))
     {
         // Update cookie with new weapon.
         if (slot != Slot_Projectile || !ZMarket_IsGrenadeCountMaxedEx(client, weaponentity))

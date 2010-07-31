@@ -112,7 +112,6 @@ ZRCInfect_Register()
 public ZRCInfect_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnPluginEnd",              "ZRCInfect_OnPluginEnd");
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnMapStart",               "ZRCInfect_OnMapStart");
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnMapEnd",                 "ZRCInfect_OnMapEnd");
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnClientPutInServer",      "ZRCInfect_OnClientPutInServer");
@@ -125,7 +124,6 @@ public ZRCInfect_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_RoundEnd",                 "ZRCInfect_RoundEnd");
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_PlayerSpawn",              "ZRCInfect_PlayerSpawn");
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_PlayerHurt",               "ZRCInfect_PlayerHurt");
-    //EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_PlayerDeath",              "ZRCInfect_PlayerDeath");
     
     #endif
 }
@@ -147,16 +145,6 @@ ZRCInfect_OnPluginStart()
     // Create commands.
     RegConsoleCmd("zr_infect", ZRCInfect_InfectCommand, "Turn a player into a zombie. Usage: zr_infect <#userid|name> [respawn - 1/0]");
     RegConsoleCmd("zr_human", ZRCInfect_HumanCommand, "Turn a player into a human. Usage: zr_human <#userid|name> [respawn - 1/0] [protect - 1/0]");
-}
-
-/**
- * Plugin is ending.
- */
-public ZRCInfect_OnPluginEnd()
-{
-    // Stop timers.
-    Util_CloseHandle(g_hMotherInfect);
-    Util_CloseHandle(g_hMotherInfectCountdown);
 }
 
 /**
@@ -311,18 +299,6 @@ public ZRCInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon
             }
         #endif
     }
-}
-
-/**
- * Client has been killed.
- * 
- * @param victim    The index of the killed client.
- * @param attacker  The killer of the victim.
- * @param weapon    The weapon classname used to kill the victim. (No weapon_ prefix)
- * @param headshot  True if the death was by headshot, false if not.
- */
-public ZRCInfect_PlayerDeath(victim, attacker, const String:weapon[], bool:headshot)
-{
 }
 
 /**

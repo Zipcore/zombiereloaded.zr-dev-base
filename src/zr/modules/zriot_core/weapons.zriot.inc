@@ -3,9 +3,9 @@
  *
  *  Zombie:Reloaded
  *
- *  File:          weapons.zrc.inc
+ *  File:          weapons.zriot.inc
  *  Type:          Module
- *  Description:   Manages weapons for ZRClassic gameplay.
+ *  Description:   Manages weapons for ZRiot gameplay.
  *
  *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
  *
@@ -28,97 +28,97 @@
 /**
  * This module's identifier.
  */
-new Module:g_moduleZRCWeps;
+new Module:g_moduleZRiotWeapons;
 
 /**
  * Function for outside files to use to return the module's identifier.
  */
-stock Module:ZRCWeps_GetIdentifier() { return g_moduleZRCWeps; }
+stock Module:ZRiotWeps_GetIdentifier() { return g_moduleZRiotWeapons; }
 
 /**
  * Cvar handles.
  */
 #if defined PROJECT_GAME_CSS
-  new Handle:g_hCvarZRCWepsDrop;
-  new Handle:g_hCvarZRCWepsEndEquip;
+  new Handle:g_hCvarZRiotWeaponsDrop;
+  new Handle:g_hCvarZRiotWeaponsEndEquip;
 #endif
 
 /**
  * Array to block any client from picking up weapons.
  */
-new bool:g_bZRCWepsBlockWeapon[MAXPLAYERS + 1];
+new bool:g_bZRiotWeaponsBlockWeapon[MAXPLAYERS + 1];
 
 /**
  * Register this module.
  */
-ZRCWeps_Register()
+ZRiotWeps_Register()
 {
     // Define all the module's data as layed out by enum ModuleData in project.inc.
     new moduledata[ModuleData];
     
     moduledata[ModuleData_Disabled] = false;
     moduledata[ModuleData_Hidden] = false;
-    strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "ZRC Weapon Control");
-    strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "zrcweapons");
-    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Manages weapons for ZRClassic gameplay.");
-    moduledata[ModuleData_Dependencies][0] = ZRC_GetIdentifier();
+    strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "ZRiot Weapon Control");
+    strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "zriotweapons");
+    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Manages weapons for ZRiot gameplay.");
+    moduledata[ModuleData_Dependencies][0] = ZRiot_GetIdentifier();
     moduledata[ModuleData_Dependencies][1] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
-    g_moduleZRCWeps = ModuleMgr_Register(moduledata);
+    g_moduleZRiotWeapons = ModuleMgr_Register(moduledata);
     
     // Register the OnEventsRegister event to register all events in it.
-    EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnEventsRegister",           "ZRCWeps_OnEventsRegister");
+    EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnEventsRegister",         "ZRiotWeps_OnEventsRegister");
 }
 
 /**
  * Register all events here.
  */
-public ZRCWeps_OnEventsRegister()
+public ZRiotWeps_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnEventsReady",              "ZRCWeps_OnEventsReady");
+    EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnEventsReady",            "ZRiotWeps_OnEventsReady");
     
     #if defined PROJECT_GAME_CSS
     
-    EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_RoundEnd",                   "ZRCWeps_RoundEnd");
-    EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_PlayerSpawn",                "ZRCWeps_PlayerSpawn");
+    EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_RoundEnd",                 "ZRiotWeps_RoundEnd");
+    EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_PlayerSpawn",              "ZRiotWeps_PlayerSpawn");
     
     #endif
     
     // Register custom events.
-    EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnClientInfect",             "ZRCWeps_OnClientInfect");
-    EventMgr_RegisterEvent(g_moduleZRCWeps, "Hook_WeaponCanUse",                "ZRCWeps_CanUse");
+    EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnClientInfect",           "ZRiotWeps_OnClientInfect");
+    EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Hook_WeaponCanUse",              "ZRiotWeps_CanUse");
 }
 
 /**
  * All modules and events have been registered by this point.  Event priority can be changed here.
  */
-public ZRCWeps_OnEventsReady()
+public ZRiotWeps_OnEventsReady()
 {
     // Bump up priority for Event_RoundEnd to above zrinfect module.
-    EventMgr_GivePriority("Event_RoundEnd", g_moduleZRCWeps, ZRCInfect_GetIdentifier());
+    EventMgr_GivePriority("Event_RoundEnd", g_moduleZRiotWeapons, ZRiotInfect_GetIdentifier());
 }
 
 /**
  * Plugin is loading.
  */
-ZRCWeps_OnPluginStart()
+ZRiotWeps_OnPluginStart()
 {
     // Register the module.
-    ZRCWeps_Register();
+    ZRiotWeps_Register();
     
     // Create cvars.
     #if defined PROJECT_GAME_CSS
-        g_hCvarZRCWepsDrop =      CreateConVar("zr_weapons_drop", "1", "Force player to drop all weapons when infected.  Disabling this will strip weapons instead.");
-        g_hCvarZRCWepsEndEquip =  CreateConVar("zr_weapons_endequip", "1", "Restricts zombies from picking up weapons after the round has ended but before the next round has begun.");
+        g_hCvarZRiotWeaponsDrop =      CreateConVar("zriot_weapons_drop", "1", "Force player to drop all weapons when infected.  Disabling this will strip weapons instead.");
+        g_hCvarZRiotWeaponsEndEquip =  CreateConVar("zriot_weapons_endequip", "1", "Restricts zombies from picking up weapons after the round has ended but before the next round has begun.");
     #endif
     
     #if defined PROJECT_GAME_CSS
         // Listen for buy commands.
-        AddCommandListener(ZRCWeps_BuyListener, "buy");
-        AddCommandListener(ZRCWeps_BuyListener, "autobuy");
-        AddCommandListener(ZRCWeps_BuyListener, "rebuy");
+        AddCommandListener(ZRiotWeps_BuyListener, "buy");
+        AddCommandListener(ZRiotWeps_BuyListener, "autobuy");
+        AddCommandListener(ZRiotWeps_BuyListener, "rebuy");
     #endif
 }
 
@@ -129,12 +129,12 @@ ZRCWeps_OnPluginStart()
  * @param attacker      The zombie that infected the client.
  * @param motherzombie  True if the client has been infected as a mother zombie.
  */
-public ZRCWeps_OnClientInfect(client, attacker, bool:motherzombie)
+public ZRiotWeps_OnClientInfect(client, attacker, bool:motherzombie)
 {
     #if defined PROJECT_GAME_CSS
         new bool:weapons[WEPLIB_SLOT_COUNT] = {true, ...};
         weapons[_:Slot_Melee] = false;
-        if (GetConVarBool(g_hCvarZRCWepsDrop))
+        if (GetConVarBool(g_hCvarZRiotWeaponsDrop))
         {
             WepLib_DropAllWeapons(client, weapons);
         }
@@ -151,9 +151,9 @@ public ZRCWeps_OnClientInfect(client, attacker, bool:motherzombie)
  * Round has ended.
  * Note: This needs to be BEFORE the event that sets all clients back to human.
  */
-public ZRCWeps_RoundEnd()
+public ZRiotWeps_RoundEnd()
 {
-    if (!GetConVarBool(g_hCvarZRCWepsEndEquip))
+    if (!GetConVarBool(g_hCvarZRiotWeaponsEndEquip))
         return;
     
     for (new client = 1; client <= MaxClients; client++)
@@ -162,7 +162,7 @@ public ZRCWeps_RoundEnd()
             continue;
         
         if (TLib_IsClientZombie(client))
-            g_bZRCWepsBlockWeapon[client] = true;
+            g_bZRiotWeaponsBlockWeapon[client] = true;
     }
 }
 
@@ -172,13 +172,13 @@ public ZRCWeps_RoundEnd()
  * @param client    The client index.
  * 
  */
-public ZRCWeps_PlayerSpawn(client)
+public ZRiotWeps_PlayerSpawn(client)
 {
     if (!Util_IsClientOnTeam(client))
         return;
     
     // Reset block weapons flag.
-    g_bZRCWepsBlockWeapon[client] = false;
+    g_bZRiotWeaponsBlockWeapon[client] = false;
 }
 
 #endif
@@ -191,7 +191,7 @@ public ZRCWeps_PlayerSpawn(client)
  * 
  * @return          Hook action.  See include/core.inc.
  */
-public Action:ZRCWeps_CanUse(client, weapon)
+public Action:ZRiotWeps_CanUse(client, weapon)
 {
     new String:weaponentity[64];
     GetEdictClassname(weapon, weaponentity, sizeof(weaponentity));
@@ -201,7 +201,7 @@ public Action:ZRCWeps_CanUse(client, weapon)
         return Plugin_Continue;
     
     // The flat override for stopping a client from picking up a weapon.
-    if (g_bZRCWepsBlockWeapon[client])
+    if (g_bZRiotWeaponsBlockWeapon[client])
         return Plugin_Handled;
     
     // Only humans can pick up weapons.
@@ -218,7 +218,7 @@ public Action:ZRCWeps_CanUse(client, weapon)
  * @param client    The client index.
  * @param argc      Argument count.
  */
-public Action:ZRCWeps_BuyListener(client, const String:command[], argc)
+public Action:ZRiotWeps_BuyListener(client, const String:command[], argc)
 {
     // Not a client using the command.
     if (client <= 0)
@@ -230,7 +230,7 @@ public Action:ZRCWeps_BuyListener(client, const String:command[], argc)
     // Only humans can buy weapons.
     if (!TLib_IsClientHuman(client))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC weapons zombie cant use weapon");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRiot weapons zombie cant use weapon");
         return Plugin_Handled;
     }
     

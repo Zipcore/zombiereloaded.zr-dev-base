@@ -172,16 +172,7 @@ stock TLib_GTeamStringToIndex(const String:teamstring[])
  */
 stock TLib_UpdateClientTeam(client)
 {
-    new VTeam:vteam = TLib_GetClientTeam(client);
-    new gteam = GetClientTeam(client);
-    
-    // Check if the client is already on the game team before trying to switch them to it.
-    if (gteam != g_iTLibGameTeamIndex[vteam])
-    {
-        #if defined PROJECT_GAME_CSS
-            CS_SwitchTeam(client, g_iTLibGameTeamIndex[vteam]);
-        #endif
-    }
+    Util_SwitchTeam(client, g_iTLibGameTeamIndex[TLib_GetClientTeam(client)]);
 }
 
 /**

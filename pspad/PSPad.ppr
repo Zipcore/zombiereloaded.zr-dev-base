@@ -51,7 +51,11 @@ ZR
 				..\src\zr\modules\zrc_core\teammanager.zrc.inc
 				..\src\zr\modules\zrc_core\weapons.zrc.inc
 			-ZRiot Core
+				..\src\zr\modules\zriot_core\gameplay.zriot.inc
+				..\src\zr\modules\zriot_core\infection.zriot.inc
 				..\src\zr\modules\zriot_core\root.zriot.inc
+				..\src\zr\modules\zriot_core\teammanager.zriot.inc
+				..\src\zr\modules\zriot_core\weapons.zriot.inc
 			..\src\zr\modules\core.inc
 			..\src\zr\modules\gamedata.inc
 			..\src\zr\modules\gamerules.inc

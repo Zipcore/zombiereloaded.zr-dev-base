@@ -70,6 +70,8 @@ stock ForwardOnPluginStart()
     #if defined PROJECT_GAME_CSS
         Weapons_OnPluginStart();
     #endif
+    
+    AutoExecConfig(true, "zombiereloaded");
 }
 
 // **********************************************
@@ -283,6 +285,8 @@ enum ModuleToggleQuery
  */
 stock Project_LoadExtraTranslations(bool:transmanagerloaded)
 {
+    // Load needed stock translations.
+    LoadTranslations("common.phrases");
 }
 
 // **********************************************

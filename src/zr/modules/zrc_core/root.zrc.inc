@@ -52,9 +52,9 @@ ZRC_Register()
     
     moduledata[ModuleData_Disabled] = false;
     moduledata[ModuleData_Hidden] = false;
-    strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "ZR Root");
-    strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "zr_root");
-    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Top of the chain module for ZR's set of core modules.  This can not be enabled/disabled by anything other than game rules.");
+    strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "ZRC Root");
+    strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "zrc_root");
+    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Top of the chain module for ZRClassic's set of core modules.  This can not be enabled/disabled by anything other than game rules.");
     moduledata[ModuleData_Dependencies][0] = INVALID_MODULE;
     moduledata[ModuleData_Root] = true;
     

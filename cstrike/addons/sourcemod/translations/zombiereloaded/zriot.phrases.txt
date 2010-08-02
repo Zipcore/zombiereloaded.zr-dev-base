@@ -28,12 +28,12 @@
 
 	"ZRiot command infect syntax"
 	{
-		"en"		"Turn a player into a zombie.  Usage: zr_infect <#userid|name> [respawn - 1/0]"
+		"en"		"Turn a player into a zombie.  Usage: zriot_infect <#userid|name> [respawn - 1/0]"
 	}
 
 	"ZRiot command human syntax"
 	{
-		"en"		"Turn a player into a human.  Usage: zr_human <#userid|name> [respawn - 1/0] [protect - 1/0]"
+		"en"		"Turn a player into a human.  Usage: zriot_human <#userid|name> [respawn - 1/0] [protect - 1/0]"
 	}
 
 	// {1}: Name of the player.

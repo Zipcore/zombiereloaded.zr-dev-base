@@ -477,6 +477,19 @@ public Action:ZRCInfect_InitMZombieTimer(Handle:timer)
  */
 public Action:ZRCInfect_InfectCommand(client, argc)
 {
+    // Check if the this core module is disabled, if so then don't do anything with it.
+    if (ModuleMgr_IsDisabled(g_moduleZRCInfect))
+    {
+        return Plugin_Continue;
+    }
+    
+    // Check if the client has permission to use this.
+    if (!AccessMgr_HasAccess(client, g_moduleZRCInfect))
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
+        return Plugin_Handled;
+    }
+    
     // If not enough arguments given, then stop.
     if (argc < 1)
     {
@@ -550,6 +563,19 @@ public Action:ZRCInfect_InfectCommand(client, argc)
  */
 public Action:ZRCInfect_HumanCommand(client, argc)
 {
+    // Check if the this core module is disabled, if so then don't do anything with it.
+    if (ModuleMgr_IsDisabled(g_moduleZRCInfect))
+    {
+        return Plugin_Continue;
+    }
+    
+    // Check if the client has permission to use this.
+    if (!AccessMgr_HasAccess(client, g_moduleZRCInfect))
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
+        return Plugin_Handled;
+    }
+    
     // If not enough arguments given, then stop.
     if (argc < 1)
     {

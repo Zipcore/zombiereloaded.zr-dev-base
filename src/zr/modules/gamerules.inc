@@ -276,7 +276,7 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
     else
     {
         gameRuleSet[GameRuleSet_Core] = INVALID_MODULE;
-        LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "No core specified for game rule set \"%s\"!");
+        LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "No core specified for game rule set \"%s\"!", sectionname);
     }
     
     // Get value for "cfg"

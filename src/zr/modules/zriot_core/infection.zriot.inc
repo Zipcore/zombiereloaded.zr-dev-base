@@ -156,6 +156,19 @@ ZRiotInfect_ZombieToHuman(client)
  */
 public Action:ZRiotInfect_InfectCommand(client, argc)
 {
+    // Check if the this core module is disabled, if so then don't do anything with it.
+    if (ModuleMgr_IsDisabled(g_moduleZRiotInfect))
+    {
+        return Plugin_Continue;
+    }
+    
+    // Check if the client has permission to use this.
+    if (!AccessMgr_HasAccess(client, g_moduleZRiotInfect))
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
+        return Plugin_Handled;
+    }
+    
     // If not enough arguments given, then stop.
     if (argc < 1)
     {
@@ -217,6 +230,19 @@ public Action:ZRiotInfect_InfectCommand(client, argc)
  */
 public Action:ZRiotInfect_HumanCommand(client, argc)
 {
+    // Check if the this core module is disabled, if so then don't do anything with it.
+    if (ModuleMgr_IsDisabled(g_moduleZRiotInfect))
+    {
+        return Plugin_Continue;
+    }
+    
+    // Check if the client has permission to use this.
+    if (!AccessMgr_HasAccess(client, g_moduleZRiotInfect))
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
+        return Plugin_Handled;
+    }
+    
     // If not enough arguments given, then stop.
     if (argc < 1)
     {

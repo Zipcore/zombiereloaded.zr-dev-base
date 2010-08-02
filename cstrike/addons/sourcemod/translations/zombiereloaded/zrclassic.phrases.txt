@@ -16,19 +16,19 @@
 	//                  Infection		       //
 	/////////////////////////////////////////////////
 
-	"ZRC infected"
+	"ZRC human to zombie"
 	{
 		"en"		"You have been infected!  Go pass it on to as many other players as you can."
-	}
-
-	"ZRC infect disconnect"
-	{
-		"en"		"The last zombie has left the game, and has passed the infection on to you."
 	}
 
 	"ZRC zombie to human"
 	{
 		"en"		"The merciful gods (known as admins) have resurrected your soul, find some cover!"
+	}
+
+	"ZRC infect disconnect"
+	{
+		"en"		"The last zombie has left the game, and has passed the infection on to you."
 	}
 
 	"ZRC command infect syntax"

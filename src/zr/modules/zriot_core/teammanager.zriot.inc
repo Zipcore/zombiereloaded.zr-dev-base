@@ -3,9 +3,9 @@
  *
  *  Zombie:Reloaded
  *
- *  File:          teammanager.zrc.inc
+ *  File:          teammanager.zriot.inc
  *  Type:          Module
- *  Description:   Manages zombie-based teams for ZRClassic gameplay.
+ *  Description:   Manages zombie-based teams for ZRiot gameplay.
  *
  *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
  *
@@ -28,65 +28,64 @@
 /**
  * This module's identifier.
  */
-new Module:g_moduleZRCTM;
+new Module:g_moduleZRiotTM;
 
 /**
  * Function for outside files to use to return the module's identifier.
  */
-stock Module:ZRCTM_GetIdentifier() { return g_moduleZRCTM; }
+stock Module:ZRiotTM_GetIdentifier() { return g_moduleZRiotTM; }
 
 /**
  * Register this module.
  */
-ZRCTM_Register()
+ZRiotTM_Register()
 {
     // Define all the module's data as layed out by enum ModuleData in project.inc.
     new moduledata[ModuleData];
     
     moduledata[ModuleData_Disabled] = false;
     moduledata[ModuleData_Hidden] = false;
-    strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "ZRC Team Manager");
-    strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "zrcteammanager");
-    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Manages zombie-based teams for ZRClassic gameplay.");
-    moduledata[ModuleData_Dependencies][0] = ZRC_GetIdentifier();
+    strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "ZRiot Team Manager");
+    strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "zriotteammanager");
+    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Manages zombie-based teams for ZRiot gameplay.");
+    moduledata[ModuleData_Dependencies][0] = ZRiot_GetIdentifier();
     moduledata[ModuleData_Dependencies][1] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
-    g_moduleZRCTM = ModuleMgr_Register(moduledata);
+    g_moduleZRiotTM = ModuleMgr_Register(moduledata);
     
     // Register the OnEventsRegister event to register all events in it.
-    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnEventsRegister",             "ZRCTM_OnEventsRegister");
+    EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_OnEventsRegister",           "ZRiotTM_OnEventsRegister");
 }
 
 /**
  * Register all events here.
  */
-public ZRCTM_OnEventsRegister()
+public ZRiotTM_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnClientPutInServer",          "ZRCTM_OnClientPutInServer");
+    EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_OnClientPutInServer",        "ZRiotTM_OnClientPutInServer");
     
     #if defined PROJECT_GAME_CSS
     
-    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_RoundEnd",                     "ZRCTM_RoundEnd");
-    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_PlayerTeamPre",                "ZRCTM_PlayerTeamPre");
-    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_PlayerTeam",                   "ZRCTM_PlayerTeam");
-    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_PlayerSpawn",                  "ZRCTM_PlayerSpawn");
+    EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_PlayerTeamPre",              "ZRiotTM_PlayerTeamPre");
+    EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_PlayerTeam",                 "ZRiotTM_PlayerTeam");
+    EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_PlayerSpawn",                "ZRiotTM_PlayerSpawn");
     
     #endif
     
     // Register custom events.
-    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnClientInfect",            "ZRCTM_OnClientInfect");
-    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnClientHuman",             "ZRCTM_OnClientHuman");
+    EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_OnClientInfect",             "ZRiotTM_OnClientInfect");
+    EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_OnClientHuman",              "ZRiotTM_OnClientHuman");
 }
 
 /**
  * Plugin is loading.
  */
-ZRCTM_OnPluginStart()
+ZRiotTM_OnPluginStart()
 {
     // Register the module.
-    ZRCTM_Register();
+    ZRiotTM_Register();
 }
 
 /**
@@ -94,7 +93,7 @@ ZRCTM_OnPluginStart()
  * 
  * @param client    The client index.
  */
-public ZRCTM_OnClientPutInServer(client)
+public ZRiotTM_OnClientPutInServer(client)
 {
     // Initialize the client's team.
     TLib_SetClientTeam(client, VTeam_Unassigned);
@@ -107,7 +106,7 @@ public ZRCTM_OnClientPutInServer(client)
  * @param attacker      The zombie that infected the client.
  * @param mzombie       True if the client has been infected as a mother zombie.
  */
-public ZRCTM_OnClientInfect(client, attacker, bool:mzombie)
+public ZRiotTM_OnClientInfect(client, attacker, bool:mzombie)
 {
     #if defined PROJECT_GAME_CSS
         Util_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Zombie));
@@ -119,7 +118,7 @@ public ZRCTM_OnClientInfect(client, attacker, bool:mzombie)
  * 
  * @param client        The client that became human.
  */
-public ZRCTM_OnClientHuman(client)
+public ZRiotTM_OnClientHuman(client)
 {
     #if defined PROJECT_GAME_CSS
         Util_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Human));
@@ -127,14 +126,6 @@ public ZRCTM_OnClientHuman(client)
 }
 
 #if defined PROJECT_GAME_CSS
-
-/**
- * Round has ended.
- */
-public ZRCTM_RoundEnd()
-{
-    ZRCTM_BalanceTeams();
-}
 
 /**
  * Client has joined a team. (pre)
@@ -146,7 +137,7 @@ public ZRCTM_RoundEnd()
  * 
  * @return              Plugin_Handled to stop the event from being broadcasted to clients.  Plugin_Continue to let it continue like normal.  
  */
-public Action:ZRCTM_PlayerTeamPre(client, team, oldteam, bool:disconnect)
+public Action:ZRiotTM_PlayerTeamPre(client, team, oldteam, bool:disconnect)
 {
     // Prevent this from being broadcasted to clients.
     return Plugin_Handled;
@@ -160,7 +151,7 @@ public Action:ZRCTM_PlayerTeamPre(client, team, oldteam, bool:disconnect)
  * @param oldteam       The team the client is switching from.
  * @param disconnect    True if the client is disconnecting, false if switching to a team.
  */
-public ZRCTM_PlayerTeam(client, team, oldteam, bool:disconnect)
+public ZRiotTM_PlayerTeam(client, team, oldteam, bool:disconnect)
 {
     if (team == TEAM_1)
         TLib_SetClientTeam(client, VTeam_Spectator);
@@ -175,7 +166,7 @@ public ZRCTM_PlayerTeam(client, team, oldteam, bool:disconnect)
  * @param client    The client index.
  * 
  */
-public ZRCTM_PlayerSpawn(client)
+public ZRiotTM_PlayerSpawn(client)
 {
     // player_spawn is fired during the connection process, this is how we filter it out.
     if (!Util_IsClientOnTeam(client))
@@ -189,29 +180,3 @@ public ZRCTM_PlayerSpawn(client)
 }
 
 #endif
-
-/**
- * Randomly put an equal amount of clients on both teams.
- */
-stock ZRCTM_BalanceTeams()
-{
-    new bool:team1 = true;
-    
-    for (new client = 1; client <= MaxClients; client++)
-    {
-        if (!IsClientInGame(client))
-            continue;
-        
-        if (!TLib_IsClientPlaying(client))
-            continue;
-        
-        #if defined PROJECT_GAME_CSS
-            if (team1)
-                Util_SwitchTeam(client, TEAM_2);
-            else
-                Util_SwitchTeam(client, TEAM_3);
-        #endif
-        
-        team1 = !team1;
-    }
-}

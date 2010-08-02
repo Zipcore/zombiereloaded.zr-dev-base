@@ -42,12 +42,6 @@ new Module:g_moduleZRCInfect;
 stock Module:ZRCInfect_GetIdentifier() { return g_moduleZRCInfect; }
 
 /**
- * Event ID variables.
- */
-new ProjectEvent:g_EvOnClientInfect;
-new ProjectEvent:g_EvOnClientHuman;
-
-/**
  * Cvar handles.
  */
 new Handle:g_hCvarMZombieMinTime;
@@ -89,18 +83,14 @@ ZRCInfect_Register()
     
     moduledata[ModuleData_Disabled] = false;
     moduledata[ModuleData_Hidden] = false;
-    strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "ZR Infection Handler");
-    strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "zrinfection");
-    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Handles infection for ZRClassic.");
+    strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "ZRC Infection Handler");
+    strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "zrcinfection");
+    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Handles infection for ZRClassic gameplay.");
     moduledata[ModuleData_Dependencies][0] = ZRC_GetIdentifier();
     moduledata[ModuleData_Dependencies][1] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
     g_moduleZRCInfect = ModuleMgr_Register(moduledata);
-    
-    // Create custom events.
-    g_EvOnClientInfect =    EventMgr_CreateEvent("Event_OnClientInfect");
-    g_EvOnClientHuman =     EventMgr_CreateEvent("Event_OnClientHuman");
     
     // Register the OnEventsRegister event to register all events in it.
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnEventsRegister",         "ZRCInfect_OnEventsRegister");
@@ -137,14 +127,14 @@ ZRCInfect_OnPluginStart()
     ZRCInfect_Register();
     
     // Create cvars.
-    g_hCvarMZombieMinTime =             CreateConVar("zr_mzombie_min_time", "1.0", "Minimum time from the start of the round until picking the mother zombie(s).");
-    g_hCvarMZombieMaxTime =             CreateConVar("zr_mzombie_max_time", "1.0", "Maximum time from the start of the round until picking the mother zombie(s).");
-    g_hCvarMZombieRatio =               CreateConVar("zr_mzombie_ratio", "5", "Number of humans to infect as mother zombies in proportion to number of humans on the server. ['0' = Always one mother zombie]");
-    g_hCvarMZombieBlockConsecutive =    CreateConVar("zr_mzombie_block_consecutive", "1", "Prevent a player from being chosen as mother zombie two rounds in a row.");
+    g_hCvarMZombieMinTime =             CreateConVar("zrc_mzombie_min_time", "1.0", "Minimum time from the start of the round until picking the mother zombie(s).");
+    g_hCvarMZombieMaxTime =             CreateConVar("zrc_mzombie_max_time", "1.0", "Maximum time from the start of the round until picking the mother zombie(s).");
+    g_hCvarMZombieRatio =               CreateConVar("zrc_mzombie_ratio", "5", "Number of humans to infect as mother zombies in proportion to number of humans on the server. ['0' = Always one mother zombie]");
+    g_hCvarMZombieBlockConsecutive =    CreateConVar("zrc_mzombie_block_consecutive", "1", "Prevent a player from being chosen as mother zombie two rounds in a row.");
     
     // Create commands.
-    RegConsoleCmd("zr_infect", ZRCInfect_InfectCommand, "Turn a player into a zombie. Usage: zr_infect <#userid|name> [respawn - 1/0]");
-    RegConsoleCmd("zr_human", ZRCInfect_HumanCommand, "Turn a player into a human. Usage: zr_human <#userid|name> [respawn - 1/0] [protect - 1/0]");
+    RegConsoleCmd("zrc_infect", ZRCInfect_InfectCommand, "Turn a player into a zombie. Usage: zr_infect <#userid|name> [respawn - 1/0]");
+    RegConsoleCmd("zrc_human", ZRCInfect_HumanCommand, "Turn a player into a human. Usage: zr_human <#userid|name> [respawn - 1/0] [protect - 1/0]");
 }
 
 /**
@@ -306,14 +296,14 @@ public ZRCInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon
  * 
  * @param client    The client being infected.
  * @param attacker  The client doing the infecting.
- * @param mzombie   True to make a mother zombie, false for normal zombie. 
+ * @param mzombie   True to make a mother zombie, false for normal zombie.
  */
 ZRCInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
 {
     PrintToChatAll("INFECT %N infected %N", attacker, client);
     TLib_SetClientTeam(client, VTeam_Zombie);
     
-    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC infected");
+    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC human to zombie");
     
     #if defined PROJECT_GAME_CSS
         // If this is the first zombie of the round then update the client teams.

@@ -61,6 +61,8 @@ new ProjectEvent:g_EvOnClientPutInServer;
 new ProjectEvent:g_EvOnClientDisconnect;
 new ProjectEvent:g_EvOnClientCookiesCached;
 new ProjectEvent:g_EvOnPlayerRunCmd;
+new ProjectEvent:g_EvOnClientInfect;
+new ProjectEvent:g_EvOnClientHuman;
 
 // CS:S events.
 #if defined PROJECT_GAME_CSS
@@ -313,6 +315,8 @@ stock EventMgr_CreateEvents()
     g_EvOnClientDisconnect =        EventMgr_CreateEvent("Event_OnClientDisconnect");       /** Client is disconnecting from the server. */
     g_EvOnClientCookiesCached =     EventMgr_CreateEvent("Event_OnClientCookiesCached");    /** Client cookies were cached from the database. */
     g_EvOnPlayerRunCmd =            EventMgr_CreateEvent("Event_OnPlayerRunCmd");           /** Client's movement buttons are being processed. */
+    g_EvOnClientInfect =            EventMgr_CreateEvent("Event_OnClientInfect");           /** Client has been infected as zombie. */
+    g_EvOnClientHuman =             EventMgr_CreateEvent("Event_OnClientHuman");            /** Client has become human from the infected state. */
     
     // CS:S events.
     #if defined PROJECT_GAME_CSS

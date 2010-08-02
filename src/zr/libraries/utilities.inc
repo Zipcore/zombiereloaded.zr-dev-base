@@ -156,6 +156,22 @@ stock Util_RemovePlayerItem(client, weaponindex)
 }
 
 /**
+ * Switch a clients team only if their current one differs.
+ * 
+ * @param client    The client to switch.
+ * @param team      The team index to switch client to.
+ */
+stock Util_SwitchTeam(client, team)
+{
+    if (GetClientTeam(client) != team)
+    {
+        #if defined PROJECT_GAME_CSS
+            CS_SwitchTeam(client, team);
+        #endif
+    }
+}
+
+/**
  * Closes a handle and sets it to invalid handle.
  * 
  * @param handle    The handle to close.

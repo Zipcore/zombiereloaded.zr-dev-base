@@ -19,7 +19,7 @@
 {
 	"zrclassic"
 	{
-		"core"		"zr_root"
+		"core"		"zrc_root"
 		"cfg"		"zrclassic.cfg"
 
 		"modulecmds"

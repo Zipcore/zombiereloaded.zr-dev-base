@@ -104,7 +104,6 @@ public ZRiotGPlay_OnEventsReady()
     EventMgr_TakePriority("Event_OnClientInfect", g_moduleZRiotGPlay, ZRiotTM_GetIdentifier());
 }
 
-
 /**
  * Plugin is loading.
  */

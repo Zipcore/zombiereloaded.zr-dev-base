@@ -166,11 +166,6 @@ public ZRiotGPlay_OnMapStart()
  */
 public ZRiotGPlay_OnClientInfect(client, attacker, bool:mzombie)
 {
-    // The core won't infect all clients as mother zombie so don't waste time checking.
-    // This could be a big performance boost if 10 mother zombies are being spawned simultaneously.
-    if (mzombie)
-        return;
-    
     // If there are no more humans then zombies win.
     if (TLib_CountTeam(VTeam_Human, true) == 0)
     {

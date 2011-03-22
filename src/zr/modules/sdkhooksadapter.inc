@@ -35,6 +35,7 @@ new Module:g_moduleSDKHAdapt;
 /**
  * Event ID variables.
  */
+new ProjectEvent:g_EvPreThinkPost;
 new ProjectEvent:g_EvTraceAttack;
 new ProjectEvent:g_EvOnTakeDamage;
 new ProjectEvent:g_EvWeaponCanUse;
@@ -60,6 +61,8 @@ SDKHAdapt_Register()
     g_moduleSDKHAdapt = ModuleMgr_Register(moduledata);
     
     // Create custom events.
+    
+    g_EvPreThinkPost =      EventMgr_CreateEvent("Hook_PreThinkPost");
     g_EvTraceAttack =       EventMgr_CreateEvent("Hook_TraceAttack");
     g_EvOnTakeDamage =      EventMgr_CreateEvent("Hook_OnTakeDamage");
     g_EvWeaponCanUse =      EventMgr_CreateEvent("Hook_WeaponCanUse");
@@ -104,6 +107,7 @@ public SDKHAdapt_OnMyModuleEnable()
         if (!IsClientInGame(client))
             continue;
         
+        SDKHook(client, SDKHook_PreThinkPost, SDKHAdapt_PreThinkPost);
         SDKHook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
         SDKHook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
         SDKHook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
@@ -123,6 +127,7 @@ public SDKHAdapt_OnMyModuleDisable()
         if (!IsClientInGame(client))
             continue;
         
+        SDKUnhook(client, SDKHook_PreThinkPost, SDKHAdapt_PreThinkPost);
         SDKUnhook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
         SDKUnhook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
         SDKUnhook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
@@ -138,6 +143,7 @@ public SDKHAdapt_OnMyModuleDisable()
  */
 public SDKHAdapt_OnClientPutInServer(client)
 {
+    SDKHook(client, SDKHook_PreThinkPost, SDKHAdapt_PreThinkPost);
     SDKHook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
     SDKHook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
     SDKHook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
@@ -152,11 +158,29 @@ public SDKHAdapt_OnClientPutInServer(client)
  */
 public SDKHAdapt_OnClientDisconnect(client)
 {
+    SDKUnhook(client, SDKHook_PreThinkPost, SDKHAdapt_PreThinkPost);
     SDKUnhook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
     SDKUnhook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
     SDKUnhook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
     SDKUnhook(client, SDKHook_WeaponEquip, SDKHAdapt_WeaponEquip);
     SDKUnhook(client, SDKHook_WeaponDrop, SDKHAdapt_WeaponDrop);
+}
+
+/**
+ * Called basically every frame after client prethink.
+ * 
+ * @param client    The client index.
+ * 
+ * @noreturn
+ */
+public SDKHAdapt_PreThinkPost(client)
+{
+    // Forward event to all modules.
+    new any:eventdata[1][1];
+    
+    eventdata[0][0] = client;
+    
+    EventMgr_Forward(g_EvPreThinkPost, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
 }
 
 /**

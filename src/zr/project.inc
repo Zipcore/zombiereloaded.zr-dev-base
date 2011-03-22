@@ -64,6 +64,7 @@ stock ForwardOnPluginStart()
     ZRC_OnPluginStart();
     ZRiot_OnPluginStart();
     SDKHAdapt_OnPluginStart();
+    Speed_OnPluginStart();
     //ZTele_OnPluginStart();
     StripObj_OnPluginStart();
     

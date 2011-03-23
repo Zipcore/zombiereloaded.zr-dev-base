@@ -56,8 +56,10 @@
 //#include "zr/modules/ztele"
 #include "zr/modules/stripobjectives"
 
+// Game-specific modules
 #if defined PROJECT_GAME_CSS
-  #include "zr/modules/weapons/weapons"
+    #include "zr/modules/weapons/weapons"
+    #include "zr/modules/napalm"
 #endif
 
 /**

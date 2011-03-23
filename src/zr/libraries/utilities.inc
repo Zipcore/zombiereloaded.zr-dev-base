@@ -235,12 +235,33 @@ stock RoundEndReasons:Util_TeamToReason(teamindex)
 #if defined PROJECT_GAME_TF2
 
 /**
+ * Ends a TF2 game in a stalemate when this is passed to the function.
+ */
+#define ROUNDEND_STALEMATE 0
+
+/**
+ * Takes a winning team index and returns its corresponding round end reason.
+ * Ex: Takes index '2' and returns the Terrorists_Win round end reason.
+ * 
+ * @param teamindex     The team index that won the round.
+ * 
+ * @return              Returns 'teamindex' unless it is invalid, in which case ROUNDEND_STALEMATE is returned.
+ */
+stock Util_TeamToReason(teamindex)
+{
+    if (teamindex == TEAM_2 || teamindex == TEAM_3)
+        return teamindex;
+    
+    return ROUNDEND_STALEMATE;
+}
+
+/**
  * Terminates the round. (TF2)
  * Credits to toazron1 for this one :)
  * 
  * @team    The team index of the winner.
  */
-stock Util_TerminateRound(teamindex)
+stock TF2_TerminateRound(teamindex)
 {
     new ent = FindEntityByClassname(-1, "team_control_point_master");
     if (ent == -1)

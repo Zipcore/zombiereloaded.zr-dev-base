@@ -124,7 +124,7 @@ ZRiotInfect_HumanToZombie(client)
     eventdata[1][0] = 0;        // No attacker in ZRiot.
     eventdata[2][0] = false;    // No mother zombies in ZRiot.
     
-    EventMgr_Forward(g_EvOnClientInfect, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    EventMgr_Forward(g_EvOnClientInfected, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
 }
 
 /**

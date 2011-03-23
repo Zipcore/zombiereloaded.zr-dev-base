@@ -85,7 +85,7 @@ public ZRiotGPlay_OnEventsRegister()
     //EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnMyModuleDisable",       "ZRiotGPlay_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnMapStart",              "ZRiotGPlay_OnMapStart");
     EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnClientDisconnect",      "ZRiotGPlay_OnClientDisconnect");
-    EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnClientInfect",          "ZRiotGPlay_OnClientInfect");
+    EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnClientInfected",        "ZRiotGPlay_OnClientInfected");
     
     #if defined PROJECT_GAME_CSS
     
@@ -101,8 +101,8 @@ public ZRiotGPlay_OnEventsRegister()
  */
 public ZRiotGPlay_OnEventsReady()
 {
-    // Push down priority for Event_OnClientInfect to below zrteammanager module.
-    EventMgr_TakePriority("Event_OnClientInfect", g_moduleZRiotGPlay, ZRiotTM_GetIdentifier());
+    // Push down priority for Event_OnClientInfected to below zrteammanager module.
+    EventMgr_TakePriority("Event_OnClientInfected", g_moduleZRiotGPlay, ZRiotTM_GetIdentifier());
 }
 
 /**
@@ -198,7 +198,7 @@ public ZRiotGPlay_OnClientDisconnect(client)
  * @param attacker      The zombie that infected the client.
  * @param mzombie       True if the client has been infected as a mother zombie.
  */
-public ZRiotGPlay_OnClientInfect(client, attacker, bool:mzombie)
+public ZRiotGPlay_OnClientInfected(client, attacker, bool:mzombie)
 {
     // If there are no more humans then zombies win.
     if (TLib_CountTeam(VTeam_Human, true) == 0)

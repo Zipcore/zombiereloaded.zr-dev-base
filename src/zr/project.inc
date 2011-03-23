@@ -70,6 +70,7 @@ stock ForwardOnPluginStart()
     
     #if defined PROJECT_GAME_CSS
         Weapons_OnPluginStart();
+        Napalm_OnPluginStart();
     #endif
     
     AutoExecConfig(true, "zombiereloaded");

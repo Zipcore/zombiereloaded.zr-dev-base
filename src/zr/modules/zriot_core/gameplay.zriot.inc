@@ -84,6 +84,7 @@ public ZRiotGPlay_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnMyModuleEnable",        "ZRiotGPlay_OnMyModuleEnable");
     //EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnMyModuleDisable",       "ZRiotGPlay_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnMapStart",              "ZRiotGPlay_OnMapStart");
+    EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnClientDisconnect",      "ZRiotGPlay_OnClientDisconnect");
     EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnClientInfect",          "ZRiotGPlay_OnClientInfect");
     
     #if defined PROJECT_GAME_CSS
@@ -115,11 +116,16 @@ ZRiotGPlay_OnPluginStart()
     // Create cvars.
     g_hCvarObeyRoundTime = CreateConVar("zriot_obey_roundtime", "0", "When the time set by mp_roundtime expires, then zombies win.  Otherwise, the only way to win is to eliminate the opposing team.");
     
-    #if defined PROJECT_GAME_CSS
-        HookConVarChange(FindConVar("mp_restartgame"), ZRiotGPlay_CvarHookMPRGame);
-        CvarLib_LockCvar("mp_limitteams", "0");
+    #if defined PROJECT_GAME_CSS || defined PROJECT_GAME_TF2
+        HookConVarChange(FindConVar("mp_restartgame"), ZRCGPlay_CvarHookMPRGame);
         CvarLib_LockCvar("mp_autoteambalance", "0");
     #endif
+    
+    #if defined PROJECT_GAME_CSS
+        CvarLib_LockCvar("mp_limitteams", "0");
+    #endif
+    
+    // TODO: tf2 mp_limitteams?
 }
 
 /**
@@ -158,6 +164,34 @@ public ZRiotGPlay_OnMapStart()
 }
 
 /**
+ * Client is disconnecting from the server.
+ * 
+ * @param client    The client index.
+ */
+public ZRiotGPlay_OnClientDisconnect(client)
+{
+    // End the round if the last human leaves.
+    if (TLib_IsClientHuman(client))
+    {
+        if (TLib_CountTeam(VTeam_Human, true) <= 1)
+        {
+            new team = TLib_GetGameTeamIndex(VTeam_Zombie);
+            new reason = _:Util_TeamToReason(team);
+            
+            #if defined PROJECT_GAME_CSS
+                SDKToolsLib_TerminateRound(3.0, RoundEndReasons:reason);
+            #endif
+            
+            #if defined PROJECT_GAME_TF2
+                TF2_TerminateRound(reason);
+            #endif
+        }
+    }
+    
+    // TODO Pick new zombie.
+}
+
+/**
  * Client has been infected.
  * 
  * @param client        The infected client.
@@ -169,7 +203,16 @@ public ZRiotGPlay_OnClientInfect(client, attacker, bool:mzombie)
     // If there are no more humans then zombies win.
     if (TLib_CountTeam(VTeam_Human, true) == 0)
     {
-        SDKToolsLib_TerminateRound(3.0, Util_TeamToReason(TLib_GetGameTeamIndex(VTeam_Zombie)));
+        new team = TLib_GetGameTeamIndex(VTeam_Zombie);
+        new reason = _:Util_TeamToReason(team);
+        
+        #if defined PROJECT_GAME_CSS
+            SDKToolsLib_TerminateRound(3.0, RoundEndReasons:reason);
+        #endif
+        
+        #if defined PROJECT_GAME_TF2
+            TF2_TerminateRound(reason);
+        #endif
     }
 }
 
@@ -183,11 +226,18 @@ public ZRiotGPlay_OnClientHuman(client)
     // If there are no more humans then humans win.
     if (TLib_CountTeam(VTeam_Zombie, true) == 0)
     {
-        SDKToolsLib_TerminateRound(3.0, Util_TeamToReason(TLib_GetGameTeamIndex(VTeam_Human)));
+        new team = TLib_GetGameTeamIndex(VTeam_Human);
+        new reason = _:Util_TeamToReason(team);
+        
+        #if defined PROJECT_GAME_CSS
+            SDKToolsLib_TerminateRound(3.0, RoundEndReasons:reason);
+        #endif
+        
+        #if defined PROJECT_GAME_TF2
+            TF2_TerminateRound(reason);
+        #endif
     }
 }
-
-#if defined PROJECT_GAME_CSS
 
 /**
  * Round has started.
@@ -234,7 +284,16 @@ public Action:ZRiotGPlay_RoundEndTimer(Handle:timer)
     g_hZRiotRoundTimer = INVALID_HANDLE;
     
     // Humans held out against the zombies, they win!
-    SDKToolsLib_TerminateRound(3.0, Util_TeamToReason(TLib_GetGameTeamIndex(VTeam_Zombie)));
+    new team = TLib_GetGameTeamIndex(VTeam_Human);
+    new reason = _:Util_TeamToReason(team);
+    
+    #if defined PROJECT_GAME_CSS
+        SDKToolsLib_TerminateRound(3.0, RoundEndReasons:reason);
+    #endif
+    
+    #if defined PROJECT_GAME_TF2
+        TF2_TerminateRound(reason);
+    #endif
 }
 
 /**
@@ -246,13 +305,9 @@ public ZRiotGPlay_RoundEnd()
     Util_CloseHandle(g_hZRiotRoundTimer);
 }
 
-#endif
-
 // **********************************************
 //            Cvar Hook Callbacks
 // **********************************************
-
-#if defined PROJECT_GAME_CSS
 
 /**
  * Called when a console variable's value is changed.
@@ -268,11 +323,16 @@ public ZRiotGPlay_CvarHookMPRGame(Handle:convar, const String:oldValue[], const 
     if (time == 0)
         return;
     
-    // End round with "Game commencing"
-    SDKToolsLib_TerminateRound(float(time), ROUNDEND_GAME_COMMENCING);
+    #if defined PROJECT_GAME_CSS
+        // End round with "Game commencing"
+        SDKToolsLib_TerminateRound(float(time), ROUNDEND_GAME_COMMENCING);
+    #endif
+    
+    #if defined PROJECT_GAME_TF2
+        // End in stalemate.
+        TF2_TerminateRound(ROUNDEND_STALEMATE);
+    #endif
     
     // This basically makes mp_restartgame useless.
     SetConVarInt(convar, 0);
 }
-
-#endif

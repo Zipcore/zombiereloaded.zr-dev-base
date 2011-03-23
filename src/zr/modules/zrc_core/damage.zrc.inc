@@ -38,7 +38,7 @@ stock Module:ZRCDmg_GetIdentifier() { return g_moduleZRCDmg; }
 /**
  * Cvar handles.
  */
-#if defined PROJECT_GAME_CSS
+#if defined PROJECT_GAME_CSS || defined PROJECT_GAME_TF2
   new Handle:g_hCvarMPFF;
 #endif
 
@@ -140,7 +140,7 @@ public Action:ZRCDmg_OnTakeDamage(victim, &attacker, &Float:damage, &damagetype)
     {
         // Knifing is included in DMG_BULLET in CS:S.
         // They couldn't just use DMG_SLASH because that would make sense.
-        if (damagetype & DMG_BULLET)
+        if (damagetype & UTILS_DMG_BULLET)
         {
             SetEntityHealth(victim, GetClientHealth(victim) + RoundToNearest(damage));
         }

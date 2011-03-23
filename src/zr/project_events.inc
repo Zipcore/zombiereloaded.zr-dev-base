@@ -25,6 +25,8 @@
  * ============================================================================
  */
 
+#include "zr/libraries/offsetlib"
+
 /**
  * The max number of events that the project can have.
  */

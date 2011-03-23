@@ -29,7 +29,9 @@
  * CHECK CLASS SETTINGS
  */
 
+#include "zr/libraries/damagelib"
 #include "zr/libraries/offsetlib"
+
 /**
  * This module's identifier.
  */

@@ -25,6 +25,8 @@
  * ============================================================================
  */
 
+#include "zr/libraries/damagelib"
+
 /**
  * This module's identifier.
  */

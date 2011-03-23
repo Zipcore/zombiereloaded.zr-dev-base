@@ -342,7 +342,7 @@ ZRCInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
     eventdata[1][0] = attacker;
     eventdata[2][0] = mzombie;
     
-    EventMgr_Forward(g_EvOnClientInfect, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    EventMgr_Forward(g_EvOnClientInfected, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
 }
 
 /**

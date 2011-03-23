@@ -279,7 +279,7 @@ public <FuncPrefix>_OnClientCookiesCached(client)
  * @param attacker      The zombie that infected the client.
  * @param mzombie       True if the client has been infected as a mother zombie.
  */
-public <FuncPrefix>_OnClientInfect(client)
+public <FuncPrefix>_OnClientInfected(client)
 {
 }
 

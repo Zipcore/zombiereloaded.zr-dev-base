@@ -75,7 +75,7 @@ public ZRiotTM_OnEventsRegister()
     #endif
     
     // Register custom events.
-    EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_OnClientInfect",             "ZRiotTM_OnClientInfect");
+    EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_OnClientInfected",           "ZRiotTM_OnClientInfected");
     EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_OnClientHuman",              "ZRiotTM_OnClientHuman");
 }
 
@@ -106,7 +106,7 @@ public ZRiotTM_OnClientPutInServer(client)
  * @param attacker      The zombie that infected the client.
  * @param mzombie       True if the client has been infected as a mother zombie.
  */
-public ZRiotTM_OnClientInfect(client, attacker, bool:mzombie)
+public ZRiotTM_OnClientInfected(client, attacker, bool:mzombie)
 {
     #if defined PROJECT_GAME_CSS
         Util_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Zombie));

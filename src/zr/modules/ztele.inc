@@ -119,7 +119,7 @@ public ZTele_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZTele, "Event_OnMapStart",                   "ZTele_OnMapStart");
     EventMgr_RegisterEvent(g_moduleZTele, "Event_OnClientPutInServer",          "ZTele_OnClientPutInServer");
     EventMgr_RegisterEvent(g_moduleZTele, "Event_OnClientDisconnect",           "ZTele_OnClientDisconnect");
-    EventMgr_RegisterEvent(g_moduleZTele, "Event_OnClientInfect",               "ZTele_OnClientInfect");
+    EventMgr_RegisterEvent(g_moduleZTele, "Event_OnClientInfected",             "ZTele_OnClientInfected");
     EventMgr_RegisterEvent(g_moduleZTele, "Event_OnClientHuman",                "ZTele_OnClientHuman");
     
     #if defined PROJECT_GAME_CSS
@@ -252,7 +252,7 @@ public ZTele_PlayerDeath(victim, attacker, const String:weapon[], bool:headshot)
  * 
  * @param client    The client index.
  */
-public ZTele_OnClientInfect(client)
+public ZTele_OnClientInfected(client)
 {
     g_iZTeleCount[client] = 0;
     Util_CloseHandle(g_hZTeleTimer[client]);

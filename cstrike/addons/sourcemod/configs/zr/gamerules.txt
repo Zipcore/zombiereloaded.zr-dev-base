@@ -8,19 +8,37 @@
 //
 // ============================================================================
 //
-// Valid module cmds:
+// Each game rule set (aka game mode or GRS) is defined in this file.
+// The value of cvar zr_ruleset refers to these game rule set names.  E.g. "zrclassic"
 //
-// on           Enable the module.
-// force_on     Force the module to be enabled.  This guarantees that the module will be loaded at all times.
-// off          Disable the module.
-// force_off	Force the module to be disabled.  The module will be disabled after cvars are set, and this guarantees they will remain off.
+// Available rules for each GRS/game mode include:
+// "core"		- The root module that should be enabled.  Each GRS can only have 1 core enabled, all others will be forced off.
+//			  Don't touch this if you don't know what you are doing.
+// "configs"		- The config files to load for this GRS.  Options:
+//	"cfg"		- The executable .cfg file relative to cfg/sourcemod/ to execute when this game rule set is applied.
+//	"weapons"	- The weapons module will load the file this points to.
+//	TODO: Add the other module configs files.
+//
+// "modulecmds"	 	- Specific module commands.  Options:
+//	"<modulename>"	- Valid commands:
+//		"on"		- Module will be enabled when this is applied.
+//		"force_on"	- Module will be locked into the enabled state.
+//		"off"		- Module will be disabled when this is applied.
+//		"force_off"	- Module will be locked into the disabled state.
+//	"<modulename2>"
+//	"etc"
 
 "gamerules"
 {
 	"zrclassic"
 	{
 		"core"		"zrc_root"
-		"cfg"		"zrclassic.cfg"
+
+		"configs"
+		{
+			"cfg"		"zombiereloaded/zrclassic.cfg"
+			"weapons"	"configs/zr/weapons.txt"
+		}
 
 		"modulecmds"
 		{
@@ -31,7 +49,12 @@
 	"zriot"
 	{
 		"core"		"zriot_root"
-		"cfg"		"zriot.cfg"
+
+		"configs"
+		{
+			"cfg"		"zriot.cfg"
+			"weapons"	"configs/zr/weapons.txt"
+		}
 
 		"modulecmds"
 		{

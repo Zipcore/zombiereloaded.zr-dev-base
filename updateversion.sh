@@ -4,17 +4,17 @@
 #       from that location.
 
 # Program for printing date.
-PROJECT_DATEPATH='date'
+DATEPATH='date'
 
-PROJECT_UNOFFICIAL=false
+UNOFFICIAL=false
 
 if [ "$1" ]
 then
     if [ "$1" = "--unofficial" ]
     then
-        PROJECT_UNOFFICIAL=true
+        UNOFFICIAL=true
     else
-        PROJECT_DATEPATH=$1
+        DATEPATH=$1
     fi
 fi
 
@@ -22,12 +22,12 @@ PROJECT_VERSION_FILE="src/zr/base/hgversion.inc"
 
 PROJECT_REVISION=$(hg id -n):$(hg id -i)
 
-if [ $PROJECT_UNOFFICIAL = "true" ]
+if [ $UNOFFICIAL = "true" ]
 then
     PROJECT_REVISION="Unofficial build - based on $PROJECT_REVISION"
 fi
 
-PROJECT_DATE=$($PROJECT_DATEPATH -R)
+DATE=$($DATEPATH -R)
 
 echo "#define PROJECT_MERCURIAL_REVISION         \"$PROJECT_REVISION\"" > $PROJECT_VERSION_FILE
 echo "#define PROJECT_MERCURIAL_DATE             \"$PROJECT_DATE\"" >> $PROJECT_VERSION_FILE

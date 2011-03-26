@@ -1,8 +1,9 @@
+# Script made by [SG-10]Cpt.Moore
 
 SOURCEDIR=src
 SMINCLUDES=env/include
 BUILDDIR=build
-SPCOMP=env/linux/bin/spcomp
+SPCOMP=env/linux/bin/spcomp-1.4.0-3078
 VERSIONDUMP=./updateversion.sh
 
 vpath %.sp $(SOURCEDIR)

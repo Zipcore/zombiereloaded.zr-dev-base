@@ -46,8 +46,12 @@ stock Module:GameRules_GetIdentifier() { return g_moduleGameRules; }
 /**
  * Cvar handles.
  */
-new Handle:g_hCvarGameRulesConfigFile;
 new Handle:g_hCvarGameRuleSet;
+
+/**
+ * Location of gamerules config file.
+ */
+#define GAMERULES_FILE "configs/zr/gamerules.txt"
 
 /**
  * Available game rule actions.
@@ -166,7 +170,6 @@ GameRules_OnPluginStart()
     GameRules_Register();
     
     // Create cvars.
-    g_hCvarGameRulesConfigFile  = Project_CreateConVar("gamerules_configfile", "configs/zr/gamerules.txt", "Path to game rules config file.  Path is relative to the \"sourcemod/\" directory.");
     g_hCvarGameRuleSet          = Project_CreateConVar("ruleset", "zrclassic", "Name of game rule set to use.");
     
     // Create array.
@@ -373,16 +376,13 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
  */
 GameRules_CacheGameRulesData()
 {
-    decl String:configfile[PLATFORM_MAX_PATH];
-    GetConVarString(g_hCvarGameRulesConfigFile, configfile, sizeof(configfile));
-    
-    if (ConfigMgr_ValidateFile(configfile))
+    if (ConfigMgr_ValidateFile(GAMERULES_FILE))
     {
-        ConfigMgr_WriteString(g_moduleGameRules, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);
+        ConfigMgr_WriteString(g_moduleGameRules, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, GAMERULES_FILE);
     }
     else
     {
-        LogMgr_Print(g_moduleGameRules, LogType_Fatal_Module, "Config Validation", "Error: Invalid config file path in cvar zr_gamerules_configfile: \"%s\"", configfile);
+        LogMgr_Print(g_moduleGameRules, LogType_Fatal_Module, "Config Validation", "Error: Missing critical gamerules config file: \"%s\"", GAMERULES_FILE);
         return;
     }
     
@@ -392,7 +392,7 @@ GameRules_CacheGameRulesData()
     
     // There were no game rule sets configured.
     if (g_iGameRuleCount == 0)
-        LogMgr_Print(g_moduleGameRules, LogType_Fatal_Module, "Config Validation", "Error: No usable data found in game rules config file: %s", configfile);
+        LogMgr_Print(g_moduleGameRules, LogType_Fatal_Module, "Config Validation", "Error: No usable data found in game rules config file: \"%s\"", GAMERULES_FILE);
 }
 
 /**

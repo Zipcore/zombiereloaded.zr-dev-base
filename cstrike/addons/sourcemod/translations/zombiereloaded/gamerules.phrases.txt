@@ -1,0 +1,16 @@
+"Phrases"
+{
+	// **********************************************
+	//                  Game Rules
+	// **********************************************
+
+	"GameRules config reload"
+	{
+		"en"		"The gamerules config file is re-loaded only on map-changes."
+	}
+
+	"GameRules nextruleset command syntax"
+	{
+		"en"		"Set the ruleset to be applied for next map.  Usage: zr_nextruleset <ruleset>"
+	}
+}

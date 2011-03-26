@@ -32,6 +32,7 @@
 
 // Include libraries.
 #include "zr/libraries/cookielib"
+#include "zr/libraries/functionlib"
 #include "zr/libraries/menulib"
 #include "zr/libraries/offsetlib"
 #include "zr/libraries/sdktoolslib"
@@ -52,7 +53,7 @@ stock Module:Weapons_GetIdentifier() { return g_moduleWeapons; }
 /**
  * Cvar handles.
  */
-new Handle:g_hCvarWeaponsConfigFile;
+
 
 /**
  * The max string lengths of weapon config data variables.
@@ -161,9 +162,10 @@ public Weapons_OnEventsRegister()
 {
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnPluginEnd",            "Weapons_OnPluginEnd");
-    EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnConfigsExecuted",      "Weapons_OnConfigsExecuted");
-    EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnClientPutInServer",    "Weapons_OnClientPutInServer");
-    EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnClientDisconnect",     "Weapons_OnClientDisconnect");
+    EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnMapStart",             "Weapons_OnMapStart");
+    EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnMyModuleEnable",       "Weapons_OnMyModuleEnable");
+    //EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnClientPutInServer",    "Weapons_OnClientPutInServer");
+    //EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnClientDisconnect",     "Weapons_OnClientDisconnect");
 }
 
 /**
@@ -175,7 +177,7 @@ Weapons_OnPluginStart()
     Weapons_Register();
     
     // Create cvars.
-    g_hCvarWeaponsConfigFile = Project_CreateConVar("weapons_configfile",  "configs/zr/weapons.txt",   "Path to weapons config file.  Path is relative to the \"sourcemod/\" directory.");
+    
     
     // Create dynamic arrays to store weapon data.
     g_hWeapons[WEAPONS_GLOBAL] = CreateArray(sizeof(g_WeaponsDummyArray));
@@ -205,9 +207,20 @@ public Weapons_OnPluginEnd()
 }
 
 /**
+ * The module that hooked this event callback has been enabled.
+ */
+public Action:Weapons_OnMyModuleEnable()
+{
+    // Don't let the module load unless the weapon data is cached successfully.
+    if (!Weapons_CacheWeaponData())
+        return Plugin_Handled;
+    return Plugin_Continue;
+}
+
+/**
  * The map has started.
  */
-public Weapons_OnConfigsExecuted()
+public Weapons_OnMapStart()
 {
     Weapons_CacheWeaponData();
 }
@@ -227,9 +240,6 @@ public Weapons_OnConfigReload(configindex)
  */
 public Weapons_OnClientPutInServer(client)
 {
-    // Client is joining before OnConfigsExecuted, they need to rejoin.
-    if (!Weapons_AreConfigsCached())
-        KickClient(client);
 }
 
 /**
@@ -291,17 +301,25 @@ public KvCache:Weapons_Cache(Handle:kv, sectionindex, const String:sectionname[]
  * Re-cache all weapon data from disk.
  * Never use this before OnConfigsExecuted!
  */
-Weapons_CacheWeaponData()
+bool:Weapons_CacheWeaponData()
 {
+    // This will kill the module if the gamerules module is not present.
+    if (!FuncLib_IsFunctionAvailable("GameRules_GetNamedConfig"))
+    {
+        LogMgr_Print(g_moduleWeapons, LogType_Fatal_Module, "Missing module", "Requires the gamerules module!  Contact module author.");
+        return false;
+    }
+    
+    // Get the config path from the gamerules module.
     decl String:configfile[PLATFORM_MAX_PATH];
-    GetConVarString(g_hCvarWeaponsConfigFile, configfile, sizeof(configfile));
+    GameRules_GetNamedConfig("weapons", configfile);
     
     if (ConfigMgr_ValidateFile(configfile))
         ConfigMgr_WriteString(g_moduleWeapons, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);
     else
     {
-        LogMgr_Print(g_moduleWeapons, LogType_Fatal_Module, "Config Validation", "Invalid config file path in cvar zr_weapons_configfile: \"%s\"", configfile);
-        return;
+        LogMgr_Print(g_moduleWeapons, LogType_Fatal_Module, "Config Validation", "Invalid config file path in cvar zr_weapons_configfile: \"%s\".  Disabling module.", configfile);
+        return false;
     }
     
     ClearArray(g_hWeapons[WEAPONS_GLOBAL]);
@@ -313,6 +331,8 @@ Weapons_CacheWeaponData()
     
     // Build a list of used weapon types.
     Weapons_BuildWTList();
+    
+    return true;
 }
 
 /**

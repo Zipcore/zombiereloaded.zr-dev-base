@@ -85,6 +85,14 @@ stock ForwardOnPluginStart()
  */
 #define SERVER_INDEX 0
 
+/**
+ * Generic enum for specifying whether this should apply to the server or the client.
+ */
+enum CommandFor
+{
+    CommandFor_Server,
+    CommandFor_Client
+}
 
 // **********************************************
 //                Module Manager

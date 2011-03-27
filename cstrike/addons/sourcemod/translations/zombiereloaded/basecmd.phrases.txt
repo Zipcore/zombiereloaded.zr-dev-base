@@ -39,6 +39,16 @@
 		"en"		"Display version information"
 	}
 
+	"BaseCmd server config description"
+	{
+		"en"		"Manage configs"
+	}
+
+	"BaseCmd server log description"
+	{
+		"en"		"Manage log settings"
+	}
+
 	// {1}: PROJECT_FULLNAME
 	"BaseCmd server modules syntax"
 	{
@@ -79,6 +89,41 @@
 	"BaseCmd server modules reload description"
 	{
 		"en"		"Reloads a module"
+	}
+
+	// {1}: PROJECT_FULLNAME
+	"BaseCmd server config syntax"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} Config Menu:"
+	}
+
+	"BaseCmd server config reload description"
+	{
+		"en"		"Reloads a module's configs"
+	}
+
+	"BaseCmd server config reload_all description"
+	{
+		"en"		"Reloads all modules' configs"
+	}
+
+	// {1}: PROJECT_FULLNAME
+	"BaseCmd server log syntax"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} Log Settings Menu:"
+	}
+
+	"BaseCmd server log whitelist_add description"
+	{
+		"en"		"Add a module to the whitelist"
+	}
+
+	
+	"BaseCmd server log whitelist_rem description"
+	{
+		"en"		"Remove a module from the whitelist"
 	}
 
 	// {1}: PROJECT_FULLNAME
@@ -187,15 +232,6 @@
 	{
 		"#format"	"{1:s}"
 		"en"		"  Currently Registered Config Files: {1}"
-	}
-
-	// Command: <PROJECT_CMD_PREFIX>_reload_config
-
-	// {1-2}: PROJECT_CMD_PREFIX
-	"ConfigMgr cmd reloadconfig usage"
-	{
-		"#format"	"{1:s},{2:s}"
-		"en"		"Reloads a module's config files.  Usage: {1}_reload_config <moduleshortname> [module2] ...\nRelated command(s): {2}_reload_config_all"
 	}
 
 

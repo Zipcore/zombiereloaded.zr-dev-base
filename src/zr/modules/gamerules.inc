@@ -567,7 +567,7 @@ stock GameRules_ApplyRuleSet(ruleSet)
     GameRules_GetNamedConfig("cfg", cfgfile);
     if (cfgfile[0])
     {
-        ServerCommand("exec sourcemod/zombiereloaded/%s", cfgfile);
+        ServerCommand("exec %s", cfgfile);
         LogMgr_Print(g_moduleGameRules, LogType_Debug, "Game Rule Configs", "Executed game ruleset file: sourcemod/zombiereloaded/%s", cfgfile);
     }
     

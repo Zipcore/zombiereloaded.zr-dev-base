@@ -208,12 +208,23 @@ public Weapons_OnPluginEnd()
 
 /**
  * The module that hooked this event callback has been enabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
  */
-public Action:Weapons_OnMyModuleEnable()
+public Action:Weapons_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
     // Don't let the module load unless the weapon data is cached successfully.
     if (!Weapons_CacheWeaponData())
+    {
+        decl String:configfile[PLATFORM_MAX_PATH];
+        GameRules_GetNamedConfig("weapons", configfile);
+        Format(refusalmsg, maxlen, "%T", "Weapons refuse enable", LANG_SERVER, configfile);
         return Plugin_Handled;
+    }
+    
     return Plugin_Continue;
 }
 
@@ -300,16 +311,11 @@ public KvCache:Weapons_Cache(Handle:kv, sectionindex, const String:sectionname[]
 /**
  * Re-cache all weapon data from disk.
  * Never use this before OnConfigsExecuted!
+ * 
+ * @return      True if cached successfully, false if the file couldn't be found or no usable data was inside.
  */
 bool:Weapons_CacheWeaponData()
 {
-    // This will kill the module if the gamerules module is not present.
-    if (!FuncLib_IsFunctionAvailable("GameRules_GetNamedConfig"))
-    {
-        LogMgr_Print(g_moduleWeapons, LogType_Fatal_Module, "Missing module", "Requires the gamerules module!  Contact module author.");
-        return false;
-    }
-    
     // Get the config path from the gamerules module.
     decl String:configfile[PLATFORM_MAX_PATH];
     GameRules_GetNamedConfig("weapons", configfile);
@@ -327,7 +333,10 @@ bool:Weapons_CacheWeaponData()
     
     // There were no weapons configured.
     if (g_iWeaponCount == 0)
+    {
         LogMgr_Print(g_moduleWeapons, LogType_Fatal_Module, "Config Validation", "No usable data found in weapons config file: %s", configfile);
+        return false;
+    }
     
     // Build a list of used weapon types.
     Weapons_BuildWTList();

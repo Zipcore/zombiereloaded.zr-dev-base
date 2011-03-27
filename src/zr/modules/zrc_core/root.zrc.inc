@@ -100,13 +100,18 @@ ZRC_OnPluginStart()
 /**
  * The module that hooked this event callback has been enabled.
  * 
- * @return      Return Plugin_Handled to stop load, and Plugin_Continue to allow it.
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
  */
-public ZRC_OnMyModuleEnable()
+public Action:ZRC_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
     // Enable core ZR modules.
     new Module:dependentmodules[MM_DATA_DEPENDENCIES];
     new count = ModuleMgr_FindDependentModules(g_moduleZRCRoot, dependentmodules);
     for (new dmoduleindex = 0; dmoduleindex < count; dmoduleindex++)
         ModuleMgr_Enable(dependentmodules[dmoduleindex]);
+    
+    return Plugin_Continue;
 }

@@ -222,10 +222,14 @@ public Action:GameRules_OnModuleDisable(Module:module)
 /**
  * The module that hooked this event callback has been disabled.
  * 
- * @return      Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
  */
-public Action:GameRules_OnMyModuleDisable()
+public Action:GameRules_OnMyModuleDisable(String:refusalmsg[], maxlen)
 {
+    Format(refusalmsg, maxlen, "%T", "Game Rules refuse disable", LANG_SERVER);
     return Plugin_Handled;
 }
 
@@ -418,7 +422,7 @@ public GameRules_OnMapStart()
  */
 public GameRules_OnConfigReload(configindex)
 {
-    TransMgr_PrintText(SERVER_INDEX, MsgFormat_Plugin, MsgType_Reply, g_moduleGameRules, _, "GameRules config reload", GAMERULES_FILE);
+    TransMgr_PrintText(SERVER_INDEX, MsgFormat_Plugin, MsgType_Reply, g_moduleGameRules, _, "Game Rules config reload", GAMERULES_FILE);
 }
 
 /**
@@ -612,7 +616,7 @@ public Action:GameRules_NextRuleSet(client, argc)
     // If not enough arguments given, then stop.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "GameRules nextruleset command syntax", PROJECT_CMD_PREFIX);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Game Rules nextruleset command syntax", PROJECT_CMD_PREFIX);
         return Plugin_Handled;
     }
     

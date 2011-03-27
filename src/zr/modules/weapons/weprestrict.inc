@@ -100,9 +100,12 @@ WepRestrict_OnPluginStart()
 /**
  * The module that hooked this event callback has been enabled.
  * 
- * @return      Return Plugin_Handled to stop load, and Plugin_Continue to allow it.
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
  */
-public WepRestrict_OnMyModuleEnable()
+public Action:WepRestrict_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
     // Hook all clients in the server.
     for (new client = 1; client <= MaxClients; client++)
@@ -113,12 +116,19 @@ public WepRestrict_OnMyModuleEnable()
         // Hook WeaponCanUse on the client for restricting the weapon.
         SDKHook(client, SDKHook_WeaponCanUse, WepRestrict_CanUse);
     }
+    
+    return Plugin_Continue;
 }
 
 /**
  * The module that hooked this event callback has been disabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
  */
-public WepRestrict_OnMyModuleDisable()
+public Action:WepRestrict_OnMyModuleDisable(String:refusalmsg[], maxlen)
 {
     // Unhook all clients in the server.
     for (new client = 1; client <= MaxClients; client++)
@@ -128,6 +138,8 @@ public WepRestrict_OnMyModuleDisable()
         
         SDKUnhook(client, SDKHook_WeaponCanUse, WepRestrict_CanUse);
     }
+    
+    return Plugin_Continue;
 }
 
 /**

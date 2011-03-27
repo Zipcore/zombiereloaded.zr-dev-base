@@ -124,28 +124,40 @@ ZRCGPlay_OnPluginStart()
 
 /**
  * The module that hooked this event callback has been enabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
  */
-public ZRCGPlay_OnMyModuleEnable()
+public Action:ZRCGPlay_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
     #if defined PROJECT_GAME_CSS
         HookConVarChange(FindConVar("mp_restartgame"), ZRCGPlay_CvarHookMPRGame);
         CvarLib_LockCvar("mp_limitteams", "0");
         CvarLib_LockCvar("mp_autoteambalance", "0");
     #endif
+    
+    return Plugin_Continue;
 }
 
 /**
  * The module that hooked this event callback has been disabled.
  * 
- * @return      Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
  */
-public ZRCGPlay_OnMyModuleDisable()
+public Action:ZRCGPlay_OnMyModuleDisable(String:refusalmsg[], maxlen)
 {
     #if defined PROJECT_GAME_CSS
         UnhookConVarChange(FindConVar("mp_restartgame"), ZRCGPlay_CvarHookMPRGame);
         CvarLib_UnlockCvar("mp_limitteams");
         CvarLib_UnlockCvar("mp_autoteambalance");
     #endif
+    
+    return Plugin_Continue;
 }
 
 /**

@@ -218,17 +218,29 @@ stock ModuleToggleQuery:ModuleMgr_Disable(Module:module)
         new Action:result2 = Plugin_Continue;
         
         // If a module stops this module from disabling, then don't forward this event.
+        new any:eventdata2[2][512];
         if (result1 == Plugin_Continue)
         {
+            static EventDataTypes:eventdatatypes[] = {DataType_StringRef, DataType_Cell};
+            eventdata2[1][0] = sizeof(eventdata2[]);
+            
             // Send this event only to the module being disabled.
             new Module:modules[2] = {INVALID_MODULE, ...};
             modules[0] = module;
             
-            result2 = EventMgr_Forward(g_EvOnMyModuleDisable, g_CommonEventData1, 0, 0, g_CommonDataType1, modules);
+            result2 = EventMgr_Forward(g_EvOnMyModuleDisable, eventdata2, sizeof(eventdata2), sizeof(eventdata2[]), eventdatatypes, modules);
         }
         
         if (result1 == Plugin_Handled || result2 == Plugin_Handled)
+        {
+            // Check if a refusal message was set.
+            if (eventdata2[0][0])
+            {
+                PrintToServer(eventdata2[0]);
+                return ToggleQuery_RefuseWithMsg;
+            }
             return ToggleQuery_Refuse;
+        }
     #endif
     
     // Set the ModuleData_Disabled data to 'true'.
@@ -288,19 +300,30 @@ stock ModuleToggleQuery:ModuleMgr_Enable(Module:module)
         new Action:result2 = Plugin_Continue;
         
         // If a module stops this module from enabling, then don't forward this event.
+        new any:eventdata2[2][512];
         if (result1 == Plugin_Continue)
         {
+            static EventDataTypes:eventdatatypes[] = {DataType_StringRef, DataType_Cell};
+            eventdata2[1][0] = sizeof(eventdata2[]);
+            
             // Send this event only to the module being enabled.
             new Module:modules[2] = {INVALID_MODULE, ...};
             modules[0] = module;
             
-            result2 = EventMgr_Forward(g_EvOnMyModuleEnable, g_CommonEventData1, 0, 0, g_CommonDataType1, modules);
+            result2 = EventMgr_Forward(g_EvOnMyModuleEnable, eventdata2, sizeof(eventdata2), sizeof(eventdata2[]), eventdatatypes, modules);
         }
         
         // Undo the enabling if it refuses.
         if (result1 == Plugin_Handled || result2 == Plugin_Handled)
         {
             ModuleMgr_WriteCell(module, ModuleData_Disabled, true);
+            
+            // Check if a refusal message was set.
+            if (eventdata2[0][0])
+            {
+                PrintToServer(eventdata2[0]);
+                return ToggleQuery_RefuseWithMsg;
+            }
             return ToggleQuery_Refuse;
         }
     #endif
@@ -501,6 +524,13 @@ stock ModuleMgr_FindDependentModules(Module:module, Module:dependencies[MM_DATA_
         {
             if (_dependencies[_dindex] == INVALID_MODULE)
                 break;
+            
+            if (dindex >= MM_DATA_DEPENDENCIES)
+            {
+                decl String:modulefullname[MM_DATA_FULLNAME];
+                ModuleMgr_ReadString(Module:moduleindex, ModuleData_FullName, modulefullname, sizeof(modulefullname));
+                SetFailState("More than %d modules depend on module \"%s\".  Define \"MM_DATA_DEPENDENCIES\" must be increased.", MM_DATA_DEPENDENCIES, modulefullname);
+            }
             
             if (_dependencies[_dindex] == module)
             {

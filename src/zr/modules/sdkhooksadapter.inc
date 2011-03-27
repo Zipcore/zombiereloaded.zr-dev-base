@@ -97,9 +97,12 @@ SDKHAdapt_OnPluginStart()
 /**
  * The module that hooked this event callback has been enabled.
  * 
- * @return      Return Plugin_Handled to stop load, and Plugin_Continue to allow it.
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
  */
-public SDKHAdapt_OnMyModuleEnable()
+public Action:SDKHAdapt_OnMyModuleEnable()
 {
     // Hook all clients in the server.
     for (new client = 1; client <= MaxClients; client++)
@@ -114,12 +117,19 @@ public SDKHAdapt_OnMyModuleEnable()
         SDKHook(client, SDKHook_WeaponEquip, SDKHAdapt_WeaponEquip);
         SDKHook(client, SDKHook_WeaponDrop, SDKHAdapt_WeaponDrop);
     }
+    
+    return Plugin_Continue;
 }
 
 /**
  * The module that hooked this event callback has been disabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
  */
-public SDKHAdapt_OnMyModuleDisable()
+public Action:SDKHAdapt_OnMyModuleDisable()
 {
     // Unhook all clients in the server.
     for (new client = 1; client <= MaxClients; client++)
@@ -134,6 +144,8 @@ public SDKHAdapt_OnMyModuleDisable()
         SDKUnhook(client, SDKHook_WeaponEquip, SDKHAdapt_WeaponEquip);
         SDKUnhook(client, SDKHook_WeaponDrop, SDKHAdapt_WeaponDrop);
     }
+    
+    return Plugin_Continue;
 }
 
 /**

@@ -53,9 +53,11 @@
 		"en"		"Force ZTele (zr_ztele_force)\nSelect a Player:"
 	}
 
+	// {1}: PROJECT_CMD_PREFIX
 	"ZTele command syntax"
 	{
-		"en"		"ZTele a client. Usage: zr_ztele <client>"
+		"#format"	"{1:s}"
+		"en"		"ZTele a client. Usage: {1}_ztele <client>"
 
 	}
 

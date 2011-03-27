@@ -437,7 +437,7 @@ public Action:Command_Restrict(client, argc)
     // Check if enough arguments were given.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Weapons command restrict syntax");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Weapons command restrict syntax", PROJECT_CMD_PREFIX);
         return Plugin_Handled;
     }
     
@@ -488,7 +488,7 @@ public Action:Command_Unrestrict(client, argc)
     // Check if enough arguments were given.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Weapons command restrict syntax");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Weapons command unrestrict syntax", PROJECT_CMD_PREFIX);
         return Plugin_Handled;
     }
     

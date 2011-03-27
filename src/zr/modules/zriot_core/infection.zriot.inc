@@ -246,7 +246,7 @@ public Action:ZRiotInfect_HumanCommand(client, argc)
     // If not enough arguments given, then stop.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRiot command infect syntax");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRiot command human syntax");
         return Plugin_Handled;
     }
     

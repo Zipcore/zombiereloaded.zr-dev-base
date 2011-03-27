@@ -133,8 +133,8 @@ ZRCInfect_OnPluginStart()
     g_hCvarMZombieBlockConsecutive =    CreateConVar("zrc_mzombie_block_consecutive", "1", "Prevent a player from being chosen as mother zombie two rounds in a row.");
     
     // Create commands.
-    RegConsoleCmd("zrc_infect", ZRCInfect_InfectCommand, "Turn a player into a zombie. Usage: zr_infect <#userid|name> [respawn - 1/0]");
-    RegConsoleCmd("zrc_human", ZRCInfect_HumanCommand, "Turn a player into a human. Usage: zr_human <#userid|name> [respawn - 1/0] [protect - 1/0]");
+    RegConsoleCmd("zrc_infect", ZRCInfect_InfectCommand, "Turn a player into a zombie. Usage: zrc_infect <#userid|name> [respawn - 1/0]");
+    RegConsoleCmd("zrc_human", ZRCInfect_HumanCommand, "Turn a player into a human. Usage: zrc_human <#userid|name> [respawn - 1/0] [protect - 1/0]");
 }
 
 /**
@@ -579,7 +579,7 @@ public Action:ZRCInfect_HumanCommand(client, argc)
     // If not enough arguments given, then stop.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command infect syntax");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command human syntax");
         return Plugin_Handled;
     }
     

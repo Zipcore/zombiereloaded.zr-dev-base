@@ -81,14 +81,18 @@
 		"en"		"Weapon {green}{1} {default}is restricted."
 	}
 
+	// {1}: PROJECT_CMD_PREFIX
 	"Weapons command restrict syntax"
 	{
-		"en"		"Restricts a weapon or a weapon type. Usage: zr_restrict <weapon|weapon type> [weapon2|weapontype2] ..."
+		"#format"	"{1:s}"
+		"en"		"Restricts a weapon or a weapon type. Usage: {1}_restrict <weapon|weapon type> [weapon2|weapontype2] ..."
 	}
 
+	// {1}: PROJECT_CMD_PREFIX
 	"Weapons command unrestrict syntax"
 	{
-		"en"		"Unrestricts a weapon or a weapon type. Usage: zr_unrestrict <weapon|weapon type> [weapon2|weapontype2] ..."
+		"#format"	"{1:s}"
+		"en"		"Unrestricts a weapon or a weapon type. Usage: {1}_unrestrict <weapon|weapon type> [weapon2|weapontype2] ..."
 	}
 
 	//                 ZMarket		       //

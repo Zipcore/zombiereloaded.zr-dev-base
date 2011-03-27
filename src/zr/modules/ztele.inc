@@ -594,7 +594,7 @@ public Action:ZTele_Command(client, argc)
     // If not enough arguments given, then stop.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZTele command syntax");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZTele command syntax", PROJECT_CMD_PREFIX);
         return Plugin_Handled;
     }
     

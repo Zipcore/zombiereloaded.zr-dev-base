@@ -612,7 +612,7 @@ public Action:GameRules_NextRuleSet(client, argc)
     // If not enough arguments given, then stop.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "GameRules nextruleset command syntax");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "GameRules nextruleset command syntax", PROJECT_CMD_PREFIX);
         return Plugin_Handled;
     }
     

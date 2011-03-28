@@ -1252,10 +1252,13 @@ stock ZMarket_ToggleAutoRebuy(client)
  */
 public Action:Command_ZMarket(client, argc)
 {
+    // Check if the module is disabled.
+    if (ModuleMgr_IsDisabled(g_moduleZMarket))
+        return Plugin_Continue;
+    
     // If client is console, then stop and tell them this feature is for players only.
     if (client > SERVER_INDEX)
         ZMarket_MenuMain(client);
-    
     else
         TransMgr_PrintText(SERVER_INDEX, MsgFormat_Plugin, MsgType_Server, g_moduleZMarket, _, "Must be player");
     

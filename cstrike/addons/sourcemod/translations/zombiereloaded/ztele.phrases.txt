@@ -4,6 +4,11 @@
 	//                  ZTele Module
 	// **********************************************
 
+	"ZTele restricted zombie"
+	{
+		"en"		"ZTele is restricted for zombies."
+	}
+
 	"ZTele restricted human"
 	{
 		"en"		"ZTele is restricted for humans at this time."
@@ -54,14 +59,14 @@
 	}
 
 	// {1}: PROJECT_CMD_PREFIX
-	"ZTele command syntax"
+	"ZTele command ztele syntax"
 	{
 		"#format"	"{1:s}"
 		"en"		"ZTele a client. Usage: {1}_ztele <client>"
 
 	}
 
-	"ZTele command successful"
+	"ZTele command ztele successful"
 	{
 		"#format"	"{1:s}"
 		"en"		"Player {1} was successfully teleported."

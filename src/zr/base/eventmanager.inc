@@ -116,6 +116,8 @@ EventMgr_OnPluginStart()
  */
 EventMgr_OnPluginEnd()
 {
+    // This needs to happen before all event data is destroyed by the event manager, otherwise the modules won't get the OnModuleDisabled event.
+    
     // Loop through all the modules, and disable them.
     new Module:module;
     new count = MODULE_COUNT;

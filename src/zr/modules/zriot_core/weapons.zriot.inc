@@ -26,6 +26,12 @@
  */
 
 /**
+ * TODO:
+ * Unhook listeners when module is disabled.
+ * Waiting for SM to not error when i do this on OnPluginEnd
+ */
+
+/**
  * This module's identifier.
  */
 new Module:g_moduleZRiotWeapons;
@@ -77,7 +83,10 @@ ZRiotWeps_Register()
 public ZRiotWeps_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnEventsReady",            "ZRiotWeps_OnEventsReady");
+    EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnEventsReady",         "ZRiotWeps_OnEventsReady");
+    //EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnPluginEnd",           "ZRiotWeps_OnPluginEnd");
+    EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnMyModuleEnable",      "ZRiotWeps_OnMyModuleEnable");
+    //EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnMyModuleDisable",     "ZRiotWeps_OnMyModuleDisable");
     
     #if defined PROJECT_GAME_CSS
     
@@ -96,7 +105,7 @@ public ZRiotWeps_OnEventsRegister()
  */
 public ZRiotWeps_OnEventsReady()
 {
-    // Bump up priority for Event_RoundEnd to above zrinfect module.
+    // Bump up priority for Event_RoundEnd to above infection.zriot module.
     EventMgr_GivePriority("Event_RoundEnd", g_moduleZRiotWeapons, ZRiotInfect_GetIdentifier());
 }
 
@@ -119,6 +128,42 @@ ZRiotWeps_OnPluginStart()
         AddCommandListener(ZRiotWeps_BuyListener, "buy");
         AddCommandListener(ZRiotWeps_BuyListener, "autobuy");
         AddCommandListener(ZRiotWeps_BuyListener, "rebuy");
+    #endif
+}
+
+/**
+ * The module that hooked this event callback has been enabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
+ */
+public Action:ZRiotWeps_OnMyModuleEnable(String:refusalmsg[], maxlen)
+{
+    #if defined PROJECT_GAME_CSS
+        // Listen for buy commands.
+        AddCommandListener(ZRiotWeps_BuyListener, "buy");
+        AddCommandListener(ZRiotWeps_BuyListener, "autobuy");
+        AddCommandListener(ZRiotWeps_BuyListener, "rebuy");
+    #endif
+}
+
+/**
+ * The module that hooked this event callback has been disabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
+ */
+public Action:ZRiotWeps_OnMyModuleDisable(String:refusalmsg[], maxlen)
+{
+    #if defined PROJECT_GAME_CSS
+        // Stop listening for buy commands.
+        RemoveCommandListener(ZRiotWeps_BuyListener, "buy");
+        RemoveCommandListener(ZRiotWeps_BuyListener, "autobuy");
+        RemoveCommandListener(ZRiotWeps_BuyListener, "rebuy");
     #endif
 }
 

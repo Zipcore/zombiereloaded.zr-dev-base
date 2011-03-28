@@ -434,10 +434,7 @@ public Action:Command_Restrict(client, argc)
 {
     // Check if the module is disabled.
     if (ModuleMgr_IsDisabled(g_moduleWepRestrict))
-    {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Feature is disabled");
-        return Plugin_Handled;
-    }
+        return Plugin_Continue;
     
     // Check if client has access.
     if (!AccessMgr_HasAccess(client, g_moduleWepRestrict))
@@ -485,10 +482,7 @@ public Action:Command_Unrestrict(client, argc)
 {
     // Check if the module is disabled.
     if (ModuleMgr_IsDisabled(g_moduleWepRestrict))
-    {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Feature is disabled");
-        return Plugin_Handled;
-    }
+        return Plugin_Continue;
     
     // Check if client has access.
     if (!AccessMgr_HasAccess(client, g_moduleWepRestrict))

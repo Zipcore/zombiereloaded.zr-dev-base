@@ -26,6 +26,12 @@
  */
 
 /**
+ * TODO:
+ * Unhook listeners when module is disabled.
+ * Waiting for SM to not error when i do this on OnPluginEnd
+ */
+
+/**
  * This module's identifier.
  */
 new Module:g_moduleZRCWeps;
@@ -78,6 +84,9 @@ public ZRCWeps_OnEventsRegister()
 {
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnEventsReady",              "ZRCWeps_OnEventsReady");
+    //EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnPluginEnd",                "ZRCWeps_OnPluginEnd");
+    EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnMyModuleEnable",           "ZRCWeps_OnMyModuleEnable");
+    //EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnMyModuleDisable",          "ZRCWeps_OnMyModuleDisable");
     
     #if defined PROJECT_GAME_CSS
     
@@ -96,7 +105,7 @@ public ZRCWeps_OnEventsRegister()
  */
 public ZRCWeps_OnEventsReady()
 {
-    // Bump up priority for Event_RoundEnd to above zrinfect module.
+    // Bump up priority for Event_RoundEnd to above infection.zrc module.
     EventMgr_GivePriority("Event_RoundEnd", g_moduleZRCWeps, ZRCInfect_GetIdentifier());
 }
 
@@ -119,6 +128,42 @@ ZRCWeps_OnPluginStart()
         AddCommandListener(ZRCWeps_BuyListener, "buy");
         AddCommandListener(ZRCWeps_BuyListener, "autobuy");
         AddCommandListener(ZRCWeps_BuyListener, "rebuy");
+    #endif
+}
+
+/**
+ * The module that hooked this event callback has been enabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
+ */
+public Action:ZRCWeps_OnMyModuleEnable(String:refusalmsg[], maxlen)
+{
+    #if defined PROJECT_GAME_CSS
+        // Listen for buy commands.
+        AddCommandListener(ZRiotWeps_BuyListener, "buy");
+        AddCommandListener(ZRiotWeps_BuyListener, "autobuy");
+        AddCommandListener(ZRiotWeps_BuyListener, "rebuy");
+    #endif
+}
+
+/**
+ * The module that hooked this event callback has been disabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
+ */
+public Action:ZRCWeps_OnMyModuleDisable(String:refusalmsg[], maxlen)
+{
+    #if defined PROJECT_GAME_CSS
+        // Stop listening for buy commands.
+        RemoveCommandListener(ZRiotWeps_BuyListener, "buy");
+        RemoveCommandListener(ZRiotWeps_BuyListener, "autobuy");
+        RemoveCommandListener(ZRiotWeps_BuyListener, "rebuy");
     #endif
 }
 

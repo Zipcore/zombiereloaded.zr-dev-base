@@ -53,7 +53,7 @@
 #include "zr/modules/zriot_core/root.zriot"
 #include "zr/modules/sdkhooksadapter"
 #include "zr/modules/speed"
-//#include "zr/modules/ztele"
+#include "zr/modules/ztele"
 #include "zr/modules/stripobjectives"
 
 // Game-specific modules

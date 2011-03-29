@@ -283,7 +283,7 @@ public KvCache:Weapons_Cache(Handle:kv, sectionindex, const String:sectionname[]
     // General weapon information.
     KvGetString(kv, "entity", weapondata[WepConfig_Entity], sizeof(weapondata[WepConfig_Entity]));
     KvGetString(kv, "type", weapondata[WepConfig_Type], sizeof(weapondata[WepConfig_Type]));
-    weapondata[WepConfig_Slot] = WepLib_Slots:KvGetNum(kv, "slot");
+    weapondata[WepConfig_Slot] = WepLib_Slots:KvGetNum(kv, "slot", -1);
     
     // Restriction.
     weapondata[WepConfig_RestrictDefault] = bool:TransMgr_KvPhraseToBoolEx(kv, BoolPhrase_YesNo, "restrictdefault", "no");
@@ -292,6 +292,7 @@ public KvCache:Weapons_Cache(Handle:kv, sectionindex, const String:sectionname[]
     
     // Weapon Ammo.
     KvGetString(kv, "ammocvar", weapondata[WepConfig_AmmoCvar], sizeof(weapondata[WepConfig_AmmoCvar]));
+    
     weapondata[WepConfig_AmmoPrice] = KvGetNum(kv, "ammoprice", -1);
     
     // Knockback.
@@ -301,11 +302,47 @@ public KvCache:Weapons_Cache(Handle:kv, sectionindex, const String:sectionname[]
     weapondata[WepConfig_Price] = KvGetNum(kv, "price", -1);
     weapondata[WepConfig_BuyLimit] = KvGetNum(kv, "buylimit", 0);
     
-    // TODO: VALIDATION.  If fail, return KvCache_Ignore.
-    // Push the array into the data.
-    PushArrayArray(g_hWeapons[WEAPONS_GLOBAL], weapondata[0], sizeof(weapondata));
+    // Validation.
     
-    return KvCache_Continue;
+    // If nothing goes wrong this will be returned.
+    new KvCache:result = KvCache_Continue;
+    
+    if (_:weapondata[WepConfig_Slot] < 0)
+    {
+        LogMgr_Print(g_moduleWeapons, LogType_Error, "Config Validation", "Error: Invalid value (%d) for option \"slot\" for weapon \"%s\".  Ignoring weapon.", _:weapondata[WepConfig_Slot], sectionname);
+        result = KvCache_Ignore;
+    }
+    
+    if (weapondata[WepConfig_AmmoCvar][0] && FindConVar(weapondata[WepConfig_AmmoCvar]) == INVALID_HANDLE)
+    {
+        LogMgr_Print(g_moduleWeapons, LogType_Error, "Config Validation", "Error: Invalid value (%s) for option \"ammocvar\" for weapon \"%s\".  Ignoring weapon.", weapondata[WepConfig_AmmoCvar], sectionname);
+        result = KvCache_Ignore;
+    }
+    
+    #if defined PROJECT_GAME_CSS
+    
+    if (weapondata[WepConfig_AmmoPrice] > 16000)
+    {
+        LogMgr_Print(g_moduleWeapons, LogType_Error, "Config Validation", "Warning: Invalid money value ($%d) for option \"ammoprice\" for weapon \"%s\".  Setting to $16000.", weapondata[WepConfig_AmmoPrice], sectionname);
+        weapondata[WepConfig_AmmoPrice] = 16000;
+    }
+    
+    if (weapondata[WepConfig_Price] > 16000)
+    {
+        LogMgr_Print(g_moduleWeapons, LogType_Error, "Config Validation", "Warning: Invalid money value ($%d) for option \"price\" for weapon \"%s\".  Setting to $16000.", weapondata[WepConfig_Price], sectionname);
+        weapondata[WepConfig_Price] = 16000;
+    }
+    
+    #endif
+    
+    // Only push the data into the array if validation didn't fail.
+    if (result == KvCache_Continue)
+    {
+        // Push the array into the data.
+        PushArrayArray(g_hWeapons[WEAPONS_GLOBAL], weapondata[0], sizeof(weapondata));
+    }
+    
+    return result;
 }
 
 /**

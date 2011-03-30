@@ -1,9 +1,13 @@
 @echo off
 
+:: Update these with your project's name.
+set SOURCEFILE=src\zombiereloaded.sp
+set PLUGIN=zombiereloaded.smx
+
 set SOURCEDIR=src
 set SMINCLUDES=env\include
 set BUILDDIR=build
-set SPCOMP=env\win32\bin\spcomp-1.4.0-3078.exe
+set SPCOMP=env\win32\bin\spcomp-1.4.0-3218.exe
 set VERSIONDUMP=updateversion.bat
 
 :: Dump version and revision information first.
@@ -17,7 +21,7 @@ if not exist "%BUILDDIR%" (
 
 :: Compile.
 echo Starting compiler:
-%SPCOMP% -i%SOURCEDIR% -i%SOURCEDIR%/include -i%SMINCLUDES% -o%BUILDDIR%/zombiereloaded.smx %SOURCEDIR%\zombiereloaded.sp
+%SPCOMP% -i%SOURCEDIR% -i%SMINCLUDES% -o%BUILDDIR%/%PLUGIN% %SOURCEFILE%
 
 echo Compiling done. This script is looped, close if you're done.
 pause

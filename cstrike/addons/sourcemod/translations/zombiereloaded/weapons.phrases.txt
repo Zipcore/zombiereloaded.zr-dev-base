@@ -227,14 +227,9 @@
 		"en"		"Projectile:"
 	}
 
-	"Weapons menu zmarket weapon setup explosive"
+	"Weapons menu zmarket weapon setup extras"
 	{
-		"en"		"Explosive:"
-	}
-
-	"Weapons menu zmarket weapon setup equipment"
-	{
-		"en"		"Equipment:"
+		"en"		"Extras:"
 	}
 
 	"Weapons menu zmarket types title"

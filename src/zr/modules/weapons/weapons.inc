@@ -27,7 +27,7 @@
 
 /**
  * TODO: NVGs
- * Weapon menu zadmin 
+ * Weapon menu zadmin
  */
 
 // Include libraries.

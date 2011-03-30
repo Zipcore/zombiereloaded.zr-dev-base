@@ -578,7 +578,7 @@ new String:g_strTransSlotNames[WEPLIB_SLOT_COUNT][16] = {
     "secondary",
     "melee",
     "projectile",
-    "explosive"
+    "extras"
 };
 
 /**
@@ -619,7 +619,7 @@ stock bool:ZMarket_MenuWepSetup(client)
     decl String:info[4];
     
     Format(clearall, sizeof(clearall), "%T\n ", "Weapons menu zmarket weapon setup clear all", client);
-    AddMenuItem(menu_zmarket_weaponsetup, "-1", clearall, MenuLib_GetMenuItemDraw(!StrEqual(weaponsetup[Slot_Primary], none) || !StrEqual(weaponsetup[Slot_Secondary], none) || !StrEqual(weaponsetup[Slot_Melee], none) || !StrEqual(weaponsetup[Slot_Projectile], none) || !StrEqual(weaponsetup[Slot_Explosive], none)));
+    AddMenuItem(menu_zmarket_weaponsetup, "-1", clearall, MenuLib_GetMenuItemDraw(!StrEqual(weaponsetup[Slot_Primary], none) || !StrEqual(weaponsetup[Slot_Secondary], none) || !StrEqual(weaponsetup[Slot_Melee], none) || !StrEqual(weaponsetup[Slot_Projectile], none) || !StrEqual(weaponsetup[Slot_Extras], none)));
     
     decl String:multiwepformat[32];
     GetConVarString(g_hCvarZMarketMultiWepFormat, multiwepformat, sizeof(multiwepformat));
@@ -1030,7 +1030,7 @@ stock bool:ZMarket_SaveCurrentSetup(client)
             
             // Check that this weapon is configured.
             if (windex != -1)
-                ZMarket_AddWeaponToSlot(client, WepLib_Slots:wepslotindex, windex, true);
+                ZMarket_AddWeaponToSlot(client, WepLib_Slots:wepslotindex, windex, true); // limit to 1 per slot here unless the game someday allows more
         }
     }
     
@@ -1056,6 +1056,13 @@ stock bool:ZMarket_SaveCurrentSetup(client)
     
     new projectileindex = _:Slot_Projectile;
     SetClientCookie(client, g_hZMarketWeaponSetupCookie[projectileindex], grenades);
+    
+    // Add NVGs to the weapon setup if the client has them.
+    if (OffsLib_GetHasNVGs(client))
+    {
+        windex = Weapons_ClsNameToDisplay("item_nvgs", weaponname, sizeof(weaponname));
+        ZMarket_AddWeaponToSlot(client, Slot_Extras, windex, false);
+    }
     
     #endif
     

@@ -30,7 +30,7 @@
  */
 
 #if defined PROJECT_GAME_CSS
-    #define STRIPOBJ_ENTITIES "func_bomb_target|func_hostage_rescue|c4|hostage_entity"
+    #define STRIPOBJ_ENTITIES "func_bomb_target|func_hostage_rescue|weapon_c4|hostage_entity"
 #endif
 
 #if defined PROJECT_GAME_TF2

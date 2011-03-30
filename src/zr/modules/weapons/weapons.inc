@@ -26,7 +26,8 @@
  */
 
 /**
- * TODO: NVGs
+ * TODO:
+ * Quit rebuying ammo/nvgs on spawn 
  * Weapon menu zadmin
  */
 

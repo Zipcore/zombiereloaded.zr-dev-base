@@ -693,8 +693,8 @@
 		// General
 
 		"entity"		"item_nvgs"
-		"type"			"All, Equipment"
-		"slot"			"5"
+		"type"			"All, Extras"
+		"slot"			"4"
 
 		// Restrict
 

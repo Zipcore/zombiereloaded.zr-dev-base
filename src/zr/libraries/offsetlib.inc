@@ -7,7 +7,7 @@
  *  Type:          Library
  *  Description:   A library of offset wrappers.
  *
- *  Copyright (C) 2009-2010  Greyscale
+ *  Copyright (C) 2009-2011  Greyscale
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -186,8 +186,7 @@ stock OffsLib_SetClientDeaths(client, deaths)
  * Gets an entity's color.
  * 
  * @param entity	The entity index.
- *  
- * @return          The alpha value of the client. (0-255)
+ * @param color     Output. Entity colors.
  */
 stock OffsLib_GetEntityColor(entity, color[4])
 {
@@ -325,6 +324,56 @@ stock OffsLib_SetNVGsOn(client, bool:nvgson)
 {
     new offsNVGsOn = FindSendPropInfo("CCSPlayer", "m_bNightVisionOn");
     SetEntData(client, offsNVGsOn, value, 1);
+}
+
+/**
+ * Gets the client's minimum fade distance.
+ *  
+ * @param client    The client index.
+ * 
+ * @return          Minimum fade distance.
+ */
+stock Float:OffsLib_GetFadeMinDist(client)
+{
+    new offsFadeMinDist = FindSendPropInfo("CCSPlayer", "m_fadeMinDist");
+    return GetEntDataFloat(client, offsFadeMinDist);
+}
+
+/**
+ * Sets the client's minimum fade distance.
+ *  
+ * @param client    The client index.
+ * @param minDist   Minimum fade distance.
+ */
+stock Float:OffsLib_SetFadeMinDist(client, Float:minDist)
+{
+    new offsFadeMinDist = FindSendPropInfo("CCSPlayer", "m_fadeMinDist");
+    SetEntDataFloat(client, offsFadeMinDist, minDist, true);
+}
+
+/**
+ * Gets the client's maximum fade distance.
+ *  
+ * @param client    The client index.
+ * 
+ * @return          Maximum fade distance.
+ */
+stock Float:OffsLib_GetFadeMaxDist(client)
+{
+    new offsFadeMaxDist = FindSendPropInfo("CCSPlayer", "m_fadeMaxDist");
+    return GetEntDataFloat(client, offsFadeMaxDist);
+}
+
+/**
+ * Sets the client's maximum fade distance.
+ *  
+ * @param client    The client index.
+ * @param maxDist   Maximum fade distance.
+ */
+stock Float:OffsLib_SetFadeMaxDist(client, Float:maxDist)
+{
+    new offsFadeMaxDist = FindSendPropInfo("CCSPlayer", "m_fadeMaxDist");
+    SetEntDataFloat(client, offsFadeMaxDist, maxDist, true);
 }
 
 #endif

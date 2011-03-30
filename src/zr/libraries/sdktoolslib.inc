@@ -7,7 +7,7 @@
  *  Type:          Library
  *  Description:   Pre-defined sdktool hooks.
  *
- *  Copyright (C) 2009-2010  Greyscale
+ *  Copyright (C) 2009-2011  Greyscale
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -94,7 +94,6 @@ stock bool:SDKToolsLib_IsAvailable(SDKLibCalls:sdkcall)
 {
     return (g_hSDKCall[sdkcall] != INVALID_HANDLE);
 }
-
 /**
  * Prep a pre-defined SDKCall.
  * 
@@ -165,6 +164,7 @@ stock Handle:SDKToolsLib_SetupPredefined(Handle:gameconfig, SDKLibCalls:sdkcall)
 
 /**
  * All round end reasons.
+ * Used an enum instead of defines so the include order doesn't matter.
  */
 enum RoundEndReasons
 {

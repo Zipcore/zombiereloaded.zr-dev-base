@@ -1,7 +1,7 @@
 # use glob syntax.
 syntax: glob
 
-src/zr/base/hgversion.inc
+src/zr/base/vcsversion.inc
 docs/changes.diff
 docs/changes/*
 

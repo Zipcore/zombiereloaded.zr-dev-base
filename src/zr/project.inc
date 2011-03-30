@@ -86,7 +86,8 @@ stock ForwardOnPluginStart()
 #define SERVER_INDEX 0
 
 /**
- * Generic enum for specifying whether this should apply to the server or the client.
+ * Generic enum for specifying whether this should apply to the server or the
+ * client.
  */
 enum CommandFor
 {
@@ -100,12 +101,14 @@ enum CommandFor
 
 /**
  * The amount of registered modules.
- * All integers less than this (and greater than or equal to zero) are valid module identifiers.
+ * All integers less than this (and greater than or equal to zero) are valid
+ * module identifiers.
  */
 #define MODULE_COUNT GetArraySize(ModuleMgr_GetList())
 
 /**
- * Takes either a module ID or module identifier and converts it to its respective opposite.
+ * Takes either a module ID or module identifier and converts it to its
+ * respective opposite.
  */
 #define MODULE_TO_ID(%1) _:%1 + 1
 #define ID_TO_MODULE(%1) Module:(%1 - 1)
@@ -133,8 +136,8 @@ enum Module
 /**
  * The max string/array lengths of module data variables.
  */
-#define MM_DATA_FULLNAME        32
-#define MM_DATA_SHORTNAME       16
+#define MM_DATA_FULLNAME        64
+#define MM_DATA_SHORTNAME       32
 #define MM_DATA_DESCRIPTION     256
 #define MM_DATA_DEPENDENCIES    8
 
@@ -150,8 +153,8 @@ enum ModuleData
     String:ModuleData_Description[MM_DATA_DESCRIPTION],     /** A description of the module */
     Module:ModuleData_Dependencies[MM_DATA_DEPENDENCIES],   /** An array of module IDs that the module depends on.  {INVALID_MODULE} = no dependencies.  Must end with INVALID_MODULE. */
     bool:ModuleData_Root,                                   /** True if the module is a root module.  Typically the top module of a game mode. */
-    any:ModuleData_Extra2,                                  /** An extra spot to store any value that other modules can read. */
-    any:ModuleData_Extra3                                   /** An extra spot to store any value that other modules can read. */
+    any:ModuleData_Extra2,                                  /** An extra spot to store any value that other modules can read.  This can be renamed to whatever you want. */
+    any:ModuleData_Extra3                                   /** An extra spot to store any value that other modules can read.  This can be renamed to whatever you want. */
 }
 
 /**
@@ -176,14 +179,16 @@ enum ModuleToggleQuery
 //                 Event Manager
 // **********************************************
 // Note: Ignore this section if eventmanager.inc isn't included in the project.
-// Look in project_events.inc to setup and hook all events your project will need.
+// Look in project_events.inc to setup and hook all events your project will
+// need.
 
 // **********************************************
 //                    General
 // **********************************************
 
 /**
- * Basic project information.  This will also be displayed in 'sm plugins *' commands.
+ * Basic project information.  This will also be displayed in 'sm plugins *'
+ * commands.
  */
 
 // Used when printing the plugin name anywhere.
@@ -207,15 +212,16 @@ enum ModuleToggleQuery
 /**
  * Additional information displayed in the version info.
  */
-#define PROJECT_COPYRIGHT "Copyright (C) 2010  Greyscale, Richard Helgeby"
+#define PROJECT_COPYRIGHT "Copyright (C) 2009-2011  Greyscale, Richard Helgeby"
 #define PROJECT_LICENSE "GNU GPL, Version 3"
 
 /**
  * Credits.
  * This is the exact string that's printed to the server/client.
- * Feel free to change it to anything, but the names mentioned here by default, should be credited somewhere.
+ * Feel free to change it to anything, but the names mentioned here by default,
+ * should be credited somewhere.
  */
-#define PROJECT_CREDITS " Plugin was developed by Greyscale and Richard Helgeby.\n Development would not have been possible without:\n  AlliedModders, LLC.\n  Andrew \"Greyscale\" Borba, plugin base developer\n  Richard \"rhelgeby\" Helgeby, compilation environment designer and advisor\n http://www.sourcemod.net/"
+#define PROJECT_CREDITS "Plugin was developed by Greyscale and Richard Helgeby.\n\nDevelopment would not have been possible without:\n  * AlliedModders, LLC.\n  * Andrew \"Greyscale\" Borba, plugin base developer\n  * Richard \"rhelgeby\" Helgeby, developer, compilation environment designer and advisor\n  * http://www.sourcemod.net/"
 
 /**
  * Base file message prefixes.
@@ -227,7 +233,9 @@ enum ModuleToggleQuery
 
 /**
  * Your plugin's base command for module management.
- * This command will be very similar to the "sm" command except geared toward module management instead of plugin management.
+ * This command will be very similar to the "sm" command except geared toward
+ * module management instead of plugin management.
+ *
  * Also handles printing plugin information like credits and version.
  * Comment out to remove command from the plugin.
  */
@@ -237,6 +245,8 @@ enum ModuleToggleQuery
  * The prefixes for any base cvars/commands.
  * These are strictly for project base cvars/commands.
  * This will not affect cvars/commands created in your modules.
+ * Note: See wrappers.inc for stocks that allow you to create cvars/commands
+ *       with these prefixes.
  */
 #define PROJECT_CVAR_PREFIX "zr"
 #define PROJECT_CMD_PREFIX  "zr"
@@ -248,19 +258,25 @@ enum ModuleToggleQuery
 
 /**
  * Exvel's chat color include is supported by the translations manager.
- * Include the color.inc file below and TransMgr_PrintText* will support the color tags.
+ * Include the color.inc file below and TransMgr_PrintText* will support the
+ * color tags.
  * 
  * Link to colors on SM forums: http://forums.alliedmods.net/showthread.php?t=96831
+ *
+ * The include file must be placed in env/include.
  */
 #include <colors>
 
 /**
- * The directory where the project's translation files will be in.
- * All translations files in the format of *.phrases.txt will be automatically loaded.
+ * The directory where the project's translation files will be in. All
+ * translations files in the format of *.phrases.txt will be automatically
+ * loaded.
+ *
  * Example path: addons/sourcemod/translations/TM_BASE_DIR/projectbase.phrases.txt.
  * If the resulting path doesn't exist, errors will be logged.
  * 
- * Comment the define out to disable auto-loading.  See stock Project_LoadExtraTranslations.
+ * Comment the define out to disable auto-loading. See 
+ * Project_LoadExtraTranslations.
  * 
  * Note: This only used if translationsmanager.inc is included.
  */
@@ -287,18 +303,31 @@ enum ModuleToggleQuery
  * Load any extra translation files here.
  * This is also called when translations are being reloaded mid-game.
  *  
- * If TM_BASE_DIR is defined, all translations files in the format of *.phrases.txt will be
- * automatically loaded from the "translations/TM_BASE_DIR/" dir.
+ * If TM_BASE_DIR is defined, all translations files in the format of
+ * *.phrases.txt will be automatically loaded from the
+ * "translations/TM_BASE_DIR/" dir.
  * 
- * Note: If the translations manager isn't included, you must load all your translations here.
+ * Note: If the translations manager isn't included, you must load all your
+ *       translations here.
  * 
- * @param transmanagerloaded    True if the translations manager is loaded, false if not.
+ * @param transmanagerloaded    True if the translations manager is loaded,
+ *                              false if not.
  */
 stock Project_LoadExtraTranslations(bool:transmanagerloaded)
 {
-    // Load needed stock translations.
-    LoadTranslations("common.phrases");
+    // Load translations we may need, if the translations manager isn't loaded.
+    if (!transmanagerloaded)
+    {
+        LoadTranslations("projectbase.phrases");
+        
+        #if defined PROJECT_BASE_CMD
+            LoadTranslations("basecmd.phrases");
+        #endif
+    }
+    
+    // Standard phrases provided by SM.
 }
+
 
 // **********************************************
 //                 Log Manager
@@ -333,11 +362,25 @@ stock Project_LoadExtraTranslations(bool:transmanagerloaded)
 // **********************************************
 
 /**
- * If this is defined, then it should be in a mercurial repository.
+ * Define this to specify that the project is commited in a version control
+ * system (like Mercurial, SVN, Git, etc.).
+ *
+ * If you enable this, remember to add the file with version info
+ * (base/vcsversion.inc) to the ignore list. You usually don't want to commit
+ * this file since it's generated automatically.
+ *
+ * Also update variables in updateversion.sh.
  */
-#define PROJECT_MERCURIAL
+#define PROJECT_IN_VCS
 
-// Name of the Mercurial branch this is being developed in.
+/**
+ * If in a VCS, this specify which branch this code belongs to. Examples:
+ *
+ * myproject-dev    Development/experimental branch
+ * myproject-1.0    First release
+ * myproject-1.1    Major changes in first release.
+ * myproject-2.0    New major release.
+ */
 #define PROJECT_BRANCH "zr-dev-base"
 
 /**

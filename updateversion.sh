@@ -1,11 +1,22 @@
 #!/bin/sh
 
-# Note: Copy this script to the source code repository and execute it
-#       from that location.
+# This script writes version information in a file to be included by the base.
+# You may change variables below to match your project environment.
 
-# Program for printing date.
-DATEPATH='date'
+# Path to destination include file (will be created or overwritten). Update this
+# if you renamed the project folder.
+PROJECT_VERSION_FILE="src/zr/base/vcsversion.inc"
 
+# Command for printing date.
+DATE_COMMAND="date -R"
+
+# Current revision number in the VCS. Change this if you use something else
+# than Mercurial.
+PROJECT_REVISION=$(hg id -n):$(hg id -i)
+
+# ------------------------ Do not edit below this line -------------------------
+
+# Whether this is an unofficial build (to prepare distributed source code).
 UNOFFICIAL=false
 
 if [ "$1" ]
@@ -14,22 +25,18 @@ then
     then
         UNOFFICIAL=true
     else
-        DATEPATH=$1
+        DATE_COMMAND=$1
     fi
 fi
-
-PROJECT_VERSION_FILE="src/zr/base/hgversion.inc"
-
-PROJECT_REVISION=$(hg id -n):$(hg id -i)
 
 if [ $UNOFFICIAL = "true" ]
 then
     PROJECT_REVISION="Unofficial build - based on $PROJECT_REVISION"
 fi
 
-DATE=$($DATEPATH -R)
+DATE=$($DATE_COMMAND)
 
-echo "#define PROJECT_MERCURIAL_REVISION         \"$PROJECT_REVISION\"" > $PROJECT_VERSION_FILE
-echo "#define PROJECT_MERCURIAL_DATE             \"$PROJECT_DATE\"" >> $PROJECT_VERSION_FILE
+echo "#define PROJECT_VCS_REVISION          \"$PROJECT_REVISION\"" > $PROJECT_VERSION_FILE
+echo "#define PROJECT_VCS_DATE              \"$DATE\"" >> $PROJECT_VERSION_FILE
 
 echo "Updated $PROJECT_VERSION_FILE"

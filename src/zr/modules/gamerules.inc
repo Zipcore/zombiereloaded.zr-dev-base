@@ -571,8 +571,8 @@ stock GameRules_ApplyRuleSet(ruleSet)
     GameRules_GetNamedConfig("cfg", cfgfile);
     if (cfgfile[0])
     {
-        ServerCommand("exec %s", cfgfile);
-        LogMgr_Print(g_moduleGameRules, LogType_Debug, "Game Rule Configs", "Executed game ruleset file: sourcemod/zombiereloaded/%s", cfgfile);
+        ServerCommand("exec sourcemod/%s", cfgfile);
+        LogMgr_Print(g_moduleGameRules, LogType_Debug, "Game Rule Configs", "Executed game ruleset file: sourcemod/%s", cfgfile);
     }
     
     // Loop through each module and apply its action.
@@ -586,7 +586,6 @@ stock GameRules_ApplyRuleSet(ruleSet)
         // Apply action.
         switch (GameRules_GetModuleCmd(moduleshortname))
         {
-            // TODO: why not On?
             case GRuleModuleCmd_On:         ModuleMgr_Enable(Module:moduleindex);
             case GRuleModuleCmd_ForceOn:    ModuleMgr_Enable(Module:moduleindex);
             case GRuleModuleCmd_Off:        ModuleMgr_Disable(Module:moduleindex);

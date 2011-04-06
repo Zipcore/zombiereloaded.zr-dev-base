@@ -846,6 +846,12 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
     // Get the appropriate price of the item being bought.
     new bool:hasweapon = WepLib_HasWeapon(client, weaponentity);
     
+    // Special case for nvgs in CS:S.
+    #if defined PROJECT_GAME_CSS
+        if (StrEqual(weaponentity, "item_nvgs", false))
+            hasweapon = OffsLib_GetHasNVGs(client);
+    #endif
+    
     #if defined PROJECT_GAME_CSS
     new itemprice = (hasweapon && slot != Slot_Projectile) ? Weapons_ReadCell(windex, WepConfig_AmmoPrice) : Weapons_ReadCell(windex, WepConfig_Price);
     #else
@@ -916,6 +922,7 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
     }
     #endif
     
+    // Check cash flow.
     new cash = OffsLib_GetCash(client);
     if (cash < itemprice)
     {
@@ -925,12 +932,11 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Weapons zmarket updated weapon setup");
         return false;
     }
-    OffsLib_SetCash(client, cash - itemprice);
     
     // Get a list of the client's current weapons.
     new weapons[WepLib_Slots];
     WepLib_GetWeapons(client, weapons);
-    
+        
     // Check if client is buying the weapon or ammo for it.
     #if defined PROJECT_GAME_CSS
     if (!hasweapon || slot == Slot_Projectile)
@@ -955,6 +961,9 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
         GivePlayerItem(client, weaponentity);
         ZMarket_SetBuyCount(client, windex, 1, true);
         
+        // Take cash money.
+        OffsLib_SetCash(client, cash - itemprice);
+    
         // Check if the client's weapon setup already has the max number of grenades that they can hold if a grenade is being equipped.
         if (slot != Slot_Projectile || !ZMarket_IsGrenadeCountMaxedEx(client, weaponentity))
         {
@@ -983,6 +992,9 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
         // Read the value of the ammo cvar.  Assume it's valid, because it's already been validated on config cache.
         new ammoamt = GetConVarInt(FindConVar(ammocvar));
         WepLib_SetAmmo(windex, false, ammoamt);
+        
+        // Take cash money.
+        OffsLib_SetCash(client, cash - itemprice);
     }
     
     return true;

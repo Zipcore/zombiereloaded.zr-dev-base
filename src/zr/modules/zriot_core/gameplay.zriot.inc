@@ -200,7 +200,9 @@ public ZRiotGPlay_OnClientDisconnect(client)
         }
     }
     
-    // TODO Pick new zombie.
+    /**
+     * TODO: what happens if all zombies disconnect ?
+     */
 }
 
 /**

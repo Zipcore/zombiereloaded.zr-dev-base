@@ -119,8 +119,8 @@ ZRCWeps_OnPluginStart()
     
     // Create cvars.
     #if defined PROJECT_GAME_CSS
-        g_hCvarZRCWepsDrop =      CreateConVar("zr_weapons_drop", "1", "Force player to drop all weapons when infected.  Disabling this will strip weapons instead.");
-        g_hCvarZRCWepsEndEquip =  CreateConVar("zr_weapons_endequip", "1", "Restricts zombies from picking up weapons after the round has ended but before the next round has begun.");
+        g_hCvarZRCWepsDrop =      Project_CreateConVar("weapons_drop", "1", "Force player to drop all weapons when infected.  Disabling this will strip weapons instead.");
+        g_hCvarZRCWepsEndEquip =  Project_CreateConVar("weapons_endequip", "1", "Restricts zombies from picking up weapons after the round has ended but before the next round has begun.");
     #endif
     
     #if defined PROJECT_GAME_CSS

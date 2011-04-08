@@ -134,6 +134,6 @@ ZRCore_UpdateZombieTeam()
     {
         LogMgr_Print(g_moduleZRCore, LogType_Error, "Cvar Validation", "Invalid team name (%s) in cvar \"zr_zombie_team\".  Check the description for it in zombiereloaded.cfg.  Assuming team index 2..", strZombieTeam);
         TLib_SetGameTeamIndex(VTeam_Zombie, 2);
-        TLib_SetGameTeamIndex(VTeam_Zombie, 3);
+        TLib_SetGameTeamIndex(VTeam_Human, 3);
     }
 }

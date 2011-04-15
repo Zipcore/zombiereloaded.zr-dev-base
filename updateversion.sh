@@ -8,7 +8,7 @@
 PROJECT_VERSION_FILE="src/zr/base/vcsversion.inc"
 
 # Command for printing date.
-DATE_COMMAND="date -R"
+DATE_COMMAND="date"
 
 # Current revision number in the VCS. Change this if you use something else
 # than Mercurial.

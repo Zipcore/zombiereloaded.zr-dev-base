@@ -4,8 +4,16 @@
 SOURCEDIR=src
 SMINCLUDES=env/include
 BUILDDIR=build
-SPCOMP=env/linux/bin/spcomp-1.4.0-3218
+SPCOMP_LINUX=env/linux/bin/spcomp-1.4.0-3218
+SPCOMP_DARWIN=env/darwin/bin/spcomp-1.4.0-3254
 VERSIONDUMP=./updateversion.sh
+
+OS = $(shell uname -s)
+ifeq "$(OS)" "Darwin"
+	SPCOMP = $(SPCOMP_DARWIN)
+else
+	SPCOMP = $(SPCOMP_LINUX)
+endif
 
 vpath %.sp $(SOURCEDIR)
 vpath %.smx $(BUILDDIR)

@@ -60,6 +60,7 @@
 #if defined PROJECT_GAME_CSS
     #include "zr/modules/weapons/weapons"
     #include "zr/modules/napalm"
+    #include "zr/modules/models/modelmgr"
 #endif
 
 /**

@@ -71,6 +71,7 @@ stock ForwardOnPluginStart()
     #if defined PROJECT_GAME_CSS
         Weapons_OnPluginStart();
         Napalm_OnPluginStart();
+        ModelMgr_OnPluginStart();
     #endif
     
     AutoExecConfig(true, "zombiereloaded");
@@ -326,6 +327,8 @@ stock Project_LoadExtraTranslations(bool:transmanagerloaded)
     }
     
     // Standard phrases provided by SM.
+    LoadTranslations("common.phrases");
+    LoadTranslations("core.phrases");
 }
 
 
@@ -342,7 +345,7 @@ stock Project_LoadExtraTranslations(bool:transmanagerloaded)
  * 'description': The log description.
  * 'logbuffer': The log text.
  */
-#define LM_FORMAT "[ZR] [%s] %s", description, logbuffer
+#define LM_FORMAT "[ZR] [%s] [%s] %s", modulefullname, description, logbuffer
 
 
 // Access Manager

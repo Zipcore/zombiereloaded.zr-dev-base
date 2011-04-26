@@ -65,6 +65,7 @@ new ProjectEvent:g_EvOnClientCookiesCached;
 new ProjectEvent:g_EvOnPlayerRunCmd;
 new ProjectEvent:g_EvOnClientInfected;
 new ProjectEvent:g_EvOnClientHuman;
+new ProjectEvent:g_EvOnClientPostAdminCheck;
 
 // CS:S events.
 #if defined PROJECT_GAME_CSS
@@ -242,6 +243,20 @@ public OnClientCookiesCached(client)
 }
 
 /**
+ * Client is authorized.
+ *
+ * @param client    The client index.
+ */
+public OnClientPostAdminCheck(client)
+{
+    // Forward event to all modules.
+    new any:eventdata[1][1];
+    eventdata[0][0] = client;
+    
+    EventMgr_Forward(g_EvOnClientPostAdminCheck, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+}
+
+/**
  * @brief Called when a clients movement buttons are being processed
  *
  * @param client	Index of the client.
@@ -319,6 +334,7 @@ stock EventMgr_CreateEvents()
     g_EvOnPlayerRunCmd =            EventMgr_CreateEvent("Event_OnPlayerRunCmd");           /** Client's movement buttons are being processed. */
     g_EvOnClientInfected =          EventMgr_CreateEvent("Event_OnClientInfected");         /** Client has been infected as zombie. */
     g_EvOnClientHuman =             EventMgr_CreateEvent("Event_OnClientHuman");            /** Client has become human from the infected state. */
+    g_EvOnClientPostAdminCheck =    EventMgr_CreateEvent("Event_OnClientPostAdminCheck");   /** Client is authorized. */
     
     // CS:S events.
     #if defined PROJECT_GAME_CSS

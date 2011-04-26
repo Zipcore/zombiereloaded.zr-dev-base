@@ -25,6 +25,8 @@
  * ============================================================================
  */
 
+#include "src/zr/libraries/functionlib"
+
 /**
  * This module's identifier.
  */
@@ -42,13 +44,27 @@ stock Module:ModelMgr_GetIdentifier() { return g_moduleModelMgr; }
 #define MODEL_COLLECTION_FILE   "configs/zr/modelcollections.txt"
 
 /**
+ * Default sizes.
+ */
+#define MODEL_NAME_LEN     64
+#define MODEL_STRING_LEN   255
+
+/**
  * Cvar handles.
  */
 new Handle:g_hCvarModelsFile;
 new Handle:g_hCvarModelCollectionsFile;
 
+/**
+ * Config indexes.
+ */
+new ModelCfgIndex;
+new ModelCollectionCfgIndex;
+
 // Module components.
 #include "src/zr/modules/models/modeldb"
+#include "src/zr/modules/models/modelcollections"
+
 
 /**
  * Register this module.
@@ -71,7 +87,8 @@ ModelMgr_Register()
     EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnEventsRegister",      "ModelMgr_OnEventsRegister");
     
     // Register config file that this module will use.
-    ConfigMgr_Register(g_moduleModelMgr, "ModelsMgr_OnConfigReload", MODEL_FILE);
+    ConfigMgr_Register(g_moduleModelMgr, "ModelMgr_OnConfigReload", MODEL_FILE, ModelCfgIndex);
+    ConfigMgr_Register(g_moduleModelMgr, "ModelMgr_OnConfigReload", MODEL_COLLECTION_FILE, ModelCollectionCfgIndex);
 }
 
 /**
@@ -116,9 +133,10 @@ public ModelMgr_OnEventsRegister()
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnMapStart",              "ModelMgr_OnMapStart");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnMapEnd",                "ModelMgr_OnMapEnd");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnAutoConfigsBuffered",   "ModelMgr_OnAutoConfigsBuffered");
-    EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnConfigsExecuted",       "ModelMgr_OnConfigsExecuted");
-    //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnClientPutInServer",     "ModelMgr_OnClientPutInServer");
+    EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnConfigsExecuted",         "ModelMgr_OnConfigsExecuted");
+    EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnClientPutInServer",       "ModelMgr_OnClientPutInServer");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnClientDisconnect",      "ModelMgr_OnClientDisconnect");
+    EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnClientPostAdminCheck",    "ModelMgr_OnClientPostAdminCheck");
     
     #if defined PROJECT_GAME_CSS
     
@@ -147,7 +165,8 @@ public ModelMgr_OnEventsReady()
  */
 public ModelMgr_OnConfigsExecuted()
 {
-    ModelMgr_LoadModels();
+    ModelDB_LoadModels();
+    ModelDB_LoadCollections();
 }
 
 /**
@@ -155,46 +174,155 @@ public ModelMgr_OnConfigsExecuted()
  */
 public ModelMgr_OnConfigReload(configindex)
 {
-    ModelMgr_LoadModels();
+    ModelDB_LoadModels();
+    ModelDB_LoadCollections();
+}
+
+public ModelMgr_OnClientPutInServer(client)
+{
+    // Clear model access cache for this player in case something tries to
+    // authorize a model before the cache is updated.
+    ModelMgr_ClearPlayerAccess(client);
 }
 
 /**
- * Loads models from file.
+ * Client is authorized.
  *
- * Note: Models must NOT be loaded BEFORE OnConfigsExecuted event!
- * Note: Failing to load models will stop the plugin.
+ * @param client    Client index.
  */
-ModelMgr_LoadModels()
+public ModelMgr_OnClientPostAdminCheck(client)
 {
-    // TODO: Do nothing if module is disabled.
-    
-    decl String:configfile[PLATFORM_MAX_PATH];
-    GetConVarString(g_hCvarModelsFile, configfile, sizeof(configfile));
-    ModelCount = 0;
-    
-    // Validate path.
-    if (ConfigMgr_ValidateFile(configfile))
+    // Update model access cache for this player.
+    ModelMgr_UpdatePlayerAccess(client);
+}
+
+
+/******************
+ *   Public API   *
+ ******************/
+
+/**
+ * Gets the number of valid models loaded.
+ */
+public ModelMgr_GetModelCount()
+{
+    return ModelCount;
+}
+
+/**
+ * Updates the entire model access cache for every connected player.
+ * Useful when reloading a config.
+ */
+public ModelMgr_UpdateAccessCache()
+{
+    for (new client = 1; client < MaxClients + 1; client++)
     {
-        ConfigMgr_WriteString(g_moduleModelMgr, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);
+        if (IsClientConnected(client) && IsClientAuthorized(client))
+        {
+            ModelMgr_UpdatePlayerAccess(client);
+        }
     }
-    else
+}
+
+/**
+ * Updates the model access cache for a player.
+ *
+ * @param client    Player to cache.
+ */
+public ModelMgr_UpdatePlayerAccess(client)
+{
+    // Loop through every model and update authorized-flags.
+    for (new model = 0; model < ModelCount; model++)
     {
-        LogMgr_Print(g_moduleModelMgr, LogType_Fatal_Plugin, "Config Validation", "Error: Invalid config file path in cvar zr_models_file: \"%s\"", configfile);
-        return;
+        ModelHasAccess[client][model] = ModelDB_IsPlayerAuthorized(client, model);
     }
-    
-    // Log loading-message.
-    LogMgr_Print(g_moduleModelMgr, LogType_Normal, "Config Loading", "Loading models from file \"%s\".", configfile);
-    
-    // Parse model file.
-    ConfigMgr_CacheKv(g_moduleModelMgr, CM_CONFIGINDEX_FIRST, "ModelDB_LoadModel");
-    
-    // Log loaded-message.
-    LogMgr_Print(g_moduleModelMgr, LogType_Normal, "Config Loading", "Models loaded: %d", ModelCount);
-    
-    // Check if there are no classes.
-    if (ModelCount == 0)
+}
+
+/**
+ * Removes access to all models for a player.
+ *
+ * @param client    Player to clear.
+ */
+public ModelMgr_ClearPlayerAccess(client)
+{
+    for (new model = 0; model < ModelCount; model++)
     {
-        LogMgr_Print(g_moduleModelMgr, LogType_Fatal_Plugin, "Config Validation", "Error: No usable data found in model config file: %s", configfile);
+        ModelHasAccess[client][model] = false;
     }
+}
+
+/**
+ * Returns whether a player has access to a model. Reads a cached value.
+ *
+ * @param client    Player index.
+ * @param model     Model index.
+ *
+ * @return          True if the player has acces, false otherwise.
+ */
+public bool:ModelMgr_HasAccess(client, model)
+{
+    return ModelHasAccess[client][model];
+}
+
+/**
+ * Returns whether the specified model index is valid or not.
+ *
+ * @param model     Model index to validate.
+ *
+ * @return          True if valid, false otherwise.
+ */
+public bool:ModelMgr_IsValidIndex(model)
+{
+    return model > 0 && (model < ModelCount < MODELS_MAX);
+}
+
+/**
+ * Gets the index of a model.
+ *
+ * @param modelName     Name that identifies the model.
+ *
+ * @return              Model index if found, -1 otherwise.
+ */
+public ModelMgr_GetModelIndex(const String:modelName[])
+{
+    new model = -1;
+    
+    // Lookup the model name in the trie index.
+    if (!GetTrieValue(ModelNameIndex, modelName, model))
+    {
+        return -1;
+    }
+    
+    return model;
+}
+
+/*
+ * Gets the full model file path for the specified model.
+ *
+ * @param model     Model index.
+ * @param file      Destination string buffer.
+ * @param maxlen    Size of destination buffer.
+ *
+ * @return          Number of cells written.
+ */
+public ModelMgr_GetModelFile(model, String:file[], maxlen)
+{
+    new count;
+    
+    // Validate index.
+    if (!ModelMgr_IsValidIndex(model))
+    {
+        return 0;
+    }
+    
+    // Build model path.
+    count = strcopy(file, maxlen, ModelData[model][Model_Path]);
+    
+    // Append file name.
+    count += StrCat(file, maxlen, ModelData[model][Model_FileName]);
+    
+    // Append file extension.
+    count += StrCat(file, maxlen, ".mdl");
+    
+    return count;
 }

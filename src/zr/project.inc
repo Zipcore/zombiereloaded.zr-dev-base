@@ -345,7 +345,7 @@ stock Project_LoadExtraTranslations(bool:transmanagerloaded)
  * 'description': The log description.
  * 'logbuffer': The log text.
  */
-#define LM_FORMAT "[ZR] [%s] [%s] %s", modulefullname, description, logbuffer
+#define LM_FORMAT "[%s] [%s] %s", modulefullname, description, logbuffer
 
 
 // Access Manager

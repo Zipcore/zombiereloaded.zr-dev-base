@@ -13,6 +13,7 @@
 // SHORT DESCRIPTIONS
 //
 // Section name: Unique user defined name to identify the model.
+//               Cannot contain spaces.
 //
 // Attribute:           Values:     Description:
 // ----------------------------------------------------------------------------

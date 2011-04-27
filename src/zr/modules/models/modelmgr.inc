@@ -273,7 +273,7 @@ public bool:ModelMgr_HasAccess(client, model)
  */
 public bool:ModelMgr_IsValidIndex(model)
 {
-    return model > 0 && (model < ModelCount < MODELS_MAX);
+    return model >= 0 && (model < ModelCount < MODELS_MAX);
 }
 
 /**

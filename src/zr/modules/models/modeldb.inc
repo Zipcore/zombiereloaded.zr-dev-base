@@ -165,14 +165,18 @@ ModelDB_LoadModels()
     // Parse model file.
     ConfigMgr_CacheKv(g_moduleModelMgr, ModelCfgIndex, "ModelDB_LoadModel");
     
-    // Log loaded-message.
-    LogMgr_Print(g_moduleModelMgr, LogType_Normal, "Config Loading", "Models loaded: %d", ModelCount);
-    
     // Check if there are no models.
     if (ModelCount == 0)
     {
-        LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Validation", "Error: No usable data found in model config file: %s", configfile);
+        LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Validation", "Error: No valid models found in model config file: %s", configfile);
+        return;
     }
+    
+    // Precache models.
+    ModelDB_PrecacheModels();
+    
+    // Log loaded-message.
+    LogMgr_Print(g_moduleModelMgr, LogType_Normal, "Config Loading", "Models loaded: %d", ModelCount);
 }
 
 /**
@@ -193,7 +197,7 @@ public KvCache:ModelDB_LoadModel(Handle:kvModels, sectionIndex, const String:sec
     // Check if maximum number of models is reached.
     if (sectionIndex == MODELS_MAX)
     {
-        LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Validation", "Warning: Maximum number of models reached (%d), skipping other models from \"%s\" (%d).", MODELS_MAX, sectionName, sectionIndex);
+        LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Loading", "Warning: Maximum number of models reached (%d), skipping other models from \"%s\" (%d).", MODELS_MAX, sectionName, sectionIndex);
         return KvCache_Hault;
     }
     
@@ -301,7 +305,7 @@ public KvCache:ModelDB_LoadModel(Handle:kvModels, sectionIndex, const String:sec
     // Check if failed.
     if (dir == INVALID_HANDLE)
     {
-        LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Validation", "Error opening directory: %s", path);
+        LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Validation", "Error opening directory \"%s\" for model \"%s\" (%d).", path, sectionName, sectionIndex);
         return KvCache_Ignore;
     }
     
@@ -365,6 +369,40 @@ public KvCache:ModelDB_LoadModel(Handle:kvModels, sectionIndex, const String:sec
         // Model is valid.
         ModelCount++;
         return KvCache_Continue;
+    }
+}
+
+/**
+ * Precaches a model. An error message is logged if it failed.
+ *
+ * @param model     Model index.
+ *
+ * @return          True if successful, false otherwise.
+ */
+ModelDB_PrecacheModel(model)
+{
+    decl String:file[PLATFORM_MAX_PATH];
+    ModelMgr_GetModelFile(model, file, sizeof(file));
+    
+    LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Loading", "Precaching model: %s", file);
+    
+    if (PrecacheModel(file) == 0)
+    {
+        LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Loading", "Failed to precache model: %s", file);
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Precaches all loaded models. Error messages are logged on errors.
+ */
+ModelDB_PrecacheModels()
+{
+    for (new model = 0; model < ModelCount; model++)
+    {
+        ModelDB_PrecacheModel(model);
     }
 }
 

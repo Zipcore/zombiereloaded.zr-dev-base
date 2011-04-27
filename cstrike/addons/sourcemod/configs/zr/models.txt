@@ -25,16 +25,16 @@
 //                                      "humans"
 // mother_zombies_only  yes/no      Only allow mother zombies to use the model.
 // admins_only          yes/no      Only allow admins to use the model.
-// is_hidden            yes/no      Exclude model from random selections. A class or a model collection must refer to the model to use it.
-// auth_mode            text        Authorization mode for the model. Options:
+// is_hidden            yes/no      Exclude model from random selections. A class or a model collection must explicitly refer to the model to use it.
+// auth_mode            text        Advanced authorization mode for the model. Options:
 //                                      "disabled" - No authorization. Everyone can use the model.
 //                                      "flag"     - Player must have at least one of the flags.
 //                                      "group"    - Player must be in at least one of the groups.
 //                                      "either"   - Player must either have one of the flags or be in one of the groups.
 //                                      "both"     - Player must both have one of the flags and be in one of the groups.
 //                                      "all"      - Player must have all flags and be in all groups.
-// flags                text        List of flag names to authorize. Separated by comma (,). See auth_mode.
-// groups               text        List of groups to authorize. Separated by comma (,). See auth_mode.
+// flags                text        List of flag names to authorize. Separated by space (" "). See auth_mode.
+// groups               text        List of groups to authorize. Separated by space (" "). See auth_mode.
 
 "models"
 {
@@ -117,6 +117,26 @@
     // Special model examples:
     // -----------------------
     
+    // Mixed restriction example. The player must have either a flag or be in a group to use it.
+    //"special_model"
+    //{
+    //    // General
+    //    "displayname"           "A special model"
+    //    "filename"              "specialmodel"
+    //    "path"                  "models/player/specialmodel/"
+    //    "team"                  "humans"
+    //    
+    //    // Restrictions
+    //    "mother_zombies_only"   "no"
+    //    "admins_only"           "no"
+    //    "is_hidden"             "no"
+    //    
+    //    // Advanced authorization
+    //    "auth_mode"             "either"
+    //    "flags"                 "custom1 kick"
+    //    "groups"                "group1 group2"
+    //}
+    
     // Group restriction example. Only members of the vip or vip2 groups in SourceMod can use this model.
     //"vip_human"
     //{
@@ -134,7 +154,7 @@
     //    // Advanced authorization
     //    "auth_mode"             "group"
     //    "flags"                 ""
-    //    "groups"                "vip, vip2"
+    //    "groups"                "vip vip2"
     //}
     
     // Flag restriction example. Only players with custom1 or kick flags can use this model.
@@ -153,7 +173,7 @@
     //    
     //    // Advanced authorization
     //    "auth_mode"             "flag"
-    //    "flags"                 "custom1, kick"
+    //    "flags"                 "custom1 kick"
     //    "groups"                ""
     //}
 }

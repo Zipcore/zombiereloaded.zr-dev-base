@@ -25,8 +25,6 @@
  * ============================================================================
  */
 
-#include "zr/libraries/authlib"
-
 /**
  * Maximum number of model collections.
  */

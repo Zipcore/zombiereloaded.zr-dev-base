@@ -25,8 +25,6 @@
  * ============================================================================
  */
 
-#include "src/zr/libraries/functionlib"
-
 /**
  * This module's identifier.
  */

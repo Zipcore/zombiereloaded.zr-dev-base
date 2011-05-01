@@ -62,6 +62,7 @@ new ModelCollectionCfgIndex;
 // Module components.
 #include "src/zr/modules/models/modeldb"
 #include "src/zr/modules/models/modelcollections"
+#include "src/zr/modules/models/modelfilter"
 
 
 /**
@@ -294,6 +295,26 @@ public ModelMgr_GetModelIndex(const String:modelName[])
     return model;
 }
 
+/**
+ * Gets the index of a model collection.
+ *
+ * @param collectionName    Name that identifies the model collection.
+ *
+ * @return                  Model collection index if found, -1 otherwise.
+ */
+public ModelMgr_GetCollectionIndex(const String:collectionName[])
+{
+    new collection = -1;
+    
+    // Lookup the collection name in the trie index.
+    if (!GetTrieValue(ModelCollectionNameIndex, collectionName, collection))
+    {
+        return -1;
+    }
+    
+    return collection;
+}
+
 /*
  * Gets the full model file path for the specified model.
  *
@@ -323,4 +344,58 @@ public ModelMgr_GetModelFile(model, String:file[], maxlen)
     count += StrCat(file, maxlen, ".mdl");
     
     return count;
+}
+
+/**
+ * Parses a model query string for a client.
+ *
+ * @param client    Client index.
+ * @param query     Model query string.
+ * @param mode      Parser mode.
+ * @param list      Optional. List to put models in if mode is ModelParser_List.
+ *
+ * @return          -2 if it's a predefined option (mode).
+ *                  If in list mode: Number of models added to the list.
+ *                  Otherwise model index if found, or -1 if no models found.
+ */
+public ModelMgr_ParseQuery(client, const String:query[], ModelParserMode:mode, Handle:list)
+{
+    // Wrap internal parser.
+    return ModelDB_ParseQuery(client, query, mode, list);
+}
+
+/**
+ * Returns whether the specified word is reserved.
+ *
+ * @param word      Word to check.
+ *
+ * @return          True if reserved, false otherwise.
+ */
+public bool:ModelMgr_IsReservedWord(const String:word[])
+{
+    // Filter words.
+    if (ModelDB_StringToFilter(word) != -1)
+    {
+        return true;
+    }
+    
+    // Auth modes.
+    if (ModelDB_StringToAuthMode(word) != ModelAuth_Invalid)
+    {
+        return true;
+    }
+    
+    // Teams.
+    if (ModelDB_StringToTeam(word) != ModelTeam_Invalid)
+    {
+        return true;
+    }
+    
+    // Parser modes.
+    if (ModelDB_StringToParserMode(word) != ModelParser_Invalid)
+    {
+        return true;
+    }
+    
+    return false;
 }

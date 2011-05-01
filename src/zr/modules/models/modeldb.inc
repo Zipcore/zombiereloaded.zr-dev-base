@@ -48,6 +48,11 @@
 #define MODEL_ENTRY_SEPARATOR " "
 
 /**
+ * Maximum number of entries in a model query string.
+ */
+#define MODEL_MAX_ENTRIES 16
+
+/**
  * Model access settings.
  */
 enum ModelAuthMode

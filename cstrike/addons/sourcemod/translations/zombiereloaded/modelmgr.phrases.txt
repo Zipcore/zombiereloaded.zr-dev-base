@@ -1,7 +1,7 @@
 "Phrases"
 {
 	// **********************************************
-	//                  ZTele Module
+	//              Model Manager Module
 	// **********************************************
 
 	"ModelMgr no models found"

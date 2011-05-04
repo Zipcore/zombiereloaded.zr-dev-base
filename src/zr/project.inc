@@ -348,7 +348,9 @@ stock Project_LoadExtraTranslations(bool:transmanagerloaded)
 #define LM_FORMAT "[%s] [%s] %s", modulefullname, description, logbuffer
 
 
-// Access Manager
+// **********************************************
+//                Access Manager
+// **********************************************
 
 /**
  * The formatting string for module access groups/cvars.

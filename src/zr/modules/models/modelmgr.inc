@@ -63,6 +63,7 @@ new ModelCollectionCfgIndex;
 #include "src/zr/modules/models/modeldb"
 #include "src/zr/modules/models/modelcollections"
 #include "src/zr/modules/models/modelfilter"
+#include "src/zr/modules/models/modelcommands"
 
 
 /**
@@ -88,6 +89,9 @@ ModelMgr_Register()
     // Register config file that this module will use.
     ConfigMgr_Register(g_moduleModelMgr, "ModelMgr_OnConfigReload", MODEL_FILE, ModelCfgIndex);
     ConfigMgr_Register(g_moduleModelMgr, "ModelMgr_OnConfigReload", MODEL_COLLECTION_FILE, ModelCollectionCfgIndex);
+    
+    // Register commands.
+    ModelCmd_RegCommands();
 }
 
 /**
@@ -101,20 +105,6 @@ ModelMgr_OnPluginStart()
     // Create cvars.
     g_hCvarModelsFile = Project_CreateConVar("models_file", MODEL_FILE, "Path to model config file.  Path is relative to the SourceMod directory.");
     g_hCvarModelCollectionsFile = Project_CreateConVar("model_collections_file", MODEL_COLLECTION_FILE, "Path to model collections config file.  Path is relative to the SourceMod directory.");
-}
-
-/**
- * All plugins have loaded.
- */
-public ModelMgr_OnAllPluginsLoaded()
-{
-}
-
-/**
- * Plugin is ending.
- */
-public ModelMgr_OnPluginEnd()
-{
 }
 
 /**

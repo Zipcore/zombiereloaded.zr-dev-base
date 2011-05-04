@@ -1,0 +1,33 @@
+"Phrases"
+{
+	// **********************************************
+	//                  ZTele Module
+	// **********************************************
+
+	"ModelMgr no models found"
+	{
+		"en"		"No models found."
+	}
+
+	"ModelMgr header index"
+	{
+		"en"		"Index:"
+	}
+
+	"ModelMgr header team"
+	{
+		"en"		"Team:"
+	}
+
+	"ModelMgr header name"
+	{
+		"en"		"Name:"
+	}
+
+	"ModelMgr list syntax"
+	{
+		"format"	"{1:s}"
+		"en"		"Lists all models. Usage: {1}_models_list [<client target> <query>]"
+	}
+
+}

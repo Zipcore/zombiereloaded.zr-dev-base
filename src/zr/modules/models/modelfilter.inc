@@ -78,6 +78,11 @@ enum ModelParserMode
 #define MODEL_COLLECTION_PREFIX ":"
 
 /**
+ * Maximum lenghth of the query string buffer.
+ */
+#define MODEL_MAX_QUERY_LEN 320
+
+/**
  * Max length of filter name buffers.
  */
 #define MODEL_FILTER_NAME_LEN 16
@@ -86,7 +91,8 @@ enum ModelParserMode
 /**
  * Parses a model query string for a client.
  *
- * @param client    Client index.
+ * @param client    Client index. Used for authorization.
+ *                  The server will always get access.
  * @param query     Model query string.
  * @param mode      Parser mode.
  * @param list      Optional. List to put models in if mode is ModelParser_List.
@@ -256,7 +262,8 @@ ModelDB_ParseFilters(const String:filterList[])
 /**
  * Parses a collection entry in a model query.
  *
- * @param client    Client that will use the model.
+ * @param client    Client that will use the model. Used for authorization.
+ *                  The server will always get access.
  * @param entry     Collection query entry.
  * @param asList    Optional. Return all accessible models in a list.
  *                  Defaults to false.
@@ -306,6 +313,7 @@ ModelDB_ParseCollection(client, const String:entry[], bool:asList = false, Handl
  * Gets one or more models from a filtered list.
  *
  * @param client    Client that will use the model. Used for authorization.
+ *                  The server will always get access.
  * @param filters   Filtering flags.
  * @param models    Optional. Custom list of model indexes. If not specified it
  *                  will use the entire model database.
@@ -386,6 +394,7 @@ ModelDB_GetModel(client, filters, Handle:models = INVALID_HANDLE, bool:asList = 
  * Returns whether the specified model passes a filter.
  *
  * @param client    Client that will use the model. Used for authorization.
+ *                  The server will always get access.
  * @param filters   Filtering flags.
  * @param model     Model index to test.
  *
@@ -401,7 +410,8 @@ bool:ModelDB_FilterTest(client, filters, model)
     new ModelAuthMode:authMode = ModelData[model][Model_AuthMode];
     
     // Authorization. Check if not ignored, and not authorized.
-    if (filters &~ MODEL_FILTER_IGNORE_AUTH
+    if (client != 0     // Server always get access (for listings in console).
+        && filters &~ MODEL_FILTER_IGNORE_AUTH
         && !ModelDB_IsPlayerAuthorized(client, model))
     {
         // Not authorized.

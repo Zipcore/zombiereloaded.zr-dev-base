@@ -26,7 +26,7 @@
 
 	"ModelMgr list syntax"
 	{
-		"format"	"{1:s}"
+		"#format"	"{1:s}"
 		"en"		"Lists all models. Usage: {1}_models_list [<client target> <query>]"
 	}
 

@@ -51,7 +51,7 @@ public Action:ModelCmd_List(client, argc)
     if (argc == 0)
     {
         // Print syntax.
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ModelMgr list usage", PROJECT_CMD_PREFIX);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ModelMgr list syntax", PROJECT_CMD_PREFIX);
         ReplyToCommand(client, "\n");
         
         // Print the list.
@@ -122,7 +122,7 @@ public Action:ModelCmd_List(client, argc)
     else
     {
         // Print syntax.
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ModelMgr list usage", PROJECT_CMD_PREFIX);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ModelMgr list syntax", PROJECT_CMD_PREFIX);
         return Plugin_Handled;
     }
 }
@@ -152,8 +152,8 @@ public Action:ModelCmd_Dump(client, argc)
  */
 ModelCmd_PrintList(client, Handle:list = INVALID_HANDLE)
 {
-    static const String:fmt[] = "%-12d %-12s %s\n";
-    static const String:fmtHeader[] = "%-12s %-12s %s\n--------------------------------------------------\n";
+    static const String:fmt[] = "%-12d %-12s %s";
+    static const String:fmtHeader[] = "%-12s %-12s %s\n--------------------------------------------------";
     
     new bool:hasList = (list != INVALID_HANDLE);
     new count = hasList ? GetArraySize(list) : ModelCount;
@@ -171,8 +171,8 @@ ModelCmd_PrintList(client, Handle:list = INVALID_HANDLE)
     decl String:strTeam[32];
     decl String:strName[32];
     Format(strIndex, sizeof(strIndex), "%t", "ZR header index");
-    Format(strIndex, sizeof(strTeam), "%t", "ZR header team");
-    Format(strIndex, sizeof(strName), "%t", "ZR header name");
+    Format(strTeam, sizeof(strTeam), "%t", "ZR header team");
+    Format(strName, sizeof(strName), "%t", "ZR header name");
     ReplyToCommand(client, fmtHeader, strIndex, strTeam, strName);
     
     decl String:teamHumans[32];

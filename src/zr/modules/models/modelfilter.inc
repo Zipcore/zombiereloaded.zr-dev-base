@@ -252,7 +252,7 @@ ModelDB_ParseFilters(const String:filterList[])
         new filter = ModelDB_StringToFilter(filterEntries[entry]);
         if (filter > 0)
         {
-            filters &= filter;
+            filters |= filter;
         }
     }
     

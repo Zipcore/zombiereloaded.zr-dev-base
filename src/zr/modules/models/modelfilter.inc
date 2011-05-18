@@ -154,9 +154,10 @@ ModelDB_ParseQuery(client, const String:query[], ModelParserMode:mode = ModelPar
     for (new entry = 0; entry < entryCount; entry++)
     {
         // Determine entry type.
-        if (StrContains(entries[entry], MODEL_COLLECTION_PREFIX))
+        if (StrContains(entries[entry], MODEL_COLLECTION_PREFIX) >= 0)
         {
-            // It's a collection.
+            // It's a collection. The collection parser also parses filters
+            // on collections.
             model = ModelDB_ParseCollection(client, entries[entry], asList, list);
             
             if (asList)
@@ -186,13 +187,13 @@ ModelDB_ParseQuery(client, const String:query[], ModelParserMode:mode = ModelPar
                 filters = ModelDB_ParseFilters(entries[entry]);
                 model = ModelDB_GetModel(client, filters, _, asList, list);
                 
-                // Add model to filtered list if valid.
                 if (asList)
                 {
                     listCount += model;
                 }
                 else if (model >= 0)
                 {
+                    // Add model to filtered list.
                     PushArrayCell(filtered, model);
                     listCount++;
                 }
@@ -292,8 +293,7 @@ ModelDB_ParseCollection(client, const String:entry[], bool:asList = false, Handl
     }
     
     // Get collection. The collection name is the other part of the entry.
-    // TODO: Verify if pos is the position to the prefix (:) or right after.
-    new collection = ModelMgr_GetCollectionIndex(entry[pos + 1]);
+    new collection = ModelMgr_GetCollectionIndex(entry[pos]);
     
     if (collection >= 0)
     {
@@ -302,7 +302,7 @@ ModelDB_ParseCollection(client, const String:entry[], bool:asList = false, Handl
         
         // Get model(s) from list.
         model = ModelDB_GetModel(client, filters, collectionList, asList, list);
-        return model;
+        return model;   // Returns list count if writing to list.
     }
     
     // No models found.
@@ -314,7 +314,8 @@ ModelDB_ParseCollection(client, const String:entry[], bool:asList = false, Handl
  *
  * @param client    Client that will use the model. Used for authorization.
  *                  The server will always get access.
- * @param filters   Filtering flags.
+ * @param filters   Filtering flags. The "random" filter will pick a single
+ *                  model that match the filters.
  * @param models    Optional. Custom list of model indexes. If not specified it
  *                  will use the entire model database.
  * @param asList    Optional. Return all accessible models in a list.
@@ -326,7 +327,7 @@ ModelDB_ParseCollection(client, const String:entry[], bool:asList = false, Handl
  */
 ModelDB_GetModel(client, filters, Handle:models = INVALID_HANDLE, bool:asList = false, Handle:list)
 {
-    new bool:customList = models != INVALID_HANDLE;
+    new bool:customList = (models != INVALID_HANDLE);
     new model = -1;
     
     // Check if there are no models.
@@ -334,46 +335,49 @@ ModelDB_GetModel(client, filters, Handle:models = INVALID_HANDLE, bool:asList = 
     count = customList ? GetArraySize(models) : ModelCount;
     if (count == 0)
     {
-        return -1;
+        return asList ? 0 : -1;
     }
     
     // Prepare temp array for second pass, or use the list if specified.
     new filterCount = 0;
     new Handle:filtered;
-    filtered = asList ? list : CreateArray();
+    if (asList && filters & MODEL_FILTER_RANDOM)
+    {
+        // Using a list, but a random filter is enabled. This still requires a
+        // temp array.
+        filtered = CreateArray();
+    }
+    else
+    {
+        filtered = asList ? list : CreateArray();
+    }
     
     // Loop through each model and test filters.
     for (new i = 0; i < count; i++)
     {
         model = customList ? GetArrayCell(models, i) : i; 
-        
+        PrintToServer("GetModel - testing filter on model %d", model);
         if (ModelDB_FilterTest(client, model, filters))
         {
             // All filters passed, add model.
             PushArrayCell(filtered, model);
             filterCount++;
         }
-        else
-        {
-            // Didn't pass filters. Skip model.
-            continue;
-        }
     }
-    
-    // Check if using a list.
-    if (asList)
-    {
-        // Stop here and return number of models added to the list.
-        return filterCount;
-    }
-    
-    // Not using a list. Pick a model according to filter.
     
     // Check if no model passed the filter.
     if (filterCount == 0)
     {
         // No models found according to the filter.
-        return -1;
+        
+        if (!asList || filters & MODEL_FILTER_RANDOM)
+        {
+            // Temp array exist when not using a list, or when a random filter
+            // is enabled.
+            CloseHandle(filtered);
+        }
+        
+        return asList ? 0 : -1;
     }
     
     // Pick random model if enabled.
@@ -381,13 +385,30 @@ ModelDB_GetModel(client, filters, Handle:models = INVALID_HANDLE, bool:asList = 
     {
         // Get random model.
         new randIndex = GetRandomInt(0, filterCount - 1);
-        return GetArrayCell(filtered, randIndex);
+        model = GetArrayCell(filtered, randIndex); 
+        CloseHandle(filtered);      // Temp array, NOT the list.
+        
+        if (asList)
+        {
+            PushArrayCell(list, model);
+            return 1;
+        }
+        else
+        {
+            return model;
+        }
     }
-    else
+    
+    // If using a list, return number of models added.
+    if (asList)
     {
-        // Pick first model.
-        return GetArrayCell(filtered, 0);
+        return filterCount;
     }
+    
+    // Not using a list. Pick first model.
+    model = GetArrayCell(filtered, 0);
+    CloseHandle(filtered);
+    return model;
 }
 
 /**
@@ -403,6 +424,7 @@ ModelDB_GetModel(client, filters, Handle:models = INVALID_HANDLE, bool:asList = 
 bool:ModelDB_FilterTest(client, filters, model)
 {
     // Cache relevant attributes for readability.
+    PrintToServer("model = %d", model);
     new ModelTeam:team = ModelData[model][Model_Team];
     new bool:motherZombiesOnly = ModelData[model][Model_MotherZombiesOnly];
     new bool:adminsOnly = ModelData[model][Model_AdminsOnly];
@@ -419,7 +441,7 @@ bool:ModelDB_FilterTest(client, filters, model)
     }
     
     // Team filters.
-    if (filters &~ MODEL_FILTER_BOTH_TEAMS)
+    if (!(filters & MODEL_FILTER_BOTH_TEAMS))
     {
         // Both teams flag is not set. Check individual team flags.
         

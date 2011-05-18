@@ -155,11 +155,11 @@ public KvCache:ModelDB_LoadCollection(Handle:kvCollections, sectionIndex, const 
         hasErrors = true;
     }
     
-    // Loop through model entries.
+    // Loop through collection entries.
     KvGotoFirstSubKey(kvCollections, false);
     do
     {
-        // Get model name.
+        // Get collection name.
         KvGetString(kvCollections, "name", buffer, sizeof(buffer));
         
         // Validate name and add to array.
@@ -197,9 +197,23 @@ public KvCache:ModelDB_LoadCollection(Handle:kvCollections, sectionIndex, const 
         return KvCache_Ignore;
     }
     
-    // Set array.
-    ModelCollectionData[ModelCollectionCount][ModelCollection_Array] = models;
-    
-    ModelCollectionCount++;
-    return KvCache_Continue;
+    // Add name to trie index. If this fails there's already a collection
+    // with this name.
+    if (!SetTrieValue(ModelCollectionNameIndex, sectionName, ModelCollectionCount, false))
+    {
+        // Name is already in use.
+        LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Validation", "Duplicate model collection name at \"%s\" (%d). Use another section name for this model collection.", sectionName, sectionIndex);
+        ModelCollectionFailedCount++;
+        return KvCache_Ignore;
+    }
+    else
+    {
+        // Model collection is valid.
+        
+        // Set array.
+        ModelCollectionData[ModelCollectionCount][ModelCollection_Array] = models;
+        
+        ModelCollectionCount++;
+        return KvCache_Continue;
+    }
 }

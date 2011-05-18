@@ -63,22 +63,14 @@ public Action:ModelCmd_List(client, argc)
     else if (argc >= 2)
     {
         decl String:query[MODEL_MAX_QUERY_LEN];
-        decl String:argbuffer[MODEL_STRING_LEN];
-        query[0] = 0;
+        decl String:argbuffer[MODEL_MAX_QUERY_LEN];
         
-        // Join the last parameters into a string.
-        // TODO: This should be added to a library as a utility.
-        for (new arg = 2; arg <= argc; arg++)
-        {
-            GetCmdArg(arg, argbuffer, sizeof(argbuffer));
-            StrCat(query, sizeof(query), argbuffer);
-            
-            // Add space, except on the last parameter.
-            if (arg < argc)
-            {
-                StrCat(query, sizeof(query), " ");
-            }
-        }
+        // Get the query.
+        GetCmdArgString(argbuffer, sizeof(argbuffer));      // Full command string.
+        new pos = FindCharInString(argbuffer, ' ') + 1;     // Command.
+        pos = FindCharInString(argbuffer[pos], ' ') + 1;    // First argument.
+        pos = FindCharInString(argbuffer[pos], ' ') + 1;    // Query position.
+        strcopy(query, sizeof(query), argbuffer[pos]);
         
         GetCmdArg(1, argbuffer, sizeof(argbuffer));
         new target;

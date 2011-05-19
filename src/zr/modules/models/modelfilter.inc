@@ -356,8 +356,7 @@ ModelDB_GetModel(client, filters, Handle:models = INVALID_HANDLE, bool:asList = 
     for (new i = 0; i < count; i++)
     {
         model = customList ? GetArrayCell(models, i) : i; 
-        PrintToServer("GetModel - testing filter on model %d", model);
-        if (ModelDB_FilterTest(client, model, filters))
+        if (ModelDB_FilterTest(client, filters, model))
         {
             // All filters passed, add model.
             PushArrayCell(filtered, model);
@@ -424,7 +423,6 @@ ModelDB_GetModel(client, filters, Handle:models = INVALID_HANDLE, bool:asList = 
 bool:ModelDB_FilterTest(client, filters, model)
 {
     // Cache relevant attributes for readability.
-    PrintToServer("model = %d", model);
     new ModelTeam:team = ModelData[model][Model_Team];
     new bool:motherZombiesOnly = ModelData[model][Model_MotherZombiesOnly];
     new bool:adminsOnly = ModelData[model][Model_AdminsOnly];

@@ -60,10 +60,10 @@ new ModelCfgIndex;
 new ModelCollectionCfgIndex;
 
 // Module components.
-#include "src/zr/modules/models/modeldb"
-#include "src/zr/modules/models/modelcollections"
-#include "src/zr/modules/models/modelfilter"
-#include "src/zr/modules/models/modelcommands"
+#include "zr/modules/models/modeldb"
+#include "zr/modules/models/modelcollections"
+#include "zr/modules/models/modelfilter"
+#include "zr/modules/models/modelcommands"
 
 
 /**

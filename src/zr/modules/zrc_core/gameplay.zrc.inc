@@ -112,14 +112,14 @@ ZRCGPlay_OnPluginStart()
     
     #if defined PROJECT_GAME_CSS || defined PROJECT_GAME_TF2
         HookConVarChange(FindConVar("mp_restartgame"), ZRCGPlay_CvarHookMPRGame);
-        CvarLib_LockCvar("mp_autoteambalance", "0");
+        CvarLib_LockCvar("mp_autoteambalance", "0", true);
     #endif
     
     #if defined PROJECT_GAME_CSS
-        CvarLib_LockCvar("mp_limitteams", "0");
+        CvarLib_LockCvar("mp_limitteams", "0", true);
     #endif
     
-    // TODO: tf2 mp_limitteams?
+    // TODO: tf2 mp_limitteams?  -> mp_teams_unbalance_limit
 }
 
 /**
@@ -134,8 +134,8 @@ public Action:ZRCGPlay_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
     #if defined PROJECT_GAME_CSS
         HookConVarChange(FindConVar("mp_restartgame"), ZRCGPlay_CvarHookMPRGame);
-        CvarLib_LockCvar("mp_limitteams", "0");
-        CvarLib_LockCvar("mp_autoteambalance", "0");
+        CvarLib_LockCvar("mp_limitteams", "0", true);
+        CvarLib_LockCvar("mp_autoteambalance", "0", true);
     #endif
     
     return Plugin_Continue;

@@ -396,7 +396,7 @@ stock bool:GameRules_IsConfigCached()
 }
 
 /**
- * All convars are set, cvar-dependent code should use this.
+ * The map has started.
  */
 public GameRules_OnMapStart()
 {
@@ -571,8 +571,8 @@ stock GameRules_ApplyRuleSet(ruleSet)
     GameRules_GetNamedConfig("cfg", cfgfile);
     if (cfgfile[0])
     {
-        ServerCommand("exec sourcemod/%s", cfgfile);
-        LogMgr_Print(g_moduleGameRules, LogType_Debug, "Game Rule Configs", "Executed game ruleset file: sourcemod/%s", cfgfile);
+        ServerCommand("exec %s", cfgfile);
+        LogMgr_Print(g_moduleGameRules, LogType_Debug, "Game Rule Configs", "Executed game ruleset file: %s", cfgfile);
     }
     
     // Loop through each module and apply its action.

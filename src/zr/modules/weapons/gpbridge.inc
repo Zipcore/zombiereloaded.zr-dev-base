@@ -127,7 +127,10 @@ stock bool:GPBridge_CheckIfLoaded()
         
         GetPluginFilename(hPlugin, strPlugin, sizeof(strPlugin));
         if (StrEqual(strPlugin, GRENADEPACK_FILE_NAME, false))
+        {
+            CloseHandle(hPlugins);
             return (GetPluginStatus(hPlugin) == Plugin_Running);
+        }
     }
     
     CloseHandle(hPlugins);

@@ -85,6 +85,11 @@ new g_iZTeleTimeLeft[MAXPLAYERS + 1];
 new Float:g_vecAutoCancelBoundary[MAXPLAYERS + 1][3];
 
 /**
+ * Tracks if the round has started yet.
+ */
+new bool:g_bZTeleRoundInProgress;
+
+/**
  * Register this module.
  */
 ZTele_Register()
@@ -126,6 +131,9 @@ public ZTele_OnEventsRegister()
     
     EventMgr_RegisterEvent(g_moduleZTele, "Event_PlayerSpawn",                  "ZTele_PlayerSpawn");
     EventMgr_RegisterEvent(g_moduleZTele, "Event_PlayerDeath",                  "ZTele_PlayerDeath");
+    EventMgr_RegisterEvent(g_moduleZTele, "Event_RoundStart",                   "ZTele_RoundStart");
+    EventMgr_RegisterEvent(g_moduleZTele, "Event_RoundFreezeEnd",               "ZTele_RoundFreezeEnd");
+    EventMgr_RegisterEvent(g_moduleZTele, "Event_RoundEnd",                     "ZTele_RoundEnd");
     
     #endif
 }
@@ -190,6 +198,30 @@ public ZTele_OnClientDisconnect(client)
 }
 
 /**
+ * Player has been infected.
+ * 
+ * @param client    The client index.
+ */
+public ZTele_OnClientInfected(client)
+{
+    g_iZTeleCount[client] = 0;
+    Util_CloseHandle(g_hZTeleTimer[client]);
+}
+
+/**
+ * Player has been turned back human.
+ * 
+ * @param client    The client index.
+ */
+public ZTele_OnClientHuman(client)
+{
+    g_iZTeleCount[client] = 0;
+    Util_CloseHandle(g_hZTeleTimer[client]);
+}
+
+#if defined PROJECT_GAME_CSS
+
+/**
  * Client has spawned.
  * 
  * @param client    The client index.
@@ -248,26 +280,30 @@ public ZTele_PlayerDeath(victim, attacker, const String:weapon[], bool:headshot)
 }
 
 /**
- * Player has been infected.
- * 
- * @param client    The client index.
+ * Round has started.
  */
-public ZTele_OnClientInfected(client)
+public ZTele_RoundStart()
 {
-    g_iZTeleCount[client] = 0;
-    Util_CloseHandle(g_hZTeleTimer[client]);
+    g_bZTeleRoundInProgress = false;
 }
 
 /**
- * Player has been turned back human.
- * 
- * @param client    The client index.
+ * Pre-round freezetime has finished.
  */
-public ZTele_OnClientHuman(client)
+public ZTele_RoundFreezeEnd()
 {
-    g_iZTeleCount[client] = 0;
-    Util_CloseHandle(g_hZTeleTimer[client]);
+    g_bZTeleRoundInProgress = true;
 }
+
+/**
+ * Round has ended.
+ */
+public ZTele_RoundEnd()
+{
+    g_bZTeleRoundInProgress = false;
+}
+
+#endif
 
 // ************************************************************
 //  The functions in this section are ordered chronologically.
@@ -309,6 +345,12 @@ bool:ZTele_Client(client)
     if (!IsPlayerAlive(client))
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "Must be alive");
+        return false;
+    }
+    
+    if (!g_bZTeleRoundInProgress)
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZTele restricted round not active");
         return false;
     }
     

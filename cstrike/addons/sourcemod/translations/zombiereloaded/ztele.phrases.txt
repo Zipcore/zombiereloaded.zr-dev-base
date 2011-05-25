@@ -4,6 +4,11 @@
 	//                  ZTele Module
 	// **********************************************
 
+	"ZTele restricted round not active"
+	{
+		"en"		"The round has not started yet."
+	}
+
 	"ZTele restricted zombie"
 	{
 		"en"		"ZTele is restricted for zombies."
@@ -37,7 +42,7 @@
 	"ZTele countdown"
 	{
 		"#format"	"{1:d}"
-		"en"		"Teleporting back to spawn in: {1} seconds."
+		"en"		"Teleporting in: {1} seconds."
 	}
 
 	"ZTele cancel"
@@ -50,7 +55,7 @@
 	"ZTele countdown end"
 	{
 		"#format"	"{1:d},{2:d}"
-		"en"		"Teleported back to spawn. (Count: {1}/{2})"
+		"en"		"Teleportation successful (Count: {1}/{2})"
 	}
 
 	"ZTele menu clients title"
@@ -71,4 +76,5 @@
 		"#format"	"{1:s}"
 		"en"		"Player {1} was successfully teleported."
 	}
+
 }

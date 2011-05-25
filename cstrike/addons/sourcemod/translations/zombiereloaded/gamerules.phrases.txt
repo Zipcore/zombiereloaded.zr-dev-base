@@ -1,0 +1,23 @@
+"Phrases"
+{
+	// **********************************************
+	//                  Game Rules
+	// **********************************************
+
+	"Game Rules refuse disable"
+	{
+		"en"		"Game Rules module refused to disable - it must remain enabled at all times."
+	}
+
+	"Game Rules config reload"
+	{
+		"en"		"The gamerules config file is re-loaded only on map-changes."
+	}
+
+	// {1}: PROJECT_CMD_PREFIX
+	"Game Rules nextruleset command syntax"
+	{
+		"#format"	"{1:s}"
+		"en"		"Set the ruleset to be applied for next map.  Usage: {1}_nextruleset <ruleset>"
+	}
+}

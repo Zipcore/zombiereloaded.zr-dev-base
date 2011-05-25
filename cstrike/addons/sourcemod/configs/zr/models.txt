@@ -1,0 +1,179 @@
+// ============================================================================
+//
+//                              ZOMBIE:RELOADED
+//                            Model configuration
+//
+// Add custom models to this file. Set permissions and assign them to a team.
+// See Model Configuration (3.5) section in the manual for detailed info.
+//
+// ============================================================================
+//
+// Max models: 48
+//
+// SHORT DESCRIPTIONS
+//
+// Section name: Unique user defined name to identify the model.
+//               Cannot contain spaces.
+//
+// Attribute:           Values:     Description:
+// ----------------------------------------------------------------------------
+// displayname          text        User defined model name to be displayed in menus.
+// filename             text        Name of model file, without extension.
+// path                 text        Path to model files, relative to "cstrike". MUST end with "/".
+// team                 text        Which team the model belongs to. Options:
+//                                      "zombies"
+//                                      "humans"
+// mother_zombies_only  yes/no      Only allow mother zombies to use the model.
+// admins_only          yes/no      Only allow admins to use the model.
+// is_hidden            yes/no      Exclude model from random selections. A class or a model collection must explicitly refer to the model to use it.
+// auth_mode            text        Advanced authorization mode for the model. Options:
+//                                      "disabled" - No authorization. Everyone can use the model.
+//                                      "flag"     - Player must have at least one of the flags.
+//                                      "group"    - Player must be in at least one of the groups.
+//                                      "either"   - Player must either have one of the flags or be in one of the groups.
+//                                      "both"     - Player must both have one of the flags and be in one of the groups.
+//                                      "all"      - Player must have all flags and be in all groups.
+// flags                text        List of flag names to authorize. Separated by space (" "). See auth_mode.
+// groups               text        List of groups to authorize. Separated by space (" "). See auth_mode.
+
+"models"
+{
+    "zh_charple001"
+    {
+        // General
+        "displayname"           "Crispy"
+        "filename"              "zh_charple001"
+        "path"                  "models/player/zh/"
+        "team"                  "zombies"
+        
+        // Restrictions
+        "mother_zombies_only"   "no"
+        "admins_only"           "no"
+        "is_hidden"             "no"
+        
+        // Advanced authorization
+        "auth_mode"             "disabled"
+        "flags"                 ""
+        "groups"                ""
+    }
+    
+    "zh_zombie003"
+    {
+        // General
+        "displayname"           "Classic zombie (HL2)"
+        "filename"              "zh_zombie003"
+        "path"                  "models/player/zh/"
+        "team"                  "zombies"
+        
+        // Restrictions
+        "mother_zombies_only"   "no"
+        "admins_only"           "no"
+        "is_hidden"             "no"
+        
+        // Advanced authorization
+        "auth_mode"             "disabled"
+        "flags"                 ""
+        "groups"                ""
+    }
+    
+    "zh_corpse002"
+    {
+        // General
+        "displayname"           "Corpse"
+        "filename"              "zh_corpse002"
+        "path"                  "models/player/zh/"
+        "team"                  "zombies"
+        
+        // Restrictions
+        "mother_zombies_only"   "no"
+        "admins_only"           "no"
+        "is_hidden"             "no"
+        
+        // Advanced authorization
+        "auth_mode"             "disabled"
+        "flags"                 ""
+        "groups"                ""
+    }
+    
+    "t_guerilla"
+    {
+        // General
+        "displayname"           "Hellknight"
+        "filename"              "t_guerilla"
+        "path"                  "models/player/ics/hellknight_red/"
+        "team"                  "zombies"
+        
+        // Restrictions
+        "mother_zombies_only"   "no"
+        "admins_only"           "no"
+        "is_hidden"             "no"
+        
+        // Advanced authorization
+        "auth_mode"             "disabled"
+        "flags"                 ""
+        "groups"                ""
+    }
+    
+    // Special model examples:
+    // -----------------------
+    
+    // Mixed restriction example. The player must have either a flag or be in a group to use it.
+    //"special_model"
+    //{
+    //    // General
+    //    "displayname"           "A special model"
+    //    "filename"              "specialmodel"
+    //    "path"                  "models/player/specialmodel/"
+    //    "team"                  "humans"
+    //    
+    //    // Restrictions
+    //    "mother_zombies_only"   "no"
+    //    "admins_only"           "no"
+    //    "is_hidden"             "no"
+    //    
+    //    // Advanced authorization
+    //    "auth_mode"             "either"
+    //    "flags"                 "custom1 kick"
+    //    "groups"                "group1 group2"
+    //}
+    
+    // Group restriction example. Only members of the vip or vip2 groups in SourceMod can use this model.
+    //"vip_human"
+    //{
+    //    // General
+    //    "displayname"           "VIP"
+    //    "filename"              "vipmodel"
+    //    "path"                  "models/player/vip/"
+    //    "team"                  "humans"
+    //    
+    //    // Restrictions
+    //    "mother_zombies_only"   "no"
+    //    "admins_only"           "no"
+    //    "is_hidden"             "no"
+    //    
+    //    // Advanced authorization
+    //    "auth_mode"             "group"
+    //    "flags"                 ""
+    //    "groups"                "vip vip2"
+    //}
+    
+    // Flag restriction example. Only players with custom1 or kick flags can use this model.
+    //"human"
+    //{
+    //    // General
+    //    "displayname"           "Some human"
+    //    "filename"              "mymodel"
+    //    "path"                  "models/player/mymodel/"
+    //    "team"                  "humans"
+    //    
+    //    // Restrictions
+    //    "mother_zombies_only"   "no"
+    //    "admins_only"           "no"
+    //    "is_hidden"             "no"
+    //    
+    //    // Advanced authorization
+    //    "auth_mode"             "flag"
+    //    "flags"                 "custom1 kick"
+    //    "groups"                ""
+    //}
+}

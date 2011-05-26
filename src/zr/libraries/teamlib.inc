@@ -27,6 +27,7 @@
 
 // Include libraries.
 #include "zr/libraries/sdktoolslib"
+#include "zr/libraries/utilities"
 
 /**
  * Team defines.

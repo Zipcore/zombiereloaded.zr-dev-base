@@ -30,9 +30,6 @@
 #endif
 #define _utilities_included
 
-// Include libraries.
-#include "zr/libraries/teamlib"
-
 /**
  * Max len of string printed to console. Excludes newline and null terminator.
  */
@@ -48,6 +45,9 @@
 #define UTILS_FILTER_ZOMBIE       (1 << 4)    /** Only allow zombies. */
 #define UTILS_FILTER_HUMAN        (1 << 5)    /** Only allow humans. */
 #define UTILS_FILTER_CANTARGET    (1 << 6)    /** Only list clients that the menu recipient can target.  Needs target client!*/
+
+// Include libraries.
+#include "zr/libraries/teamlib"
 
 /**
  * Build an array of clients that pass the filters.
@@ -144,8 +144,12 @@ stock bool:Util_IsClientInGame(client)
  */
 stock bool:Util_IsClientOnTeam(client)
 {
-    new cteam = GetClientTeam(client);
-    return (cteam == TEAM_2 || cteam == TEAM_3);
+    #if defined PROJECT_GAME_CSS | defined PROJECT_GAME_TF2
+        new cteam = GetClientTeam(client);
+        return (cteam == TEAM_2 || cteam == TEAM_3);
+    #else
+        ThrowError("Util_IsClientOnTeam doesn't support this game");
+    #endif
 }
 
 /**

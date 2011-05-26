@@ -25,14 +25,11 @@
  * ============================================================================
  */
 
-// Include libraries.
-#include "zr/libraries/sdktoolslib"
-
 /**
  * Team defines.
  */
 #if defined PROJECT_GAME_CSS
-  #define TEAM_0 CS_TEAM_NON
+  #define TEAM_0 CS_TEAM_NONE
   #define TEAM_1 CS_TEAM_SPECTATOR
   #define TEAM_2 CS_TEAM_T
   #define TEAM_3 CS_TEAM_CT
@@ -44,6 +41,10 @@
   #define TEAM_2 _:TFTeam_Red
   #define TEAM_3 _:TFTeam_Blue
 #endif
+
+// Include libraries.
+#include "zr/libraries/sdktoolslib"
+#include "zr/libraries/utilities"
 
 /**
  * Virtual teams.
@@ -132,7 +133,7 @@ new g_iTLibGameTeamIndex[VTeam];
 stock TLib_GetGameTeamIndex(VTeam:team) { return g_iTLibGameTeamIndex[team]; }
 
 /**
- * Set a client's team.
+ * Set a game team index to a virtual team.
  * 
  * @param client    The client index.
  * @param team      The team from enum VTeam to set.
@@ -150,11 +151,11 @@ stock TLib_GTeamStringToIndex(const String:teamstring[])
 {
     #if defined PROJECT_GAME_CSS
         if (StrEqual(teamstring, "spec", false) || StrEqual(teamstring, "spectators", false))
-            return CS_TEAM_SPECTATOR;
+            return TEAM_1;
         else if (StrEqual(teamstring, "t", false) || StrEqual(teamstring, "terrorists", false))
-            return CS_TEAM_T;
+            return TEAM_2;
         else if (StrEqual(teamstring, "ct", false) || StrEqual(teamstring, "counter-terrorists", false))
-            return CS_TEAM_CT;
+            return TEAM_3;
         
         return -1;
     #else
@@ -172,7 +173,9 @@ stock TLib_GTeamStringToIndex(const String:teamstring[])
  */
 stock TLib_UpdateClientTeam(client)
 {
-    Util_SwitchTeam(client, g_iTLibGameTeamIndex[TLib_GetClientTeam(client)]);
+    // Can't switch a player to any team index lessthan 1 in any game.
+    if (g_iTLibGameTeamIndex[TLib_GetClientTeam(client)] > 0)
+        Util_SwitchTeam(client, g_iTLibGameTeamIndex[TLib_GetClientTeam(client)]);
 }
 
 /**

@@ -53,6 +53,7 @@
 #include "zr/modules/zriot_core/root.zriot"
 #include "zr/modules/sdkhooksadapter"
 #include "zr/modules/speed"
+#include "zr/modules/zspawn"
 #include "zr/modules/ztele"
 #include "zr/modules/stripobjectives"
 #include "zr/modules/classes/classmanager"

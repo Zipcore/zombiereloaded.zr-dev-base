@@ -65,6 +65,7 @@ stock ForwardOnPluginStart()
     ZRiot_OnPluginStart();
     SDKHAdapt_OnPluginStart();
     Speed_OnPluginStart();
+    ZSpawn_OnPluginStart();
     ZTele_OnPluginStart();
     StripObj_OnPluginStart();
     
@@ -74,7 +75,7 @@ stock ForwardOnPluginStart()
         ModelMgr_OnPluginStart();
     #endif
     
-    AutoExecConfig(true, "zombiereloaded");
+    AutoExecConfig(true, "zombiereloaded/zombiereloaded");
 }
 
 // **********************************************

@@ -29,7 +29,6 @@
 
 /**
  * TODO:
- * Identify and #if CS:S-only stuff.
  * The rest should be compiler errors.
  */
 
@@ -65,18 +64,16 @@ ZSpawn_Register()
     
     moduledata[ModuleData_Disabled] = false;
     moduledata[ModuleData_Hidden] = false;
-    strcopy(moduledata[ModuleData_FullName], CM_DATA_FULLNAME, "ZSpawn");
-    strcopy(moduledata[ModuleData_ShortName], CM_DATA_SHORTNAME, "zspawn");
-    strcopy(moduledata[ModuleData_Description], CM_DATA_DESCRIPTION, "Allows players to spawn into the game late.");
+    strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "ZSpawn");
+    strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "zspawn");
+    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Allows players to spawn into the game late.");
     
     // Send this array of data to the module manager.
     g_moduleZSpawn = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
-    //EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnAllModulesLoaded",       "ZSpawn_OnAllModulesLoaded");
     EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnMyModuleDisable",        "ZSpawn_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnMapStart",               "ZSpawn_OnMapStart");
-    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnClientPutInServer",      "ZSpawn_OnClientPutInServer");
     EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnClientDisconnect",       "ZSpawn_OnClientDisconnect");
     
     #if defined PROJECT_GAME_CSS
@@ -104,14 +101,6 @@ ZSpawn_OnPluginStart()
     
     // Create commands.
     RegConsoleCmd("zspawn", ZSpawn_SayCommand, "Spawn into the game.");
-    Project_RegConsoleCmd("zspawn_force", Command_ZSpawnForce, "Respawn a player as zombie or human. Usage: zr_zspawn_force <client> ['0' = Spawn as zombie | '1' = Spawn as human]");
-}
-
-/**
- * All modules have been registered.
- */
-public ZSpawn_OnAllModulesLoaded()
-{
 }
 
 /**
@@ -137,15 +126,6 @@ public ZSpawn_OnMapStart()
 }
 
 /**
- * Client has joined the server.
- * 
- * @param client    The client index.
- */
-public ZSpawn_OnClientPutInServer(client)
-{
-}
-
-/**
  * Client is disconnecting from the server.
  * 
  * @param client    The client index.
@@ -155,10 +135,12 @@ public ZSpawn_OnClientDisconnect(client)
     // If client clicked "cancel" during connection or is a bot, then stop.
     if (!IsClientInGame(client) || IsFakeClient(client))
         return;
-
+    
     // Add client to cache.
     AuthCache_AddClient(g_hZSpawnAuthCache, client);
 }
+
+#if defined PROJECT_GAME_CSS
 
 /**
  * Round has started.
@@ -181,20 +163,9 @@ public ZSpawn_RoundFreezeEnd()
     Util_CloseHandle(g_hZSpawnTimer);
     
     // Get timelimit, and check if it's disabled.
-    new Float:timelimit = GetConVarBool(g_hCvarZSpawnTimeLimit);
+    new Float:timelimit = GetConVarFloat(g_hCvarZSpawnTimeLimit);
     if (timelimit > 0.0)
         g_hZSpawnTimer = CreateTimer(timelimit, ZSpawn_TimeLimitTimer, _, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-/**
- * ZSpawn timer callback.
- * 
- * @param timer     The timer handle.
- */
-public Action:ZSpawn_TimeLimitTimer(Handle:timer)
-{
-    // Clear timer handle variable.
-    g_hZSpawnTimer = INVALID_HANDLE;
 }
 
 /**
@@ -217,7 +188,20 @@ public ZSpawn_RoundEnd()
 public ZSpawn_PlayerDeath(victim, attacker, const String:weapon[], bool:headshot)
 {
     // Add client to cache.
-    AuthCache_AddClient(g_hZSpawnAuthCache, client);
+    AuthCache_AddClient(g_hZSpawnAuthCache, victim);
+}
+
+#endif
+
+/**
+ * ZSpawn timer callback.
+ * 
+ * @param timer     The timer handle.
+ */
+public Action:ZSpawn_TimeLimitTimer(Handle:timer)
+{
+    // Clear timer handle variable.
+    g_hZSpawnTimer = INVALID_HANDLE;
 }
 
 /**
@@ -230,9 +214,16 @@ public ZSpawn_PlayerDeath(victim, attacker, const String:weapon[], bool:headshot
 public Action:ZSpawn_SayCommand(client, argc)
 {
     // Check if the module is disabled.
-    if (ModuleMgr_IsDisabled(g_moduleWepRestrict))
+    if (ModuleMgr_IsDisabled(g_moduleZSpawn))
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "Feature is disabled");
+        return Plugin_Handled;
+    }
+    
+    // If client is console, then stop and tell them this feature is for players only.
+    if (client == SERVER_INDEX)
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "Must be player");
         return Plugin_Handled;
     }
     
@@ -257,17 +248,18 @@ public Action:ZSpawn_SayCommand(client, argc)
         return Plugin_Handled;
     }
     
-    // If client is console, then stop and tell them this feature is for players only.
-    if (client == SERVER_INDEX)
+    new Float:timelimit = GetConVarFloat(g_hCvarZSpawnTimeLimit);
+    if (timelimit == 0 || g_hZSpawnTimer != INVALID_HANDLE)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "Must be player");
-        return Plugin_Handled;
-    }
-    
-    new Float:timelimit = GetConVarBool(g_hCvarZSpawnTimeLimit);
-    if (timelimit == 0.0 || g_hZSpawnTimer != INVALID_HANDLE)
-    {
-        // Timelimit is disabled or not expired
+        // Spawn as a human first, then switch to zombie if we need to.
+        TLib_SetClientTeam(client, VTeam_Human);
+        CS_RespawnPlayer(client);
+        
+        
+        // Set the client's team and then spawn them.
+        new spawnteam = GetConVarInt(g_hCvarZSpawnTeam);
+        if (spawnteam == 0)
+            ZRCInfect_HumanToZombie(client, _, false);
     }
     else
     {
@@ -277,37 +269,29 @@ public Action:ZSpawn_SayCommand(client, argc)
         {
             case -1:
             {
-                TranslationPrintToChat(client, "ZSpawn timelimit", RoundToNearest(timelimit));
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "ZSpawn timelimit", RoundToNearest(timelimit));
                 return Plugin_Handled;
             }
             case 0:
             {
-                
+                TLib_SetClientTeam(client, VTeam_Human);
+                CS_RespawnPlayer(client);
+                ZRCInfect_HumanToZombie(client, _, false);
             }
             case 1:
             {
-                
+                TLib_SetClientTeam(client, VTeam_Human);
+                CS_RespawnPlayer(client);
+            }
+            default:
+            {
+                LogMgr_Print(g_moduleZSpawn, LogType_Error, "Cvar \"zspawn_timelimit_rules\"", "Invalid value \"%d\" defined in this cvar.", timelimitrules);
             }
         }
     }
     
     // This stops the "Unknown command" message in client's console.
     return Plugin_Handled;
-}
-
-/**
- * Spawns a client into the game.
- * 
- * @param client    The client index.
- * @param zombie    (Optional) If you are forcing spawn, you must override the team here.
- */
-stock bool:ZSpawn_Client(client, bool:zombie = false)
-{
-    CS_RespawnPlayer(client);
-    
-    // Check if first zombie has spawned.
-    if (___ && zombie)
-        Infect();
 }
 
 // *********************************************************************************************
@@ -322,6 +306,7 @@ stock bool:ZSpawn_Client(client, bool:zombie = false)
  * @param client    The client index.
  * @param argc      Argument count.
  */
+/*
 public Action:Command_ZSpawnForce(client, argc)
 {
     // Check if privileged.
@@ -387,6 +372,7 @@ public Action:Command_ZSpawnForce(client, argc)
     
     return Plugin_Handled;
 }
+*/
 
 /**
  * Menu callback (zspawn_force)
@@ -397,6 +383,7 @@ public Action:Command_ZSpawnForce(client, argc)
  * @param client    The client index.
  * @param slot      The menu slot selected. (starting from 0)
  */
+/*
 public ZSpawnForceHandle(Handle:menu_zspawn_force, MenuAction:action, client, slot)
 {
     // Client selected an option.
@@ -450,3 +437,4 @@ public ZSpawnForceHandle(Handle:menu_zspawn_force, MenuAction:action, client, sl
         CloseHandle(menu_zspawn_force);
     }
 }
+*/

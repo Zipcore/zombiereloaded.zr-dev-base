@@ -300,7 +300,8 @@ public ZRCInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon
  */
 ZRCInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
 {
-    PrintToChatAll("INFECT %N infected %N", attacker, client);
+    PrintToChatAll("%N infected %N (hp to 500)", attacker, client);
+    SetEntityHealth(client, 500);
     TLib_SetClientTeam(client, VTeam_Zombie);
     
     TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC human to zombie");
@@ -318,7 +319,7 @@ ZRCInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
     
     if (mzombie)
     {
-        g_bMotherZombie[client] = true;
+        g_bMotherZombie[client] = mzombie;
     }
     
     #if defined PROJECT_GAME_CSS

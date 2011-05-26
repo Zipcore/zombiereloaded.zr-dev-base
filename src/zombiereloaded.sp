@@ -55,12 +55,13 @@
 #include "zr/modules/speed"
 #include "zr/modules/ztele"
 #include "zr/modules/stripobjectives"
+#include "zr/modules/classes/classmanager"
+#include "zr/modules/models/modelmgr"
 
 // Game-specific modules
 #if defined PROJECT_GAME_CSS
     #include "zr/modules/weapons/weapons"
     #include "zr/modules/napalm"
-    #include "zr/modules/models/modelmgr"
 #endif
 
 /**

@@ -16,11 +16,12 @@ LINES_ZRIOT_CORE=`wc -l zr/modules/zriot_core/*.* | tail -n1 | sed 's/^ *\(.*\) 
 # Larger modules
 LINES_WEAPONS=`wc -l zr/modules/weapons/*.* | tail -n1 | sed 's/^ *\(.*\) *$/\1/' | cut -d ' ' -f1`
 LINES_MODELS=`wc -l zr/modules/models/*.* | tail -n1 | sed 's/^ *\(.*\) *$/\1/' | cut -d ' ' -f1`
+LINES_CLASSES=`wc -l zr/modules/classes/*.* | tail -n1 | sed 's/^ *\(.*\) *$/\1/' | cut -d ' ' -f1`
 
 # Totals
 GENERAL_TOTAL="$(($LINES_MAIN + $LINES_BASE + $LINES_LIBRARIES + $LINES_OTHER))"
 CORES_TOTAL="$(($LINES_ZRC_CORE + LINES_ZRIOT_CORE))"
-MODULES_TOTAL="$(($LINES_WEAPONS + $LINES_MODELS + $LINES_MODULES))"
+MODULES_TOTAL="$(($LINES_WEAPONS + $LINES_MODELS + $LINES_CLASSES + $LINES_MODULES))"
 
 LINES_TOTAL="$(($GENERAL_TOTAL + $CORES_TOTAL + $MODULES_TOTAL))"
 
@@ -35,6 +36,7 @@ echo "$LINES_ZRIOT_CORE\tzriot_core"
 echo ""
 echo "$LINES_MODELS\tmodels"
 echo "$LINES_WEAPONS\tweapons"
+echo "$LINES_CLASSES\tclasses"
 echo "$LINES_MODULES\tother modules"
 
 echo "\nTotal:"

@@ -67,6 +67,7 @@ stock ForwardOnPluginStart()
     Speed_OnPluginStart();
     ZTele_OnPluginStart();
     StripObj_OnPluginStart();
+    //ClassMgr_OnPluginStart();
     
     #if defined PROJECT_GAME_CSS
         Weapons_OnPluginStart();

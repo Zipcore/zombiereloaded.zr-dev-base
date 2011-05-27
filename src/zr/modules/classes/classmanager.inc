@@ -220,8 +220,8 @@ stock bool:ClassMgr_IsClassesLoaded() { return g_ClassLoaded; }
 /**
  * Selected classes.
  */
-new g_ClassSelected[MAXPLAYERS + 1][ClassTeam];
-new g_ClassNextClass[MAXPLAYERS + 1][ClassTeam];
+new g_ClassSelected[MAXPLAYERS + 1][ClassTeam];     // Currently active class.
+new g_ClassNextClass[MAXPLAYERS + 1][ClassTeam];    // Class to use next spawn, if any.
 
 
 /**
@@ -353,6 +353,8 @@ public ClassMgr_OnEventsRegister()
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnClientPutInServer",     "ClassMgr_OnClientPutInServer");
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnClientDisconnect",      "ClassMgr_OnClientDisconnect");
     
+    EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnClientInfected",          "ClassMgr_OnClientInfected");
+    EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnClientHuman",             "ClassMgr_OnClientHuman");
     EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnClientReady",             "ClassMgr_OnClientReady");
     
     #if defined PROJECT_GAME_CSS
@@ -362,10 +364,6 @@ public ClassMgr_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleClassMgr, "Event_PlayerDeath",               "ClassMgr_PlayerDeath");
     
     #endif
-    
-    // TODO: Activate these events when the new infection module is imported.
-    //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnPlayerInfected",        "ClassMgr_OnPlayerInfected");
-    //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnPlayerHuman",           "ClassMgr_OnPlayerHuman");
 }
 
 /**
@@ -818,7 +816,7 @@ public ClassMgr_OnClientReady(client)
  * @param attacker          Attacker index, if any.
  * @param motherZombie      Infected as mother zombie.
  */
-public ClassMgr_OnClientInfect(client, attacker, bool:motherZombie)
+public ClassMgr_OnClientInfected(client, attacker, bool:motherZombie)
 {
     // Reset instant class change.
     ClassMgr_ResetInstantChange(client);
@@ -834,7 +832,7 @@ public ClassMgr_OnClientInfect(client, attacker, bool:motherZombie)
     
     // Send OnClassApply event.
     
-    // Send OnClassPlayerInfect event.
+    // Send OnClassClientInfected event.
     
 }
 

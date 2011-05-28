@@ -46,7 +46,7 @@
 
 // Module includes.
 #include "zr/modules/gamedata"
-#include "zr/modules/zr_core"
+//#include "zr/modules/zr_core"     // keeping this around just in case we find something that ALL game modes will have in common.
 #include "zr/modules/gamerules"
 #include "zr/modules/mapconfig"
 #include "zr/modules/zrc_core/root.zrc"

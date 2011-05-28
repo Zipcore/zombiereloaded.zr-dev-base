@@ -26,7 +26,6 @@
  */
 
 // Include libraries.
-#include "zr/libraries/teamlib"
 
 /**
  * This module's identifier.
@@ -71,11 +70,8 @@ ZRCore_Register()
 public ZRCore_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRCore, "Event_OnConfigsExecuted",             "ZRCore_OnConfigsExecuted");
     
     #if defined PROJECT_GAME_CSS
-    
-    EventMgr_RegisterEvent(g_moduleZRCore, "Event_RoundStart",                    "ZRCore_RoundStart");
     
     #endif
 }
@@ -87,53 +83,4 @@ ZRCore_OnPluginStart()
 {
     // Register the module.
     ZRCore_Register();
-    
-    // Create cvars.
-    g_hCvarZombieTeam  = Project_CreateConVar("zombie_team", "t", "Define the game team that will be the zombie team.  Opposite team will be the human team.  ['t' = Terrorists | 'ct' = Counter-Terrorists]");
-}
-
-/**
- * All convars are set, cvar-dependent code should use this.
- */
-public ZRCore_OnConfigsExecuted()
-{
-    ZRCore_UpdateZombieTeam();
-}
-
-#if defined PROJECT_GAME_CSS
-
-/**
- * Round has started.
- */
-public ZRCore_RoundStart()
-{
-    // Update the zombie team every round start.
-    // This shouldn't be updated real-time with the cvar, or else zombies would be on both teams during the round.
-    ZRCore_UpdateZombieTeam();
-}
-
-#endif
-
-/**
- * Update the game teams associated with the virtual teams, as set by cvar.
- */
-ZRCore_UpdateZombieTeam()
-{
-    decl String:strZombieTeam[32];
-    GetConVarString(g_hCvarZombieTeam, strZombieTeam, sizeof(strZombieTeam));
-    new iZombieTeamIndex = TLib_GTeamStringToIndex(strZombieTeam);
-    if (iZombieTeamIndex > 1)
-    {
-        // Associate the zombie virtual team with the given value.
-        TLib_SetGameTeamIndex(VTeam_Zombie, iZombieTeamIndex);
-        
-        // For humans, use the opposite team as the one given for zombies.
-        TLib_SetGameTeamIndex(VTeam_Human, (iZombieTeamIndex == 2) ? 3 : 2);
-    }
-    else
-    {
-        LogMgr_Print(g_moduleZRCore, LogType_Error, "Cvar Validation", "Invalid team name (%s) in cvar \"zr_zombie_team\".  Check the description for it in zombiereloaded.cfg.  Assuming team index 2..", strZombieTeam);
-        TLib_SetGameTeamIndex(VTeam_Zombie, 2);
-        TLib_SetGameTeamIndex(VTeam_Human, 3);
-    }
 }

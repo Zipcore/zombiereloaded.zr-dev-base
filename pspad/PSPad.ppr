@@ -63,7 +63,7 @@ ZR
 			..\src\zr\modules\moduletemplate.inc
 			..\src\zr\modules\sdkhooksadapter.inc
 			..\src\zr\modules\stripobjectives.inc
-			..\src\zr\modules\zr_core.inc
+			..\src\zr\modules\zspawn.inc
 			..\src\zr\modules\ztele.inc
 	..\src\zr\project.inc
 	..\src\zr\project_events.inc

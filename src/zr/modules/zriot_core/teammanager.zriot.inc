@@ -36,6 +36,11 @@ new Module:g_moduleZRiotTM;
 stock Module:ZRiotTM_GetIdentifier() { return g_moduleZRiotTM; }
 
 /**
+ * Cvar handles.
+ */
+new Handle:g_hCvarZRiotZombieTeam;
+
+/**
  * Register this module.
  */
 ZRiotTM_Register()
@@ -64,10 +69,12 @@ ZRiotTM_Register()
 public ZRiotTM_OnEventsRegister()
 {
     // Register all the events needed for this module.
+    EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_OnConfigsExecuted",          "ZRiotTM_OnConfigsExecuted");
     EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_OnClientPutInServer",        "ZRiotTM_OnClientPutInServer");
     
     #if defined PROJECT_GAME_CSS
     
+    EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_RoundStart",                 "ZRiotTM_RoundStart");
     EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_PlayerTeamPre",              "ZRiotTM_PlayerTeamPre");
     EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_PlayerTeam",                 "ZRiotTM_PlayerTeam");
     EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_PlayerSpawn",                "ZRiotTM_PlayerSpawn");
@@ -86,6 +93,17 @@ ZRiotTM_OnPluginStart()
 {
     // Register the module.
     ZRiotTM_Register();
+    
+    // Create cvars.
+    g_hCvarZRiotZombieTeam  = Project_CreateConVar("zombie_team", "t", "Define the game team that will be the zombie team.  Opposite team will be the human team.  ['t' = Terrorists | 'ct' = Counter-Terrorists]");
+}
+
+/**
+ * All convars are set, cvar-dependent code should use this.
+ */
+public ZRiotTM_OnConfigsExecuted()
+{
+    ZRiotTM_UpdateZombieTeam();
 }
 
 /**
@@ -126,6 +144,17 @@ public ZRiotTM_OnClientHuman(client)
 }
 
 #if defined PROJECT_GAME_CSS
+
+/**
+ * Round has started.
+ */
+public ZRiotTM_RoundStart()
+{
+    // Update the zombie team every round start.
+    // This shouldn't be updated real-time with the cvar, or else zombies would be on both teams during the round.
+    ZRiotTM_UpdateZombieTeam();
+}
+
 
 /**
  * Client has joined a team. (pre)
@@ -180,3 +209,27 @@ public ZRiotTM_PlayerSpawn(client)
 }
 
 #endif
+
+/**
+ * Update the game teams associated with the virtual teams, as set by cvar.
+ */
+ZRiotTM_UpdateZombieTeam()
+{
+    decl String:strZombieTeam[32];
+    GetConVarString(g_hCvarZRiotZombieTeam, strZombieTeam, sizeof(strZombieTeam));
+    new iZombieTeamIndex = TLib_GTeamStringToIndex(strZombieTeam);
+    if (iZombieTeamIndex > 1)
+    {
+        // Associate the zombie virtual team with the given value.
+        TLib_SetGameTeamIndex(VTeam_Zombie, iZombieTeamIndex);
+        
+        // For humans, use the opposite team as the one given for zombies.
+        TLib_SetGameTeamIndex(VTeam_Human, (iZombieTeamIndex == 2) ? 3 : 2);
+    }
+    else
+    {
+        LogMgr_Print(g_moduleZRCore, LogType_Error, "Cvar Validation", "Invalid team name (%s) in cvar \"zr_zombie_team\".  Check the description in zombiereloaded.cfg.  Assuming zombies are terrorist team.", strZombieTeam);
+        TLib_SetGameTeamIndex(VTeam_Zombie, 2);
+        TLib_SetGameTeamIndex(VTeam_Human, 3);
+    }
+}

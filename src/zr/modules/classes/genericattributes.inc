@@ -924,7 +924,7 @@ bool:ClsGeneric_ValidateRequirements(bool:cacheDefaults = false)
     new bool:failed = false;
     
     // Find a clean default zombie class, log error if not found.
-    new zombie = ClassMgr_GetDefaultClass(ClassTeam_Zombies);
+    new zombie = ClassMgr_GetDefaultClass(ClassTeam_Zombies, _, ClassCache_Original);
     if (zombie < 0)
     {
         LogMgr_Print(g_moduleClsGeneric, LogType_Error, "Config Validation", "Error: Unable to find a clean default zombie class. Check class config.");
@@ -944,7 +944,7 @@ bool:ClsGeneric_ValidateRequirements(bool:cacheDefaults = false)
     }
     
     // Find a clean default human class, log error if not found.
-    new human = ClassMgr_GetDefaultClass(ClassTeam_Humans);
+    new human = ClassMgr_GetDefaultClass(ClassTeam_Humans, _, ClassCache_Original);
     if (human < 0)
     {
         LogMgr_Print(g_moduleClsGeneric, LogType_Error, "Config Validation", "Error: Unable to find a clean default human class. Check class config.");

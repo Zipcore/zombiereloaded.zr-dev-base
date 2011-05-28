@@ -228,7 +228,7 @@ ZRiotTM_UpdateZombieTeam()
     }
     else
     {
-        LogMgr_Print(g_moduleZRCore, LogType_Error, "Cvar Validation", "Invalid team name (%s) in cvar \"zr_zombie_team\".  Check the description in zombiereloaded.cfg.  Assuming zombies are terrorist team.", strZombieTeam);
+        LogMgr_Print(g_moduleZRiotTM, LogType_Error, "Cvar Validation", "Invalid team name (%s) in cvar \"zr_zombie_team\".  Check the description in zombiereloaded.cfg.  Assuming zombies are terrorist team.", strZombieTeam);
         TLib_SetGameTeamIndex(VTeam_Zombie, 2);
         TLib_SetGameTeamIndex(VTeam_Human, 3);
     }

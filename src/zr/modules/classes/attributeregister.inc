@@ -28,10 +28,11 @@
 /**
  * Attribute register data (adt trie).
  */
-new Handle:ClassAttribRegData = INVALID_HANDLE;
+static Handle:ClassAttribRegData = INVALID_HANDLE;
 
 /**
- * Creates the attribute register.
+ * Creates the attribute register. This is only created once, during module
+ * registration, and will not be destroyed until the plugin is unloaded.
  */
 ClassAttribReg_Create()
 {

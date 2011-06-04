@@ -91,7 +91,7 @@ stock Util_BuildClientList(&Handle:adtClients, filters, targetclient = 0)
         else
         {
             // The client is dead, so check if the filter is asking only for alive clients.
-            if (filters & UTILS_FILTER_TEAM)
+            if (filters & UTILS_FILTER_ALIVE)
                 continue;
         }
         
@@ -144,12 +144,8 @@ stock bool:Util_IsClientInGame(client)
  */
 stock bool:Util_IsClientOnTeam(client)
 {
-    #if defined PROJECT_GAME_CSS | defined PROJECT_GAME_TF2
-        new cteam = GetClientTeam(client);
-        return (cteam == TEAM_2 || cteam == TEAM_3);
-    #else
-        ThrowError("Util_IsClientOnTeam doesn't support this game");
-    #endif
+    new cteam = GetClientTeam(client);
+    return (cteam > 1);
 }
 
 /**

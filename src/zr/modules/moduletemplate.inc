@@ -1,13 +1,13 @@
 /*
  * ============================================================================
  *
- *  <Project Name>
+ *  Zombie:Reloaded
  *
  *  File:          .inc
  *  Type:          Module
  *  Description:   
  *
- *  Copyright (C) 2009-2010  <Author>
+ *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

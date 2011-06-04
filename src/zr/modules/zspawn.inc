@@ -50,7 +50,7 @@ new Handle:g_hCvarZSpawnTimeLimitRules;
 new Handle:g_hZSpawnAuthCache;
 
 /**
- * Global variable to store ZSpawn timer handle.
+ * ZSpawn timer handle.
  */
 new Handle:g_hZSpawnTimer;
 

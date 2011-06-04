@@ -596,7 +596,7 @@ public ZTele_ClientMenuHandle(Handle:menu_ztele, MenuAction:action, client, slot
         if (target == 0 || !IsPlayerAlive(client))
         {
             // Re-send the menu.
-            MenuLib_ClientMenu(client, ZTele_ClientMenuHandle, title, UTILS_FILTER_ALIVE | UTILS_FILTER_CANTARGET);
+            //MenuLib_ClientMenu(client, ZTele_ClientMenuHandle, title, UTILS_FILTER_ALIVE | UTILS_FILTER_CANTARGET);
             
             return;
         }
@@ -610,7 +610,7 @@ public ZTele_ClientMenuHandle(Handle:menu_ztele, MenuAction:action, client, slot
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZTele command successful", targetname);
         
         // Re-send the menu.
-        MenuLib_ClientMenu(client, ZTele_ClientMenuHandle, title, UTILS_FILTER_ALIVE | UTILS_FILTER_CANTARGET);
+        //MenuLib_ClientMenu(client, ZTele_ClientMenuHandle, title, UTILS_FILTER_ALIVE | UTILS_FILTER_CANTARGET);
     }
     // Client closed the menu.
     if (action == MenuAction_Cancel)

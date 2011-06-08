@@ -259,7 +259,7 @@ public Action:ZSpawn_SayCommand(client, argc)
         // Set the client's team and then spawn them.
         new spawnteam = GetConVarInt(g_hCvarZSpawnTeam);
         if (spawnteam == 0)
-            ZRCInfect_HumanToZombie(client, 0, false); // BAD
+            IInfection_HumanToZombie(g_moduleZSpawn, client, 0, false);
     }
     else
     {
@@ -276,7 +276,7 @@ public Action:ZSpawn_SayCommand(client, argc)
             {
                 TLib_SetClientTeam(client, VTeam_Human);
                 CS_RespawnPlayer(client);
-                ZRCInfect_HumanToZombie(client, 0, false); // BAD
+                IInfection_HumanToZombie(g_moduleZSpawn, client, 0, false);
             }
             case 1:
             {

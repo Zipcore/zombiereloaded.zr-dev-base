@@ -366,18 +366,8 @@ bool:ZTele_Client(client)
         return false;
     }
     
-    /**
-     * BAD
-     */
-    
-    // For ZRC check if zombie has spawned, get before value, get the after value otherwise.
-    // For non-ZRC just get the after value.
-    new bool:ztelehuman;
-    if (!ModuleMgr_IsDisabled(ZRC_GetIdentifier()))
-        ztelehuman = ZRCInfect_AreZombiesPresent() ? GetConVarBool(g_hCvarZTeleHumanAfter) : GetConVarBool(g_hCvarZTeleHumanBefore);
-    else
-        ztelehuman = GetConVarBool(g_hCvarZTeleHumanAfter);
-    
+    // If zombies are present, get the after value, if not get the before value.
+    new bool:ztelehuman = IInfection_AreZombiesPresent(g_moduleZTele) ? GetConVarBool(g_hCvarZTeleHumanAfter) : GetConVarBool(g_hCvarZTeleHumanBefore);
     if (human && !ztelehuman)
     {
         // Tell client that feature is restricted at this time.

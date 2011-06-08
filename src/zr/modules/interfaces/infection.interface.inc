@@ -3,7 +3,7 @@
  *
  *  Zombie:Reloaded
  *
- *  File:          interface.infection.inc
+ *  File:          infection.interface.inc
  *  Type:          Module
  *  Description:   An interface for common infection-type functions for modules to use.
  *
@@ -24,6 +24,11 @@
  *
  * ============================================================================
  */
+
+#if defined _iinfection_included
+ #endinput
+#endif
+#define _iinfection_included
 
 new Function:g_IInfectionHumanToZombie;
 stock IInfection_SetHumanToZombie(Function:func) { g_IInfectionHumanToZombie = func; }
@@ -81,3 +86,5 @@ stock bool:IInfection_AreZombiesPresent()
         LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use a function not supported by current game mode, disabling.", modulefullname);
     }
 }
+
+#endif

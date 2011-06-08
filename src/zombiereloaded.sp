@@ -44,9 +44,6 @@
 
 // Non-module includes.
 
-// Interfaces
-#include "zr/modules/interfaces/interface.infection.inc"
-
 // Module includes.
 #include "zr/modules/gamedata"
 //#include "zr/modules/zr_core"     // keeping this around just in case we find something that ALL game modes will have in common.

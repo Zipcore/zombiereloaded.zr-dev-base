@@ -36,6 +36,13 @@ new Module:g_moduleGameRules;
 stock Module:GameRules_GetIdentifier() { return g_moduleGameRules; }
 
 /**
+ * Custom events.
+ */
+new ProjectEvent:g_EvOnMyCoreShutdown;
+new ProjectEvent:g_EvOnMyCoreActivate;
+new ProjectEvent:g_EvOnGameRulesApplied;
+
+/**
  * Location of gamerules config file.
  */
 #define GAMERULES_FILE "configs/zr/gamerules.txt"
@@ -119,6 +126,11 @@ GameRules_Register()
     // Send this array of data to the module manager.
     g_moduleGameRules = ModuleMgr_Register(moduledata);
     
+    // Create events.
+    g_EvOnMyCoreShutdown = EventMgr_CreateEvent("Event_OnMyCoreShutdown");
+    g_EvOnMyCoreActivate = EventMgr_CreateEvent("Event_OnMyCoreActivate");
+    g_EvOnGameRulesApplied = EventMgr_CreateEvent("Event_OnGameRulesApplied");
+    
     // Register the OnEventsRegister event to register all events in it.
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnEventsRegister",         "GameRules_OnEventsRegister");
     
@@ -144,8 +156,7 @@ public GameRules_OnEventsRegister()
  */
 public GameRules_OnEventsReady()
 {
-    // Bump up priority for Event_OnConfigsExecuted to above mapconfig the module to ensure game ruleset cfgs are executed before map configs.
-    //EventMgr_GivePriority("Event_OnConfigsExecuted", g_moduleGameRules, MapConfig_GetIdentifier());
+    // It's important that GameRules_OnMapStart fires before that of any core modules.
 }
 
 /**
@@ -489,7 +500,7 @@ stock GRuleModuleCmds:GameRules_ModuleCmdToSymbol(const String:modulecmd[])
 stock GameRules_LoadRuleSet(const String:ruleset[] = "")
 {
     // Find the index of the named ruleset.  -1 is returned if invalid.
-    new rulesetindex = GameRules_FindRuleSet(ruleset);
+    new rulesetindex = ruleset[0] ? GameRules_FindRuleSet(ruleset) : 0;
     
     // Use the first ruleset if this one is invalid.
     if (rulesetindex == -1)
@@ -525,7 +536,7 @@ stock GameRules_FindRuleSet(const String:name[])
 }
 
 /**
- * Gets the ruleset with the specified name.
+ * Finds a module in a rule set.
  *
  * @param ruleset   The game ruleset index to look for module in.
  * @param module    The module to look for.
@@ -544,6 +555,22 @@ stock GameRules_FindModuleInRuleSet(ruleset, Module:module)
 }
 
 /**
+ * Get the name of a rule set given its index.
+ * 
+ * @param ruleset   The index of the ruleset to get name of.
+ * @param name      The name of the ruleset. (output)
+ * @param maxlen    The max size of the output.
+ * 
+ * @return          True if found, false if not found.
+ */
+stock GameRules_GetRuleSetName(ruleset, String:name[], maxlen)
+{
+    new gameRuleSet[GameRuleSet];
+    GetArrayArray(g_hGameRules, ruleset, gameRuleSet[0], sizeof(gameRuleSet));
+    strcopy(name, maxlen, gameRuleSet[GameRuleSet_Name]);
+}
+
+/**
  * Applies a ruleset and sets the module state (enable or disable them)
  * according to the ruleset.
  *
@@ -551,12 +578,22 @@ stock GameRules_FindModuleInRuleSet(ruleset, Module:module)
  */
 stock GameRules_ApplyRuleSet(ruleSet)
 {
+    // Call a shutdown event on the current game mode and store the name for later.
+    new Module:modules[2] = {INVALID_MODULE, ...};
+    new String:oldrulesetname[GAMERULES_DATA_NAME];
+    if (g_iCurGameRuleSet != -1)
+    {
+        if (GRULESET_CORE != INVALID_MODULE)
+        {
+            modules[0] = GRULESET_CORE;
+            EventMgr_Forward(g_EvOnMyCoreShutdown, g_CommonEventData1, 0, 0, g_CommonDataType1, modules);
+        }
+        
+        strcopy(oldrulesetname, sizeof(oldrulesetname), GRULESET_NAME);
+    }
+    
     GetArrayArray(g_hGameRules, ruleSet, g_RuleSetCache[0], sizeof(g_RuleSetCache));
     g_iCurGameRuleSet = ruleSet;    // Hiding behind this line above in case ruleSet is invalid.
-    
-    // Enable the core's root module.
-    if (GRULESET_CORE != INVALID_MODULE)
-        ModuleMgr_Enable(GRULESET_CORE);
     
     // Disable all other cores.
     new count = MODULE_COUNT;
@@ -565,6 +602,10 @@ stock GameRules_ApplyRuleSet(ruleSet)
         if (ModuleMgr_ReadCell(Module:moduleindex, ModuleData_Root) && Module:moduleindex != GRULESET_CORE)
             ModuleMgr_Disable(Module:moduleindex);
     }
+    
+    // Enable the core's root module.
+    if (GRULESET_CORE != INVALID_MODULE)
+        ModuleMgr_Enable(GRULESET_CORE);
     
     // Execute this ruleset's cfg file.
     decl String:cfgfile[PLATFORM_MAX_PATH];
@@ -594,10 +635,26 @@ stock GameRules_ApplyRuleSet(ruleSet)
     }
     
     LogMgr_Print(g_moduleGameRules, LogType_Normal, "Ruleset", "Applied ruleset: \"%s\"", GRULESET_NAME);
+    
+    // Send this event only to the module being affected.
+    if (GRULESET_CORE != INVALID_MODULE)
+    {
+        modules[0] = GRULESET_CORE;
+        EventMgr_Forward(g_EvOnMyCoreActivate, g_CommonEventData1, 0, 0, g_CommonDataType1, modules);
+    }
+    
+    // Forward event to all modules.
+    new any:eventdata[2][GAMERULES_DATA_NAME];
+    static EventDataTypes:eventdatatypes[] = {DataType_String, DataType_String};
+    
+    strcopy(eventdata[0], sizeof(eventdata[]), oldrulesetname);
+    strcopy(eventdata[1], sizeof(eventdata[]), GRULESET_NAME);
+    
+    EventMgr_Forward(g_EvOnGameRulesApplied, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
 }
 
 /**
- * Command callback (zr_ruleset)
+ * Command callback (zr_nextruleset)
  * Set the ruleset to be applied for next map.
  * 
  * @param client    The client index.
@@ -619,9 +676,16 @@ public Action:GameRules_NextRuleSet(client, argc)
         return Plugin_Handled;
     }
     
-    // Put the value into the string for the next ruleset.
-    GetCmdArg(1, g_strNextRuleSet, sizeof(g_strNextRuleSet));
-    
+    // Validate the input.
+    decl String:arg1[GAMERULES_DATA_NAME];
+    GetCmdArg(1, arg1, sizeof(arg1));
+    if (GameRules_FindRuleSet(arg1) != -1)
+    {
+        strcopy(g_strNextRuleSet, sizeof(g_strNextRuleSet), arg1);
+        LogMgr_Print(g_moduleGameRules, LogType_Normal, "zr_nextruleset", "%N queued rule set \"%s\" to be loaded with the next map.", client, arg1);
+    }
+    else
+        LogMgr_Print(g_moduleGameRules, LogType_Normal, "zr_nextruleset", "WARNING: %N attempted to set zr_nextruleset to an invalid value: \"%s\"", client, arg1);
     
     return Plugin_Handled;
 }

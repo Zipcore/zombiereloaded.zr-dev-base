@@ -56,7 +56,7 @@
 #include "zr/modules/zspawn"
 #include "zr/modules/ztele"
 #include "zr/modules/stripobjectives"
-#include "zr/modules/classes/classmanager"
+//#include "zr/modules/classes/classmanager"
 #include "zr/modules/models/modelmgr"
 
 // Game-specific modules

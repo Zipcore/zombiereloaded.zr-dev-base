@@ -72,6 +72,9 @@ public ZRC_OnEventsRegister()
 {
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleZRCRoot, "Event_OnMyModuleEnable",           "ZRC_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleZRCRoot, "Event_OnGameRulesApplied",         "ZRC_OnGameRulesApplied");
+    EventMgr_RegisterEvent(g_moduleZRCRoot, "Event_OnMyCoreActivate",           "ZRC_OnMyCoreActivate");
+    EventMgr_RegisterEvent(g_moduleZRCRoot, "Event_OnMyCoreShutdown",           "ZRC_OnMyCoreShutdown");
 }
 
 // Include sub-modules.
@@ -114,4 +117,28 @@ public Action:ZRC_OnMyModuleEnable(String:refusalmsg[], maxlen)
         ModuleMgr_Enable(dependentmodules[dmoduleindex]);
     
     return Plugin_Continue;
+}
+
+/**
+ * Forwarded to the core module being shutdown before ZRC_OnMyCoreActivate and ZRC_OnGameRulesApplied.
+ */
+public ZRC_OnMyCoreShutdown()
+{
+}
+
+/**
+ * Forwarded to the core module being activated after ZRC_OnMyCoreShutdown but before ZRC_OnGameRulesApplied.
+ */
+public ZRC_OnMyCoreActivate()
+{
+}
+
+/**
+ * Called after a new rule set has been applied after ZRC_OnMyCoreActivate.
+ * 
+ * @param oldgamerules  The name of the previous rule set.  Blank if first rule set.
+ * @param newgamerules  The name of the new rule set.
+ */
+public ZRC_OnGameRulesApplied(const String:oldruleset[], const String:newruleset[])
+{
 }

@@ -36,6 +36,11 @@ new Module:g_moduleZRiotInfect;
 stock Module:ZRiotInfect_GetIdentifier() { return g_moduleZRiotInfect; }
 
 /**
+ * For interfacing purposes.
+ */
+public bool:ZRiotInfect_AreZombiesPresent() { return true; }
+
+/**
  * Register this module.
  */
 ZRiotInfect_Register()
@@ -112,7 +117,7 @@ public ZRiotInfect_PlayerSpawn(client)
  * 
  * @param client    The client being infected.
  */
-ZRiotInfect_HumanToZombie(client)
+public ZRiotInfect_HumanToZombie(client)
 {
     TLib_SetClientTeam(client, VTeam_Zombie);
     
@@ -132,7 +137,7 @@ ZRiotInfect_HumanToZombie(client)
  * 
  * @param client    The zombie client to turn human.
  */
-ZRiotInfect_ZombieToHuman(client)
+public ZRiotInfect_ZombieToHuman(client)
 {
     TLib_SetClientTeam(client, VTeam_Human);
     

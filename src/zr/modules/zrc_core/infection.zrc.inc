@@ -53,7 +53,7 @@ new Handle:g_hCvarMZombieBlockConsecutive;
  * Variable/function set to check/set if zombies are present.
  */
 new bool:g_bZombiesPresent;
-stock bool:ZRCInfect_AreZombiesPresent() { return g_bZombiesPresent; }
+public bool:ZRCInfect_AreZombiesPresent() { return g_bZombiesPresent; }
 stock ZRCInfect_SetZombiesPresent(bool:zombiespresent) { g_bZombiesPresent = zombiespresent; }
 
 /**
@@ -298,7 +298,7 @@ public ZRCInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon
  * @param attacker  The client doing the infecting.
  * @param mzombie   True to make a mother zombie, false for normal zombie.
  */
-ZRCInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
+public ZRCInfect_HumanToZombie(client, attacker, bool:mzombie)
 {
     PrintToChatAll("%N infected %N (hp to 500)", attacker, client);
     SetEntityHealth(client, 500);
@@ -351,7 +351,7 @@ ZRCInfect_HumanToZombie(client, attacker = 0, bool:mzombie)
  * 
  * @param client    The zombie client to turn human.
  */
-ZRCInfect_ZombieToHuman(client)
+public ZRCInfect_ZombieToHuman(client)
 {
     TLib_SetClientTeam(client, VTeam_Human);
     
@@ -442,7 +442,7 @@ ZRCInfect_MotherZombie(override_count = 0)
         // Get a random client from the array, infect, and remove from list.
         randindex = GetRandomInt(0, count - 1);
         randclient = GetArrayCell(adtClients, randindex);
-        ZRCInfect_HumanToZombie(randclient, _, true);
+        ZRCInfect_HumanToZombie(randclient, 0, true);
         RemoveFromArray(adtClients, randindex); count--;
         
         // Store first infected client.
@@ -527,7 +527,7 @@ public Action:ZRCInfect_InfectCommand(client, argc)
             // If a human is infected, cancel the timer that infects a mother zombie.
             if (g_bZombiesPresent)
             {
-                ZRCInfect_HumanToZombie(targets[tindex], _, false);
+                ZRCInfect_HumanToZombie(targets[tindex], 0, false);
                 if (result == 1)
                 {
                     TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command infect successful", targets[tindex]);
@@ -536,7 +536,7 @@ public Action:ZRCInfect_InfectCommand(client, argc)
             else
             {
                 Util_CloseHandle(g_hMotherInfect);
-                ZRCInfect_HumanToZombie(targets[tindex], _, true);
+                ZRCInfect_HumanToZombie(targets[tindex], 0, true);
                 if (result == 1)
                 {
                     TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command infect mother successful", targets[tindex]);

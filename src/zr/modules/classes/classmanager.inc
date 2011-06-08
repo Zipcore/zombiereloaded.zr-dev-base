@@ -28,7 +28,7 @@
 /**
  * This module's identifier.
  */
-new Module:g_moduleClassMgr;
+static Module:g_moduleClassMgr;
 
 /**
  * Function for outside files to use to return the module's identifier.
@@ -210,7 +210,7 @@ stock ClassMgr_GetClassCount() { return g_ClassCount; }
 /**
  * Specifies whether classes are loaded.
  */
-new bool:g_ClassLoaded = false;
+static bool:g_ClassLoaded = false;
 
 /**
  * Function for outside files to use to return if classes are loaded.
@@ -220,9 +220,13 @@ stock bool:ClassMgr_IsClassesLoaded() { return g_ClassLoaded; }
 /**
  * Selected classes.
  */
-new g_ClassSelected[MAXPLAYERS + 1][ClassTeam];     // Currently active class.
-new g_ClassNextClass[MAXPLAYERS + 1][ClassTeam];    // Class to use next spawn, if any.
+new g_ClassSelected[MAXPLAYERS + 1][ClassTeam];      // Currently active class.
+new g_ClassNextClass[MAXPLAYERS + 1][ClassTeam];     // Class to use next spawn, if any.
 
+/**
+ * Cache of default class indexes.
+ */
+static ClassDefaultClass[ClassTeam];
 
 /**
  * Specifies whether a player is allowed to change class with instant effect.
@@ -534,7 +538,7 @@ public ClassMgr_OnConfigsExecuted()
     }
     
     // Validate class minimum reqirements.
-    if (!ClsGeneric_ValidateRequirements())
+    if (!ClsMgr_ValidateRequirements())
     {
         LogMgr_Print(g_moduleClassMgr, LogType_Fatal_Plugin, "Config Validation", "Error: The class configuration doesn't match the minimum requirements.");
     }
@@ -669,7 +673,8 @@ public ClassMgr_PlayerSpawn(client)
         return;
     }
     
-    // Stop if not on a team.
+    // Stop if not on a team. The spawn event is also triggered when clients
+    // connect (camera spawn).
     if (!Util_IsClientOnTeam(client))
     {
         return;
@@ -851,12 +856,79 @@ public ClassMgr_OnClientHuman(client)
  ******************************/
 
 /**
+ * Validates the minimum class requirements.
+ * Note: This function will log errors, but not stop the plugin.
+ * Note: The class manager use this function, so it can't be private (static).
+ *
+ * @param cacheDefaults     Optional. Cache default class indexes.
+ *                          Note: Writes -1 to cache if not found!
+ *
+ * @return                  True if valid, false otherwise.
+ */
+static bool:ClsMgr_ValidateRequirements(bool:cacheDefaults = false)
+{
+    if (g_ClassCount == 0)
+    {
+        if (cacheDefaults)
+        {
+            ClassDefaultClass[ClassTeam_Zombies] = -1;
+            ClassDefaultClass[ClassTeam_Humans] = -1;
+        }
+        return false;
+    }
+    
+    new bool:failed = false;
+    
+    // Find a clean default zombie class, log error if not found.
+    new zombie = ClassMgr_GetDefaultClass(ClassTeam_Zombies, _, ClassCache_Original);
+    if (zombie < 0)
+    {
+        LogMgr_Print(g_moduleClassMgr, LogType_Error, "Config Validation", "Error: Unable to find a clean default zombie class. Check class config.");
+        if (cacheDefaults)
+        {
+            ClassDefaultClass[ClassTeam_Zombies] = -1;
+        }
+        failed = true;
+    }
+    else
+    {
+        // Cache default class index.
+        if (cacheDefaults)
+        {
+            ClassDefaultClass[ClassTeam_Zombies] = zombie;
+        }
+    }
+    
+    // Find a clean default human class, log error if not found.
+    new human = ClassMgr_GetDefaultClass(ClassTeam_Humans, _, ClassCache_Original);
+    if (human < 0)
+    {
+        LogMgr_Print(g_moduleClassMgr, LogType_Error, "Config Validation", "Error: Unable to find a clean default human class. Check class config.");
+        if (cacheDefaults)
+        {
+            ClassDefaultClass[ClassTeam_Humans] = -1;
+        }
+        failed = true;
+    }
+    else
+    {
+        // Cache default class index.
+        if (cacheDefaults)
+        {
+            ClassDefaultClass[ClassTeam_Humans] = human;
+        }
+    }
+    
+    return !failed;
+}
+
+/**
  * Validates and fix a client's selected classes. If invalid, use config default
  * for next spawn.
  *
  * @param client    Optional. Client index. Use -1 to validate all players.
  */
-ClassMgr_ValidateSelClasses(client = -1)
+static ClassMgr_ValidateSelClasses(client = -1)
 {
     new start = 1;
     new end = MaxClients;

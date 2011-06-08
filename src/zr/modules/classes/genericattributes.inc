@@ -31,7 +31,7 @@
 /**
  * This module's identifier.
  */
-new Module:g_moduleClsGeneric;
+static Module:g_moduleClsGeneric;
 
 /**
  * Function for outside files to use to return the module's identifier.
@@ -62,27 +62,22 @@ enum ClassGenericAttributes
 /**
  * Original class data cache.
  */
-new ClassGenericData[CLASS_MAX][ClassGenericAttributes];
+static ClassGenericData[CLASS_MAX][ClassGenericAttributes];
 
 /**
  * Writable class data cache.
  */
-new ClassGenericData2[CLASS_MAX][ClassGenericAttributes];
+static ClassGenericData2[CLASS_MAX][ClassGenericAttributes];
 
 /**
  * Buffer to store whether the class name has been saved.
  */
-new bool:ClassGotName[CLASS_MAX];
+static bool:ClassGotName[CLASS_MAX];
 
 /**
  * Player class data cache.
  */
-new ClassPlayerData[MAXPLAYERS + 1][ClassGenericAttributes];
-
-/**
- * Cache of default class indexes.
- */
-new ClassDefaultClass[ClassTeam];
+static ClassPlayerData[MAXPLAYERS + 1][ClassGenericAttributes];
 
 
 /**
@@ -164,7 +159,7 @@ public ClsGeneric_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassClear",                "ClsGeneric_OnClassClear");
     EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassAttribLoad",           "ClsGeneric_OnClassAttribLoad");
     EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassValidate",             "ClsGeneric_OnClassValidate");
-    //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassAllLoaded",          "ClsGeneric_OnClassAllLoaded");
+    EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassAllLoaded",            "ClsGeneric_OnClassAllLoaded");
     //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassPlayerPreload",      "ClsGeneric_OnClassPlayerPreload");
     //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassApply",              "ClsGeneric_OnClassApply");
     //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassPlayerInfect",       "ClsGeneric_OnClassPlayerInfect");
@@ -341,7 +336,10 @@ public Action:ClsGeneric_OnClassValidate(classIndex)
  */
 public ClsGeneric_OnClassAllLoaded(classCount)
 {
-
+    for (new classIndex = 0; classIndex < classCount; classIndex++)
+    {
+        ClsGeneric_LoadWritableCache(classIndex);
+    }
 }
 
 /**
@@ -465,13 +463,76 @@ public ClsGeneric_EnableClass(index)
 }
 
 /**
+ * Makes a copy of original class data into the writable cahce.
+ *
+ * @param classIndex    Class to load.
+ */
+static ClsGeneric_LoadWritableCache(classIndex)
+{    
+    ClassGenericData2[classIndex][ClassAttrib_Enabled] = ClassGenericData[classIndex][ClassAttrib_Enabled];
+    ClassGenericData2[classIndex][ClassAttrib_Team] = ClassGenericData[classIndex][ClassAttrib_Team];
+    ClassGenericData2[classIndex][ClassAttrib_TeamDefault] = ClassGenericData[classIndex][ClassAttrib_TeamDefault];
+    ClassGenericData2[classIndex][ClassAttrib_IsAdminClass] = ClassGenericData[classIndex][ClassAttrib_IsAdminClass];
+    ClassGenericData2[classIndex][ClassAttrib_IsMotherZombie] = ClassGenericData[classIndex][ClassAttrib_IsMotherZombie];
+    ClassGenericData2[classIndex][ClassAttrib_AuthMode] = ClassGenericData[classIndex][ClassAttrib_AuthMode];
+    strcopy(ClassGenericData2[classIndex][ClassAttrib_Flags], CLASS_STRING_LEN, ClassGenericData[classIndex][ClassAttrib_Flags]);
+    strcopy(ClassGenericData2[classIndex][ClassAttrib_Groups], CLASS_STRING_LEN, ClassGenericData[classIndex][ClassAttrib_Groups]);
+    strcopy(ClassGenericData2[classIndex][ClassAttrib_Name], CLASS_NAME_LEN, ClassGenericData[classIndex][ClassAttrib_Name]);
+    strcopy(ClassGenericData2[classIndex][ClassAttrib_DisplayName], CLASS_NAME_LEN, ClassGenericData[classIndex][ClassAttrib_DisplayName]);
+    strcopy(ClassGenericData2[classIndex][ClassAttrib_Description], CLASS_STRING_LEN, ClassGenericData[classIndex][ClassAttrib_Description]);
+}
+
+/**
+ * Loads class attributes into the client's cache.
+ *
+ * @param client        Client index.
+ * @param classIndex    Class index.
+ * @param cache         Optional. Cache to read from. Player cache is ignored.
+ */
+static ClsGeneric_LoadPlayerCache(client, classIndex, ClassCacheType:cache = ClassCache_Modified)
+{
+    switch (cache)
+    {
+        case ClassCache_Original:
+        {
+            ClassPlayerData[client][ClassAttrib_Enabled] = ClassGenericData[classIndex][ClassAttrib_Enabled];
+            ClassPlayerData[client][ClassAttrib_Team] = ClassGenericData[classIndex][ClassAttrib_Team];
+            ClassPlayerData[client][ClassAttrib_TeamDefault] = ClassGenericData[classIndex][ClassAttrib_TeamDefault];
+            ClassPlayerData[client][ClassAttrib_IsAdminClass] = ClassGenericData[classIndex][ClassAttrib_IsAdminClass];
+            ClassPlayerData[client][ClassAttrib_IsMotherZombie] = ClassGenericData[classIndex][ClassAttrib_IsMotherZombie];
+            ClassPlayerData[client][ClassAttrib_AuthMode] = ClassGenericData[classIndex][ClassAttrib_AuthMode];
+            strcopy(ClassPlayerData[client][ClassAttrib_Flags], CLASS_STRING_LEN, ClassGenericData[classIndex][ClassAttrib_Flags]);
+            strcopy(ClassPlayerData[client][ClassAttrib_Groups], CLASS_STRING_LEN, ClassGenericData[classIndex][ClassAttrib_Groups]);
+            strcopy(ClassPlayerData[client][ClassAttrib_Name], CLASS_NAME_LEN, ClassGenericData[classIndex][ClassAttrib_Name]);
+            strcopy(ClassPlayerData[client][ClassAttrib_DisplayName], CLASS_NAME_LEN, ClassGenericData[classIndex][ClassAttrib_DisplayName]);
+            strcopy(ClassPlayerData[client][ClassAttrib_Description], CLASS_STRING_LEN, ClassGenericData[classIndex][ClassAttrib_Description]);
+        }
+        case ClassCache_Modified:
+        {
+            ClassPlayerData[client][ClassAttrib_Enabled] = ClassGenericData2[classIndex][ClassAttrib_Enabled];
+            ClassPlayerData[client][ClassAttrib_Team] = ClassGenericData2[classIndex][ClassAttrib_Team];
+            ClassPlayerData[client][ClassAttrib_TeamDefault] = ClassGenericData2[classIndex][ClassAttrib_TeamDefault];
+            ClassPlayerData[client][ClassAttrib_IsAdminClass] = ClassGenericData2[classIndex][ClassAttrib_IsAdminClass];
+            ClassPlayerData[client][ClassAttrib_IsMotherZombie] = ClassGenericData2[classIndex][ClassAttrib_IsMotherZombie];
+            ClassPlayerData[client][ClassAttrib_AuthMode] = ClassGenericData2[classIndex][ClassAttrib_AuthMode];
+            strcopy(ClassPlayerData[client][ClassAttrib_Flags], CLASS_STRING_LEN, ClassGenericData2[classIndex][ClassAttrib_Flags]);
+            strcopy(ClassPlayerData[client][ClassAttrib_Groups], CLASS_STRING_LEN, ClassGenericData2[classIndex][ClassAttrib_Groups]);
+            strcopy(ClassPlayerData[client][ClassAttrib_Name], CLASS_NAME_LEN, ClassGenericData2[classIndex][ClassAttrib_Name]);
+            strcopy(ClassPlayerData[client][ClassAttrib_DisplayName], CLASS_NAME_LEN, ClassGenericData2[classIndex][ClassAttrib_DisplayName]);
+            strcopy(ClassPlayerData[client][ClassAttrib_Description], CLASS_STRING_LEN, ClassGenericData2[classIndex][ClassAttrib_Description]);
+        }
+    }
+    
+}
+
+/**
  * Clears the specified class.
  *
  * @param classIndex    Class index.
  * @param cache         Optional. Specifies what class cache to clear. Player
  *                      cache is ignored.
  */
-ClsGeneric_ClearClass(classIndex, ClassCacheType:cache = ClassCache_Original)
+static ClsGeneric_ClearClass(classIndex, ClassCacheType:cache = ClassCache_Original)
 {
     decl attributes[ClassGenericAttributes];
     attributes[ClassAttrib_Enabled] = false;
@@ -862,7 +923,7 @@ public ClsGeneric_AuthModes:ClsGeneric_GetAuthMode(index, ClassCacheType:cache)
  *
  * @return          Authorization blending mode, or ClsGeneric_InvalidMode on error.
  */
-ClsGeneric_AuthModes:ClsGeneric_StringToAuthMode(const String:mode[])
+static ClsGeneric_AuthModes:ClsGeneric_StringToAuthMode(const String:mode[])
 {
     if (strlen(mode) > 0)
     {
@@ -901,79 +962,13 @@ ClsGeneric_AuthModes:ClsGeneric_StringToAuthMode(const String:mode[])
  ******************************/
 
 /**
- * Validates the minimum class requirements.
- * Note: This function will log errors, but not stop the plugin.
- *
- * @param cacheDefaults     Optional. Cache default class indexes.
- *                          Note: Writes -1 to cache if not found!
- *
- * @return                  True if valid, false otherwise.
- */
-bool:ClsGeneric_ValidateRequirements(bool:cacheDefaults = false)
-{
-    if (g_ClassCount == 0)
-    {
-        if (cacheDefaults)
-        {
-            ClassDefaultClass[ClassTeam_Zombies] = -1;
-            ClassDefaultClass[ClassTeam_Humans] = -1;
-        }
-        return false;
-    }
-    
-    new bool:failed = false;
-    
-    // Find a clean default zombie class, log error if not found.
-    new zombie = ClassMgr_GetDefaultClass(ClassTeam_Zombies, _, ClassCache_Original);
-    if (zombie < 0)
-    {
-        LogMgr_Print(g_moduleClsGeneric, LogType_Error, "Config Validation", "Error: Unable to find a clean default zombie class. Check class config.");
-        if (cacheDefaults)
-        {
-            ClassDefaultClass[ClassTeam_Zombies] = -1;
-        }
-        failed = true;
-    }
-    else
-    {
-        // Cache default class index.
-        if (cacheDefaults)
-        {
-            ClassDefaultClass[ClassTeam_Zombies] = zombie;
-        }
-    }
-    
-    // Find a clean default human class, log error if not found.
-    new human = ClassMgr_GetDefaultClass(ClassTeam_Humans, _, ClassCache_Original);
-    if (human < 0)
-    {
-        LogMgr_Print(g_moduleClsGeneric, LogType_Error, "Config Validation", "Error: Unable to find a clean default human class. Check class config.");
-        if (cacheDefaults)
-        {
-            ClassDefaultClass[ClassTeam_Humans] = -1;
-        }
-        failed = true;
-    }
-    else
-    {
-        // Cache default class index.
-        if (cacheDefaults)
-        {
-            ClassDefaultClass[ClassTeam_Humans] = human;
-        }
-    }
-    
-    return !failed;
-}
-
-/**
  * Validates team.
  *
  * @param team          Team to validate.
  *
  * @return              True if valid, false otherwise.
  */
-bool:ClsGeneric_IsValidTeam(ClassTeam:team)
+static bool:ClsGeneric_IsValidTeam(ClassTeam:team)
 {
     if (team == ClassTeam_Zombies ||
         team == ClassTeam_Humans)
@@ -991,7 +986,7 @@ bool:ClsGeneric_IsValidTeam(ClassTeam:team)
  *
  * @return              True if valid, false otherwise.
  */
-bool:ClsGeneric_IsValidAuthMode(ClsGeneric_AuthModes:mode)
+static bool:ClsGeneric_IsValidAuthMode(ClsGeneric_AuthModes:mode)
 {
     if (mode != ClsGeneric_InvalidMode)
     {
@@ -1008,7 +1003,7 @@ bool:ClsGeneric_IsValidAuthMode(ClsGeneric_AuthModes:mode)
  *
  * @return              True if valid, false otherwise.
  */
-bool:ClsGeneric_IsValidGroup(const String:group[])
+static stock bool:ClsGeneric_IsValidGroup(const String:group[])
 {
     // Check if the group exist in SourceMod's admin cache.
     if (FindAdmGroup(group) != INVALID_GROUP_ID)
@@ -1027,7 +1022,7 @@ bool:ClsGeneric_IsValidGroup(const String:group[])
  *
  * @return              True if all are valid, false otherwise.
  */
-bool:ClsGeneric_IsValidGroupList(const String:groupList[], const String:separator[])
+static bool:ClsGeneric_IsValidGroupList(const String:groupList[], const String:separator[])
 {
     // No groups is also valid.
     if (strlen(groupList) == 0)
@@ -1060,7 +1055,7 @@ bool:ClsGeneric_IsValidGroupList(const String:groupList[], const String:separato
  *
  * @return              True if valid, false otherwise.
  */
-bool:ClsGeneric_IsValidFlag(const String:flag[])
+static bool:ClsGeneric_IsValidFlag(const String:flag[])
 {
     new AdminFlag:dummy;
     if (FindFlagByName(flag, dummy))
@@ -1079,7 +1074,7 @@ bool:ClsGeneric_IsValidFlag(const String:flag[])
  *
  * @return              True if all are valid, false otherwise.
  */
-bool:ClsGeneric_IsValidFlagList(const String:flagList[], const String:separator[])
+static bool:ClsGeneric_IsValidFlagList(const String:flagList[], const String:separator[])
 {
     // No flags is also valid.
     if (strlen(flagList) == 0)
@@ -1112,7 +1107,7 @@ bool:ClsGeneric_IsValidFlagList(const String:flagList[], const String:separator[
  *
  * @return              True if valid, false otherwise.
  */
-bool:ClsGeneric_IsValidDisplayName(const String:displayName[])
+static bool:ClsGeneric_IsValidDisplayName(const String:displayName[])
 {
     if (strlen(displayName) > 0)
     {
@@ -1129,7 +1124,7 @@ bool:ClsGeneric_IsValidDisplayName(const String:displayName[])
  *
  * @return              True if valid, false otherwise.
  */
-bool:ClsGeneric_IsValidDescription(const String:description[])
+static bool:ClsGeneric_IsValidDescription(const String:description[])
 {
     if (strlen(description) > 0)
     {

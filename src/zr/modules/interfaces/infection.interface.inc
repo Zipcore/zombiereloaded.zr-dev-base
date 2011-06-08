@@ -52,7 +52,7 @@ stock IInfection_HumanToZombie(Module:module, client, attacker = 0, bool:mzombie
 
 new Function:g_IInfectionZombieToHuman;
 stock IInfection_SetZombieToHuman(Function:func) { g_IInfectionZombieToHuman = func; }
-stock IInfection_ZombieToHuman(client)
+stock IInfection_ZombieToHuman(Module:module, client)
 {
     if (g_IInfectionZombieToHuman != INVALID_FUNCTION)
     {
@@ -70,7 +70,7 @@ stock IInfection_ZombieToHuman(client)
 
 new Function:g_IInfectionAreZombiesPresent;
 stock IInfection_SetAreZombiesPresent(Function:func) { g_IInfectionAreZombiesPresent = func; }
-stock bool:IInfection_AreZombiesPresent()
+stock bool:IInfection_AreZombiesPresent(Module:module)
 {
     if (g_IInfectionAreZombiesPresent != INVALID_FUNCTION)
     {
@@ -85,6 +85,5 @@ stock bool:IInfection_AreZombiesPresent()
         ModuleMgr_ReadString(module, ModuleData_FullName, modulefullname, sizeof(modulefullname));
         LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use a function not supported by current game mode, disabling.", modulefullname);
     }
+    return false;
 }
-
-#endif

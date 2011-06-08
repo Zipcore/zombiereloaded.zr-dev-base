@@ -51,11 +51,17 @@
  */
 enum VTeam
 {
+    VTeam_Invalid = -1,     /** Invalid team. */
     VTeam_Unassigned = 0,   /** Client isn't on a team. */
     VTeam_Spectator,        /** Client is a spectator. */
     VTeam_Zombie,           /** Client is a zombie. */
     VTeam_Human             /** Client is a human. */
 }
+
+/**
+ * A string representation of the virtual teams.  Think cvar values or settings that specify a virtual team.
+ */
+new String:g_strTLibVTeamNames[VTeam][] = { "unassigned", "spec", "zombie", "human" };
 
 /**
  * Global array to store each client's virtual team.
@@ -162,6 +168,23 @@ stock TLib_GTeamStringToIndex(const String:teamstring[])
         ThrowError("TLib_GTeamStringToIndex doesn't support this game");
         return -1;
     #endif
+}
+
+/**
+ * Convert a virtual team string into an index.
+ * 
+ * @param teamstring    The virtual team string to convert to a virtual team symbol.
+ * 
+ * @return              The virtual team index, -1 if no symbol is associated with the team string.
+ */
+stock VTeam:TLib_VTeamStringToIndex(const String:teamstring[])
+{
+    for (new vteam = 0; vteam < sizeof(g_strTLibVTeamNames); vteam++)
+    {
+        if (StrEqual(teamstring, g_strTLibVTeamNames[VTeam:vteam], false))
+            return VTeam:vteam;
+    }
+    return VTeam_Invalid;
 }
 
 #if defined PROJECT_GAME_CSS

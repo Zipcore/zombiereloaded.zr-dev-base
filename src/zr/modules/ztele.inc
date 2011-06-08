@@ -366,6 +366,10 @@ bool:ZTele_Client(client)
         return false;
     }
     
+    /**
+     * BAD
+     */
+    
     // For ZRC check if zombie has spawned, get before value, get the after value otherwise.
     // For non-ZRC just get the after value.
     new bool:ztelehuman;

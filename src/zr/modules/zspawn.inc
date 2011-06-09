@@ -25,12 +25,11 @@
  * ============================================================================
  */
 
-#include "zr/libraries/authcachelib"
+// Include interfaces.
+#include "zr/interfaces/infection.interface"
 
-/**
- * TODO:
- * The rest should be compiler errors.
- */
+// Include libraries
+#include "zr/libraries/authcachelib"
 
 /**
  * This module's identifier.
@@ -259,7 +258,7 @@ public Action:ZSpawn_SayCommand(client, argc)
         // Set the client's team and then spawn them.
         new spawnteam = GetConVarInt(g_hCvarZSpawnTeam);
         if (spawnteam == 0)
-            IInfection_HumanToZombie(g_moduleZSpawn, client, 0, false);
+            IInfection_ClientToZombie(g_moduleZSpawn, client, 0, false);
     }
     else
     {
@@ -276,7 +275,7 @@ public Action:ZSpawn_SayCommand(client, argc)
             {
                 TLib_SetClientTeam(client, VTeam_Human);
                 CS_RespawnPlayer(client);
-                IInfection_HumanToZombie(g_moduleZSpawn, client, 0, false);
+                IInfection_ClientToZombie(g_moduleZSpawn, client, 0, false);
             }
             case 1:
             {

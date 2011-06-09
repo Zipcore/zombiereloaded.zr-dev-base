@@ -32,7 +32,7 @@
  */
 
 // Include interfaces.
-#include "zr/modules/interfaces/infection.interface"
+#include "zr/interfaces/infection.interface"
 
 /**
  * This module's identifier.
@@ -181,40 +181,6 @@ public Respawn_PlayerDeath(victim, attacker, const String:weapon[], bool:headsho
 }
 
 /**
- * Spawns a client into the round by the rules.
- * 
- * @param client            The client index.
- * @param zombie            True to spawn as zombie, false to spawn as human.
- */
-static stock Respawn_Client(client)
-{
-    decl String:respawn_team[32];
-    GetConVarString(g_hCvarRespawnTeam, respawn_team, sizeof(respawn_team));
-    new VTeam:team = TLib_VTeamStringToIndex(respawn_team);
-    
-    // Update the client's virtual team with the one defined in this cvar.
-    if (team == VTeam_Invalid)
-        LogMgr_Print(g_moduleRespawn, LogType_Fatal_Module, "Cvar zr_respawn_team", "Invalid value (%s) set in cvar,", respawn_team);
-    else
-        TLib_SetClientTeam(client, team);
-    
-    // Spawn client.
-    CS_RespawnPlayer(client);
-    
-    // Check if they should be infected.
-    if (IInfection_AreZombiesPresent(g_moduleRespawn))
-    {
-        if (team == VTeam_Zombie)
-            IInfection_HumanToZombie(g_moduleRespawn, client, 0, false);
-        else if (GetConVarBool(g_hCvarRespawnZombieIfSuicide) && g_bDeathBySuicide[client])
-        {
-            IInfection_HumanToZombie(g_moduleRespawn, client, 0, false);
-            g_bDeathBySuicide[client] = false;
-        }
-    }
-}
-
-/**
  * Timer callback, respawns a player.
  * 
  * @param timer     The timer handle.
@@ -233,5 +199,25 @@ public Action:Respawn_Timer(Handle:timer, any:client)
     if (!TLib_IsClientPlaying(client))
         return;
     
-    Respawn_Client(client);
+    // If the client suicided and the cvar is enabled, they will be respawned as zombie.
+    if (GetConVarBool(g_hCvarRespawnZombieIfSuicide) && g_bDeathBySuicide[client])
+    {
+        g_bDeathBySuicide[client] = false;
+        TLib_SetClientTeam(client, VTeam_Zombie);
+    }
+    else
+    {
+        // Update the client's virtual team with the one defined in this cvar.
+        decl String:respawn_team[32];
+        GetConVarString(g_hCvarRespawnTeam, respawn_team, sizeof(respawn_team));
+        new VTeam:team = TLib_VTeamStringToIndex(respawn_team);
+        if (team == VTeam_Invalid)
+        {
+            LogMgr_Print(g_moduleRespawn, LogType_Fatal_Module, "Cvar zr_respawn_team", "Invalid value (%s) set in cvar,", respawn_team);
+            return;
+        }
+        TLib_SetClientTeam(client, team);
+    }
+    TLib_UpdateClientTeam(client); // Switch them to the right team and then spawn.
+    CS_RespawnPlayer(client);
 }

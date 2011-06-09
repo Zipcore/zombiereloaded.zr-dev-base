@@ -21,6 +21,8 @@ ZR
 			..\src\zr\base\translationsmanager.inc
 			..\src\zr\base\versioninfo.inc
 			..\src\zr\base\wrappers.inc
+		-Interfaces
+			..\src\zr\interfaces\infection.interface.inc
 		-Libraries
 			..\src\zr\libraries\authcachelib.inc
 			..\src\zr\libraries\conversionlib.inc
@@ -61,6 +63,7 @@ ZR
 			..\src\zr\modules\gamerules.inc
 			..\src\zr\modules\mapconfig.inc
 			..\src\zr\modules\moduletemplate.inc
+			..\src\zr\modules\respawn.inc
 			..\src\zr\modules\sdkhooksadapter.inc
 			..\src\zr\modules\stripobjectives.inc
 			..\src\zr\modules\zspawn.inc

@@ -98,8 +98,8 @@ ZRiotInfect_OnPluginStart()
 public ZRiotInfect_OnMyCoreShutdown()
 {
     // Reset infection interface for the next game mode to set up.
-    IInfection_SetHumanToZombie(INVALID_FUNCTION);
-    IInfection_SetZombieToHuman(INVALID_FUNCTION);
+    IInfection_SetClientToZombie(INVALID_FUNCTION);
+    IInfection_SetClientToHuman(INVALID_FUNCTION);
     IInfection_SetAreZombiesPresent(INVALID_FUNCTION);
 }
 
@@ -109,8 +109,8 @@ public ZRiotInfect_OnMyCoreShutdown()
 public ZRiotInfect_OnMyCoreActivate()
 {
     // Set up infection interface.
-    IInfection_SetHumanToZombie(GetFunctionByName(GetMyHandle(), "ZRiotInfect_HumanToZombie"));
-    IInfection_SetZombieToHuman(GetFunctionByName(GetMyHandle(), "ZRiotInfect_ZombieToHuman"));
+    IInfection_SetClientToZombie(GetFunctionByName(GetMyHandle(), "ZRiotInfect_ClientToZombie"));
+    IInfection_SetClientToHuman(GetFunctionByName(GetMyHandle(), "ZRiotInfect_ClientToHuman"));
     IInfection_SetAreZombiesPresent(GetFunctionByName(GetMyHandle(), "ZRiotInfect_AreZombiesPresent"));
 }
 
@@ -131,7 +131,7 @@ public ZRiotInfect_PlayerSpawn(client)
     // Check if the client is on the zombie team.
     if (GetClientTeam(client) == TLib_GetGameTeamIndex(VTeam_Zombie))
     {
-        ZRiotInfect_HumanToZombie(client);
+        ZRiotInfect_ClientToZombie(client);
     }
 }
 
@@ -142,7 +142,7 @@ public ZRiotInfect_PlayerSpawn(client)
  * 
  * @param client    The client being infected.
  */
-public ZRiotInfect_HumanToZombie(client)
+public ZRiotInfect_ClientToZombie(client)
 {
     TLib_SetClientTeam(client, VTeam_Zombie);
     
@@ -162,7 +162,7 @@ public ZRiotInfect_HumanToZombie(client)
  * 
  * @param client    The zombie client to turn human.
  */
-public ZRiotInfect_ZombieToHuman(client)
+public ZRiotInfect_ClientToHuman(client)
 {
     TLib_SetClientTeam(client, VTeam_Human);
     
@@ -232,7 +232,7 @@ public Action:ZRiotInfect_InfectCommand(client, argc)
         // Can't infect a zombie.
         if (TLib_IsClientHuman(targets[tindex]))
         {
-            ZRiotInfect_HumanToZombie(targets[tindex]);
+            ZRiotInfect_ClientToZombie(targets[tindex]);
             TransMgr_PrintText(targets[tindex], MsgFormat_Plugin, MsgType_Chat, _, _, "ZRiot human to zombie");
             if (result == 1)
             {
@@ -310,7 +310,7 @@ public Action:ZRiotInfect_HumanCommand(client, argc)
         // Can't infect a zombie.
         if (TLib_IsClientZombie(targets[tindex]))
         {
-            ZRiotInfect_ZombieToHuman(targets[tindex]);
+            ZRiotInfect_ClientToHuman(targets[tindex]);
             TransMgr_PrintText(targets[tindex], MsgFormat_Plugin, MsgType_Chat, _, _, "ZRiot zombie to human");
             if (result == 1)
             {

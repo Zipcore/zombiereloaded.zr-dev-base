@@ -72,6 +72,7 @@ public ZRiot_OnEventsRegister()
 // Include sub-modules.
 #include "zr/modules/zriot_core/gameplay.zriot.inc"
 #include "zr/modules/zriot_core/infection.zriot.inc"
+#include "zr/modules/zriot_core/stages.zriot.inc"
 #include "zr/modules/zriot_core/teammanager.zriot.inc"
 #include "zr/modules/zriot_core/weapons.zriot.inc"
 
@@ -86,6 +87,7 @@ ZRiot_OnPluginStart()
     // Forward event to sub-modules.
     ZRiotGPlay_OnPluginStart();
     ZRiotInfect_OnPluginStart();
+    ZRiotStages_OnPluginStart();
     ZRiotTM_OnPluginStart();
     ZRiotWeps_OnPluginStart();
 }

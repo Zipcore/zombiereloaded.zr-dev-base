@@ -17,7 +17,7 @@
 // "core"		- The root module that should be enabled.  Each GRS can only have 1 core enabled, all others will be forced off.
 //			Don't touch this if you don't know what you are doing.
 // "configs"		- The config files to load for this ruleset.  Options:
-//	"cfg"		- The executable .cfg file relative to cfg/sourcemod/ to execute when this game ruleset is applied.
+//	"cfg"		- The executable .cfg file relative to cfg/ to execute when this game ruleset is applied.
 //	"weapons"	- The weapons module will load the file this points to.
 //	TODO: Add the other module configs files.
 //

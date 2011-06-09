@@ -187,8 +187,6 @@ stock VTeam:TLib_VTeamStringToIndex(const String:teamstring[])
     return VTeam_Invalid;
 }
 
-#if defined PROJECT_GAME_CSS
-
 /**
  * Set a client's game team to the one bound to their virtual team.
  * 
@@ -197,8 +195,9 @@ stock VTeam:TLib_VTeamStringToIndex(const String:teamstring[])
 stock TLib_UpdateClientTeam(client)
 {
     // Can't switch a player to any team index lessthan 1 in any game.
-    if (g_iTLibGameTeamIndex[TLib_GetClientTeam(client)] > 0)
-        Util_SwitchTeam(client, g_iTLibGameTeamIndex[TLib_GetClientTeam(client)]);
+    new teamindex = g_iTLibGameTeamIndex[TLib_GetClientTeam(client)];
+    if (teamindex > 0)
+        Util_SwitchTeam(client, teamindex);
 }
 
 /**
@@ -214,5 +213,3 @@ stock TLib_UpdateClientTeams()
         TLib_UpdateClientTeam(client);
     }
 }
-
-#endif

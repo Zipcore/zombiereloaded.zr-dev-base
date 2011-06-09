@@ -127,9 +127,7 @@ public ZRCTM_OnClientPutInServer(client)
  */
 public ZRCTM_OnClientInfected(client, attacker, bool:mzombie)
 {
-    #if defined PROJECT_GAME_CSS
-        Util_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Zombie));
-    #endif
+    Util_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Zombie));
 }
 
 /**
@@ -139,9 +137,7 @@ public ZRCTM_OnClientInfected(client, attacker, bool:mzombie)
  */
 public ZRCTM_OnClientHuman(client)
 {
-    #if defined PROJECT_GAME_CSS
-        Util_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Human));
-    #endif
+    Util_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Human));
 }
 
 #if defined PROJECT_GAME_CSS
@@ -211,9 +207,7 @@ public ZRCTM_PlayerSpawn(client)
     
     // Move client the right team for their virtual team if there are zombies present.
     if (g_bZombiesPresent)
-    {
         TLib_UpdateClientTeam(client);
-    }
 }
 
 #endif
@@ -221,7 +215,7 @@ public ZRCTM_PlayerSpawn(client)
 /**
  * Randomly put an equal amount of clients on both teams.
  */
-stock ZRCTM_BalanceTeams()
+static stock ZRCTM_BalanceTeams()
 {
     new bool:team1 = true;
     
@@ -247,7 +241,7 @@ stock ZRCTM_BalanceTeams()
 /**
  * Update the game teams associated with the virtual teams, as set by cvar.
  */
-ZRCTM_UpdateZombieTeam()
+static stock ZRCTM_UpdateZombieTeam()
 {
     decl String:strZombieTeam[32];
     GetConVarString(g_hCvarZRCZombieTeam, strZombieTeam, sizeof(strZombieTeam));

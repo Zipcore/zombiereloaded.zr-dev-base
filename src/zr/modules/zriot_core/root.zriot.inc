@@ -67,9 +67,6 @@ public ZRiot_OnEventsRegister()
 {
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleZRiotRoot, "Event_OnMyModuleEnable",         "ZRiot_OnMyModuleEnable");
-    EventMgr_RegisterEvent(g_moduleZRiotRoot, "Event_OnGameRulesApplied",       "ZRiot_OnGameRulesApplied");
-    EventMgr_RegisterEvent(g_moduleZRiotRoot, "Event_OnMyCoreActivate",         "ZRiot_OnMyCoreActivate");
-    EventMgr_RegisterEvent(g_moduleZRiotRoot, "Event_OnMyCoreShutdown",         "ZRiot_OnMyCoreShutdown");
 }
 
 // Include sub-modules.
@@ -110,28 +107,4 @@ public Action:ZRiot_OnMyModuleEnable(String:refusalmsg[], maxlen)
         ModuleMgr_Enable(dependentmodules[dmoduleindex]);
     
     return Plugin_Continue;
-}
-
-/**
- * Forwarded to the core module being shutdown before ZRiot_OnMyCoreActivate and ZRiot_OnGameRulesApplied.
- */
-public ZRiot_OnMyCoreShutdown()
-{
-}
-
-/**
- * Forwarded to the core module being activated after ZRiot_OnMyCoreShutdown but before ZRiot_OnGameRulesApplied.
- */
-public ZRiot_OnMyCoreActivate()
-{
-}
-
-/**
- * Called after a new rule set has been applied after ZRiot_OnMyCoreActivate.
- * 
- * @param oldgamerules  The name of the previous rule set.  Blank if first rule set.
- * @param newgamerules  The name of the new rule set.
- */
-public ZRiot_OnGameRulesApplied(const String:oldruleset[], const String:newruleset[])
-{
 }

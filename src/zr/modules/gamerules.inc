@@ -40,7 +40,6 @@ stock Module:GameRules_GetIdentifier() { return g_moduleGameRules; }
  */
 new ProjectEvent:g_EvOnMyCoreShutdown;
 new ProjectEvent:g_EvOnMyCoreActivate;
-new ProjectEvent:g_EvOnGameRulesApplied;
 
 /**
  * Location of gamerules config file.
@@ -129,7 +128,6 @@ GameRules_Register()
     // Create events.
     g_EvOnMyCoreShutdown = EventMgr_CreateEvent("Event_OnMyCoreShutdown");
     g_EvOnMyCoreActivate = EventMgr_CreateEvent("Event_OnMyCoreActivate");
-    g_EvOnGameRulesApplied = EventMgr_CreateEvent("Event_OnGameRulesApplied");
     
     // Register the OnEventsRegister event to register all events in it.
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnEventsRegister",         "GameRules_OnEventsRegister");
@@ -579,17 +577,11 @@ stock GameRules_GetRuleSetName(ruleset, String:name[], maxlen)
 stock GameRules_ApplyRuleSet(ruleSet)
 {
     // Call a shutdown event on the current game mode and store the name for later.
-    new Module:modules[2] = {INVALID_MODULE, ...};
-    new String:oldrulesetname[GAMERULES_DATA_NAME];
-    if (g_iCurGameRuleSet != -1)
+    new any:eventdata[sizeof(g_CommonEventData1)][1];
+    if (g_iCurGameRuleSet != -1 && GRULESET_CORE != INVALID_MODULE)
     {
-        if (GRULESET_CORE != INVALID_MODULE)
-        {
-            modules[0] = GRULESET_CORE;
-            EventMgr_Forward(g_EvOnMyCoreShutdown, g_CommonEventData1, 0, 0, g_CommonDataType1, modules);
-        }
-        
-        strcopy(oldrulesetname, sizeof(oldrulesetname), GRULESET_NAME);
+        eventdata[0][0] = GRULESET_CORE;
+        EventMgr_Forward(g_EvOnMyCoreShutdown, g_CommonEventData1, sizeof(g_CommonEventData1), sizeof(g_CommonEventData1[]), g_CommonDataType2);
     }
     
     GetArrayArray(g_hGameRules, ruleSet, g_RuleSetCache[0], sizeof(g_RuleSetCache));
@@ -639,18 +631,9 @@ stock GameRules_ApplyRuleSet(ruleSet)
     // Send this event only to the module being affected.
     if (GRULESET_CORE != INVALID_MODULE)
     {
-        modules[0] = GRULESET_CORE;
-        EventMgr_Forward(g_EvOnMyCoreActivate, g_CommonEventData1, 0, 0, g_CommonDataType1, modules);
+        eventdata[0][0] = GRULESET_CORE;
+        EventMgr_Forward(g_EvOnMyCoreActivate, g_CommonEventData1, 0, 0, g_CommonDataType1);
     }
-    
-    // Forward event to all modules.
-    new any:eventdata[2][GAMERULES_DATA_NAME];
-    static EventDataTypes:eventdatatypes[] = {DataType_String, DataType_String};
-    
-    strcopy(eventdata[0], sizeof(eventdata[]), oldrulesetname);
-    strcopy(eventdata[1], sizeof(eventdata[]), GRULESET_NAME);
-    
-    EventMgr_Forward(g_EvOnGameRulesApplied, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
 }
 
 /**

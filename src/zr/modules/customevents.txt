@@ -28,25 +28,15 @@ public <FuncPrefix>_OnEventsRegister()
 }
 
 /**
- * Forwarded to the core module being shutdown before <FuncPrefix>_OnMyCoreActivate and <FuncPrefix>_OnGameRulesApplied.
+ * Called when a game mode is shutting down right before <FuncPrefix>_OnMyCoreActivate.
  */
-public <FuncPrefix>_OnMyCoreShutdown()
+public <FuncPrefix>_OnMyCoreShutdown(Module:module)
 {
 }
 
 /**
- * Forwarded to the core module being activated after <FuncPrefix>_OnMyCoreShutdown but before <FuncPrefix>_OnGameRulesApplied.
+ * Called when a game mode is activating.
  */
 public <FuncPrefix>_OnMyCoreActivate()
-{
-}
-
-/**
- * Called after a new rule set has been applied after <FuncPrefix>_OnMyCoreActivate.
- * 
- * @param oldgamerules  The name of the previous rule set.  Blank if first rule set.
- * @param newgamerules  The name of the new rule set.
- */
-public <FuncPrefix>_OnGameRulesApplied(const String:oldruleset[], const String:newruleset[])
 {
 }

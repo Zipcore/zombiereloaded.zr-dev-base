@@ -188,16 +188,22 @@ public Respawn_PlayerDeath(victim, attacker, const String:weapon[], bool:headsho
  */
 static stock Respawn_Client(client)
 {
+    decl String:respawn_team[32];
+    GetConVarString(g_hCvarRespawnTeam, respawn_team, sizeof(respawn_team));
+    new VTeam:team = TLib_VTeamStringToIndex(respawn_team);
+    
+    // Update the client's virtual team with the one defined in this cvar.
+    if (team == VTeam_Invalid)
+        LogMgr_Print(g_moduleRespawn, LogType_Fatal_Module, "Cvar zr_respawn_team", "Invalid value (%s) set in cvar,", respawn_team);
+    else
+        TLib_SetClientTeam(client, team);
+    
+    // Spawn client.
     CS_RespawnPlayer(client);
     
     // Check if they should be infected.
     if (IInfection_AreZombiesPresent(g_moduleRespawn))
     {
-        decl String:respawn_team[32];
-        GetConVarString(g_hCvarRespawnTeam, respawn_team, sizeof(respawn_team));
-        new VTeam:team = TLib_VTeamStringToIndex(respawn_team);
-        if (team == VTeam_Invalid)
-            LogMgr_Print(g_moduleRespawn, LogType_Fatal_Module, "Cvar zr_respawn_team", "Invalid value (%s) set in cvar,", respawn_team);
         if (team == VTeam_Zombie)
             IInfection_HumanToZombie(g_moduleRespawn, client, 0, false);
         else if (GetConVarBool(g_hCvarRespawnZombieIfSuicide) && g_bDeathBySuicide[client])

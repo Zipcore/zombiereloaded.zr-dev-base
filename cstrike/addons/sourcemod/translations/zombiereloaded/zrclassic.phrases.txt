@@ -16,19 +16,34 @@
 	//                  Infection		       //
 	/////////////////////////////////////////////////
 
-	"ZRC human to zombie"
+	"ZRC client to mother zombie"
 	{
-		"en"		"You have been infected!  Go pass it on to as many other players as you can."
+		"en"		"You are the start of a zombie outbreak!  Your only goal now is to infect everyone else!"
+	}
+
+	"ZRC client to zombie"
+	{
+		"en"		"You have been infected!  Your goal is to infect as many humans as you can."
+	}
+
+	"ZRC spawn as zombie"
+	{
+		"en"		"You are a zombie!  Your goal is to infect as many humans as you can."
 	}
 
 	"ZRC zombie to human"
 	{
-		"en"		"The merciful gods (known as admins) have resurrected your soul, find some cover!"
+		"en"		"Your soul has been brought back from the undead, now find some cover!"
+	}
+
+	"ZRC spawn as human"
+	{
+		"en"		"You are a human.  Now go kick some zombie ass!"
 	}
 
 	"ZRC infect disconnect"
 	{
-		"en"		"The last zombie has left the game, and has passed the infection on to you."
+		"en"		"The last zombie left the game so the outbreak is restarting with you!"
 	}
 
 	"ZRC command infect syntax"

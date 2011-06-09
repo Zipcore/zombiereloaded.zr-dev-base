@@ -137,7 +137,9 @@ public ZRCTM_OnClientInfected(client, attacker, bool:mzombie)
  */
 public ZRCTM_OnClientHuman(client)
 {
-    Util_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Human));
+    // If there aren't any zombies we don't care what team they're on.
+    if (g_bZombiesPresent)
+        Util_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Human));
 }
 
 #if defined PROJECT_GAME_CSS

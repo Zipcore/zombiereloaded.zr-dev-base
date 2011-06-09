@@ -30,13 +30,13 @@
 #endif
 #define _iinfection_included
 
-new Function:g_IInfectionHumanToZombie = INVALID_FUNCTION;
-stock IInfection_SetHumanToZombie(Function:func) { g_IInfectionHumanToZombie = func; }
-stock IInfection_HumanToZombie(Module:module, client, attacker = 0, bool:mzombie)
+new Function:g_IInfectionClientToZombie = INVALID_FUNCTION;
+stock IInfection_SetClientToZombie(Function:func) { g_IInfectionClientToZombie = func; }
+stock IInfection_ClientToZombie(Module:module, client, attacker = 0, bool:mzombie)
 {
-    if (g_IInfectionHumanToZombie != INVALID_FUNCTION)
+    if (g_IInfectionClientToZombie != INVALID_FUNCTION)
     {
-        Call_StartFunction(GetMyHandle(), g_IInfectionHumanToZombie);
+        Call_StartFunction(GetMyHandle(), g_IInfectionClientToZombie);
         Call_PushCell(client);
         Call_PushCell(attacker);
         Call_PushCell(mzombie);
@@ -46,17 +46,17 @@ stock IInfection_HumanToZombie(Module:module, client, attacker = 0, bool:mzombie
     {
         decl String:modulefullname[MM_DATA_FULLNAME];
         ModuleMgr_ReadString(module, ModuleData_FullName, modulefullname, sizeof(modulefullname));
-        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_HumanToZombie which is not supported by current game mode, disabling.", modulefullname);
+        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_ClientToZombie which is not supported by current game mode, disabling.", modulefullname);
     }
 }
 
-new Function:g_IInfectionZombieToHuman = INVALID_FUNCTION;
-stock IInfection_SetZombieToHuman(Function:func) { g_IInfectionZombieToHuman = func; }
-stock IInfection_ZombieToHuman(Module:module, client)
+new Function:g_IInfectionClientToHuman = INVALID_FUNCTION;
+stock IInfection_SetClientToHuman(Function:func) { g_IInfectionClientToHuman = func; }
+stock IInfection_ClientToHuman(Module:module, client)
 {
-    if (g_IInfectionZombieToHuman != INVALID_FUNCTION)
+    if (g_IInfectionClientToHuman != INVALID_FUNCTION)
     {
-        Call_StartFunction(GetMyHandle(), g_IInfectionZombieToHuman);
+        Call_StartFunction(GetMyHandle(), g_IInfectionClientToHuman);
         Call_PushCell(client);
         Call_Finish();
     }
@@ -64,7 +64,7 @@ stock IInfection_ZombieToHuman(Module:module, client)
     {
         decl String:modulefullname[MM_DATA_FULLNAME];
         ModuleMgr_ReadString(module, ModuleData_FullName, modulefullname, sizeof(modulefullname));
-        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_ZombieToHuman which is not supported by current game mode, disabling.", modulefullname);
+        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_ClientToHuman which is not supported by current game mode, disabling.", modulefullname);
     }
 }
 

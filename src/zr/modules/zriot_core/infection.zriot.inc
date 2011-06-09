@@ -69,6 +69,9 @@ ZRiotInfect_Register()
 public ZRiotInfect_OnEventsRegister()
 {
     // Register all the events needed for this module.
+    EventMgr_RegisterEvent(g_moduleZRiotInfect, "Event_OnMyCoreActivate",       "ZRiotInfect_OnMyCoreActivate");
+    EventMgr_RegisterEvent(g_moduleZRiotInfect, "Event_OnMyCoreShutdown",       "ZRiotInfect_OnMyCoreShutdown");
+    
     #if defined PROJECT_GAME_CSS
     
     EventMgr_RegisterEvent(g_moduleZRiotInfect, "Event_PlayerSpawn",            "ZRiotInfect_PlayerSpawn");
@@ -87,6 +90,28 @@ ZRiotInfect_OnPluginStart()
     // Create commands.
     RegConsoleCmd("zriot_infect", ZRiotInfect_InfectCommand, "Turn a player into a zombie. Usage: zriot_infect <#userid|name> [respawn - 1/0]");
     RegConsoleCmd("zriot_human", ZRiotInfect_HumanCommand, "Turn a player into a human. Usage: zriot_human <#userid|name> [respawn - 1/0] [protect - 1/0]");
+}
+
+/**
+ * Forwarded to the core module being shutdown before ZRC_OnMyCoreActivate and ZRC_OnGameRulesApplied.
+ */
+public ZRiotInfect_OnMyCoreShutdown()
+{
+    // Reset infection interface for the next game mode to set up.
+    IInfection_SetHumanToZombie(INVALID_FUNCTION);
+    IInfection_SetZombieToHuman(INVALID_FUNCTION);
+    IInfection_SetAreZombiesPresent(INVALID_FUNCTION);
+}
+
+/**
+ * Forwarded to the core module being activated after ZRC_OnMyCoreShutdown but before ZRC_OnGameRulesApplied.
+ */
+public ZRiotInfect_OnMyCoreActivate()
+{
+    // Set up infection interface.
+    IInfection_SetHumanToZombie(GetFunctionByName(GetMyHandle(), "ZRiotInfect_HumanToZombie"));
+    IInfection_SetZombieToHuman(GetFunctionByName(GetMyHandle(), "ZRiotInfect_ZombieToHuman"));
+    IInfection_SetAreZombiesPresent(GetFunctionByName(GetMyHandle(), "ZRiotInfect_AreZombiesPresent"));
 }
 
 #if defined PROJECT_GAME_CSS

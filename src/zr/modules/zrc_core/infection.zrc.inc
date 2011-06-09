@@ -102,6 +102,8 @@ ZRCInfect_Register()
 public ZRCInfect_OnEventsRegister()
 {
     // Register all the events needed for this module.
+    EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnMyCoreActivate",         "ZRCInfect_OnMyCoreActivate");
+    EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnMyCoreShutdown",         "ZRCInfect_OnMyCoreShutdown");
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnMapStart",               "ZRCInfect_OnMapStart");
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnMapEnd",                 "ZRCInfect_OnMapEnd");
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnClientPutInServer",      "ZRCInfect_OnClientPutInServer");
@@ -135,6 +137,28 @@ ZRCInfect_OnPluginStart()
     // Create commands.
     RegConsoleCmd("zrc_infect", ZRCInfect_InfectCommand, "Turn a player into a zombie. Usage: zrc_infect <#userid|name> [respawn - 1/0]");
     RegConsoleCmd("zrc_human", ZRCInfect_HumanCommand, "Turn a player into a human. Usage: zrc_human <#userid|name> [respawn - 1/0] [protect - 1/0]");
+}
+
+/**
+ * Forwarded to the core module being shutdown before ZRC_OnMyCoreActivate and ZRC_OnGameRulesApplied.
+ */
+public ZRCInfect_OnMyCoreShutdown()
+{
+    // Reset infection interface for the next game mode to set up.
+    IInfection_SetHumanToZombie(INVALID_FUNCTION);
+    IInfection_SetZombieToHuman(INVALID_FUNCTION);
+    IInfection_SetAreZombiesPresent(INVALID_FUNCTION);
+}
+
+/**
+ * Forwarded to the core module being activated after ZRC_OnMyCoreShutdown but before ZRC_OnGameRulesApplied.
+ */
+public ZRCInfect_OnMyCoreActivate()
+{
+    // Set up infection interface.
+    IInfection_SetHumanToZombie(GetFunctionByName(GetMyHandle(), "ZRCInfect_HumanToZombie"));
+    IInfection_SetZombieToHuman(GetFunctionByName(GetMyHandle(), "ZRCInfect_ZombieToHuman"));
+    IInfection_SetAreZombiesPresent(GetFunctionByName(GetMyHandle(), "ZRCInfect_AreZombiesPresent"));
 }
 
 /**
@@ -306,21 +330,15 @@ public ZRCInfect_HumanToZombie(client, attacker, bool:mzombie)
     
     TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC human to zombie");
     
-    #if defined PROJECT_GAME_CSS
-        // If this is the first zombie of the round then update the client teams.
-        if (!g_bZombiesPresent)
-        {
-            TLib_UpdateClientTeams();
-        }
-    #endif
+    // If this is the first zombie of the round then update the client teams.
+    if (!g_bZombiesPresent)
+        TLib_UpdateClientTeams();
     
     // Definitely zombies present now.
     g_bZombiesPresent = true;
     
     if (mzombie)
-    {
         g_bMotherZombie[client] = mzombie;
-    }
     
     #if defined PROJECT_GAME_CSS
         // Only fire the event if there is an attacker.

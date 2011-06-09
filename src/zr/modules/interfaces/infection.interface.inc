@@ -30,7 +30,7 @@
 #endif
 #define _iinfection_included
 
-new Function:g_IInfectionHumanToZombie;
+new Function:g_IInfectionHumanToZombie = INVALID_FUNCTION;
 stock IInfection_SetHumanToZombie(Function:func) { g_IInfectionHumanToZombie = func; }
 stock IInfection_HumanToZombie(Module:module, client, attacker = 0, bool:mzombie)
 {
@@ -46,11 +46,11 @@ stock IInfection_HumanToZombie(Module:module, client, attacker = 0, bool:mzombie
     {
         decl String:modulefullname[MM_DATA_FULLNAME];
         ModuleMgr_ReadString(module, ModuleData_FullName, modulefullname, sizeof(modulefullname));
-        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use a function not supported by current game mode, disabling.", modulefullname);
+        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_HumanToZombie which is not supported by current game mode, disabling.", modulefullname);
     }
 }
 
-new Function:g_IInfectionZombieToHuman;
+new Function:g_IInfectionZombieToHuman = INVALID_FUNCTION;
 stock IInfection_SetZombieToHuman(Function:func) { g_IInfectionZombieToHuman = func; }
 stock IInfection_ZombieToHuman(Module:module, client)
 {
@@ -64,11 +64,11 @@ stock IInfection_ZombieToHuman(Module:module, client)
     {
         decl String:modulefullname[MM_DATA_FULLNAME];
         ModuleMgr_ReadString(module, ModuleData_FullName, modulefullname, sizeof(modulefullname));
-        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use a function not supported by current game mode, disabling.", modulefullname);
+        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_ZombieToHuman which is not supported by current game mode, disabling.", modulefullname);
     }
 }
 
-new Function:g_IInfectionAreZombiesPresent;
+new Function:g_IInfectionAreZombiesPresent = INVALID_FUNCTION;
 stock IInfection_SetAreZombiesPresent(Function:func) { g_IInfectionAreZombiesPresent = func; }
 stock bool:IInfection_AreZombiesPresent(Module:module)
 {
@@ -83,7 +83,7 @@ stock bool:IInfection_AreZombiesPresent(Module:module)
     {
         decl String:modulefullname[MM_DATA_FULLNAME];
         ModuleMgr_ReadString(module, ModuleData_FullName, modulefullname, sizeof(modulefullname));
-        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use a function not supported by current game mode, disabling.", modulefullname);
+        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_AreZombiesPresent which is not supported by current game mode, disabling.", modulefullname);
     }
     return false;
 }

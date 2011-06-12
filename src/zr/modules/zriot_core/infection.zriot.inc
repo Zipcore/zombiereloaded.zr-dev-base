@@ -86,32 +86,34 @@ ZRiotInfect_OnPluginStart()
 {
     // Register the module.
     ZRiotInfect_Register();
-    
-    // Create commands.
-    RegConsoleCmd("zriot_infect", ZRiotInfect_InfectCommand, "Turn a player into a zombie. Usage: zriot_infect <#userid|name> [respawn - 1/0]");
-    RegConsoleCmd("zriot_human", ZRiotInfect_HumanCommand, "Turn a player into a human. Usage: zriot_human <#userid|name> [respawn - 1/0] [protect - 1/0]");
 }
 
 /**
  * Forwarded to the core module being shutdown before ZRC_OnMyCoreActivate and ZRC_OnGameRulesApplied.
  */
-public ZRiotInfect_OnMyCoreShutdown()
+public ZRiotInfect_OnMyCoreShutdown(Module:module)
 {
-    // Reset infection interface for the next game mode to set up.
-    IInfection_SetClientToZombie(INVALID_FUNCTION);
-    IInfection_SetClientToHuman(INVALID_FUNCTION);
-    IInfection_SetAreZombiesPresent(INVALID_FUNCTION);
+    if (module == g_moduleZRiotInfect)
+    {
+        // Reset infection interface for the next game mode to set up.
+        IInfection_SetClientToZombie(INVALID_FUNCTION);
+        IInfection_SetClientToHuman(INVALID_FUNCTION);
+        IInfection_SetAreZombiesPresent(INVALID_FUNCTION);
+    }
 }
 
 /**
  * Forwarded to the core module being activated after ZRC_OnMyCoreShutdown but before ZRC_OnGameRulesApplied.
  */
-public ZRiotInfect_OnMyCoreActivate()
+public ZRiotInfect_OnMyCoreActivate(Module:module)
 {
-    // Set up infection interface.
-    IInfection_SetClientToZombie(GetFunctionByName(GetMyHandle(), "ZRiotInfect_ClientToZombie"));
-    IInfection_SetClientToHuman(GetFunctionByName(GetMyHandle(), "ZRiotInfect_ClientToHuman"));
-    IInfection_SetAreZombiesPresent(GetFunctionByName(GetMyHandle(), "ZRiotInfect_AreZombiesPresent"));
+    if (module == g_moduleZRiotInfect)
+    {
+        // Set up infection interface.
+        IInfection_SetClientToZombie(GetFunctionByName(GetMyHandle(), "ZRiotInfect_ClientToZombie"));
+        IInfection_SetClientToHuman(GetFunctionByName(GetMyHandle(), "ZRiotInfect_ClientToHuman"));
+        IInfection_SetAreZombiesPresent(GetFunctionByName(GetMyHandle(), "ZRiotInfect_AreZombiesPresent"));
+    }
 }
 
 #if defined PROJECT_GAME_CSS
@@ -128,11 +130,11 @@ public ZRiotInfect_PlayerSpawn(client)
     if (!Util_IsClientOnTeam(client))
         return;
     
-    // Check if the client is on the zombie team.
-    if (GetClientTeam(client) == TLib_GetGameTeamIndex(VTeam_Zombie))
-    {
+    // Automatically turn a client into a zombie or human depending on their virtual team.
+    if (TLib_IsClientZombie(client))
         ZRiotInfect_ClientToZombie(client);
-    }
+    else if (TLib_IsClientHuman(client))
+        ZRiotInfect_ClientToHuman(client);
 }
 
 #endif
@@ -144,7 +146,8 @@ public ZRiotInfect_PlayerSpawn(client)
  */
 public ZRiotInfect_ClientToZombie(client)
 {
-    TLib_SetClientTeam(client, VTeam_Zombie);
+    PrintToChatAll("infected %N (hp to 500)", client);
+    SetEntityHealth(client, 500);
     
     // Forward event to all modules.
     static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell, DataType_Cell};
@@ -164,167 +167,9 @@ public ZRiotInfect_ClientToZombie(client)
  */
 public ZRiotInfect_ClientToHuman(client)
 {
-    TLib_SetClientTeam(client, VTeam_Human);
-    
-    // If client was a mother zombie then set to false.
-    g_bMotherZombie[client] = false;
-    
     // Forward event to all modules.
     new any:eventdata[1][1];
-    
     eventdata[0][0] = client;
     
     EventMgr_Forward(g_EvOnClientHuman, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
-}
-
-/**
- * Command callback: zriot_infect
- * Turn a player into a zombie.
- * 
- * @param client    The client index. 
- * @param argc      The number of arguments that the server sent with the command.
- */
-public Action:ZRiotInfect_InfectCommand(client, argc)
-{
-    // Check if the this core module is disabled, if so then don't do anything with it.
-    if (ModuleMgr_IsDisabled(g_moduleZRiotInfect))
-    {
-        return Plugin_Continue;
-    }
-    
-    // Check if the client has permission to use this.
-    if (!AccessMgr_HasAccess(client, g_moduleZRiotInfect))
-    {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
-        return Plugin_Handled;
-    }
-    
-    // If not enough arguments given, then stop.
-    if (argc < 1)
-    {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRiot command infect syntax");
-        return Plugin_Handled;
-    }
-    
-    decl String:target[MAX_NAME_LENGTH], String:targetname[MAX_NAME_LENGTH];
-    new targets[MAXPLAYERS], bool:tn_is_ml, result;
-    
-    // Get targetname.
-    GetCmdArg(1, target, sizeof(target));
-    
-    // Find a target.
-    result = ProcessTargetString(target, client, targets, sizeof(targets), COMMAND_FILTER_ALIVE, targetname, sizeof(targetname), tn_is_ml);
-        
-    // Check if there was a problem finding a client.
-    if (result <= 0)
-    {
-        TransMgr_ReplyToTargetError(client, result);
-        return Plugin_Handled;
-    }
-    
-    // Check optional parameter.
-    decl String:strRespawn[4];
-    GetCmdArg(2, strRespawn, sizeof(strRespawn));
-    new bool:bRespawn = bool:StringToInt(strRespawn);
-    
-    for (new tindex = 0; tindex < result; tindex++)
-    {
-        // Can't infect a zombie.
-        if (TLib_IsClientHuman(targets[tindex]))
-        {
-            ZRiotInfect_ClientToZombie(targets[tindex]);
-            TransMgr_PrintText(targets[tindex], MsgFormat_Plugin, MsgType_Chat, _, _, "ZRiot human to zombie");
-            if (result == 1)
-            {
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRiot command infect successful", targets[tindex]);
-            }
-        }
-        else
-        {
-            if (result == 1)
-            {
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRiot command infect unsuccessful", targets[tindex]);
-            }
-        }
-    }
-    
-    return Plugin_Handled;
-}
-
-/**
- * Command callback: zriot_human
- * Turn a player into a human.
- * 
- * @param client    The client index. 
- * @param argc      The number of arguments that the server sent with the command.
- */
-public Action:ZRiotInfect_HumanCommand(client, argc)
-{
-    // Check if the this core module is disabled, if so then don't do anything with it.
-    if (ModuleMgr_IsDisabled(g_moduleZRiotInfect))
-    {
-        return Plugin_Continue;
-    }
-    
-    // Check if the client has permission to use this.
-    if (!AccessMgr_HasAccess(client, g_moduleZRiotInfect))
-    {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
-        return Plugin_Handled;
-    }
-    
-    // If not enough arguments given, then stop.
-    if (argc < 1)
-    {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRiot command human syntax");
-        return Plugin_Handled;
-    }
-    
-    decl String:target[MAX_NAME_LENGTH], String:targetname[MAX_NAME_LENGTH];
-    new targets[MAXPLAYERS], bool:tn_is_ml, result;
-    
-    // Get targetname.
-    GetCmdArg(1, target, sizeof(target));
-    
-    // Find a target.
-    result = ProcessTargetString(target, client, targets, sizeof(targets), COMMAND_FILTER_ALIVE, targetname, sizeof(targetname), tn_is_ml);
-        
-    // Check if there was a problem finding a client.
-    if (result <= 0)
-    {
-        TransMgr_ReplyToTargetError(client, result);
-        return Plugin_Handled;
-    }
-    
-    // Check optional parameters.
-    decl String:strRespawn[4];
-    GetCmdArg(2, strRespawn, sizeof(strRespawn));
-    new bool:bRespawn = bool:StringToInt(strRespawn);
-    
-    decl String:strProtect[4];
-    GetCmdArg(3, strProtect, sizeof(strProtect));
-    new bool:bProtect = bool:StringToInt(strProtect);
-    
-    for (new tindex = 0; tindex < result; tindex++)
-    {
-        // Can't infect a zombie.
-        if (TLib_IsClientZombie(targets[tindex]))
-        {
-            ZRiotInfect_ClientToHuman(targets[tindex]);
-            TransMgr_PrintText(targets[tindex], MsgFormat_Plugin, MsgType_Chat, _, _, "ZRiot zombie to human");
-            if (result == 1)
-            {
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRiot command human successful", targets[tindex]);
-            }
-        }
-        else
-        {
-            if (result == 1)
-            {
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRiot command human unsuccessful", targets[tindex]);
-            }
-        }
-    }
-    
-    return Plugin_Handled;
 }

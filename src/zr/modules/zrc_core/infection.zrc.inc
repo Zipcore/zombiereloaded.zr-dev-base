@@ -142,23 +142,29 @@ ZRCInfect_OnPluginStart()
 /**
  * Forwarded to the core module being shutdown before ZRC_OnMyCoreActivate and ZRC_OnGameRulesApplied.
  */
-public ZRCInfect_OnMyCoreShutdown()
+public ZRCInfect_OnMyCoreShutdown(Module:module)
 {
-    // Reset infection interface for the next game mode to set up.
-    IInfection_SetClientToZombie(INVALID_FUNCTION);
-    IInfection_SetClientToHuman(INVALID_FUNCTION);
-    IInfection_SetAreZombiesPresent(INVALID_FUNCTION);
+    if (module == g_moduleZRCInfect)
+    {
+        // Reset infection interface for the next game mode to set up.
+        IInfection_SetClientToZombie(INVALID_FUNCTION);
+        IInfection_SetClientToHuman(INVALID_FUNCTION);
+        IInfection_SetAreZombiesPresent(INVALID_FUNCTION);
+    }
 }
 
 /**
  * Forwarded to the core module being activated after ZRC_OnMyCoreShutdown but before ZRC_OnGameRulesApplied.
  */
-public ZRCInfect_OnMyCoreActivate()
+public ZRCInfect_OnMyCoreActivate(Module:module)
 {
-    // Set up infection interface.
-    IInfection_SetClientToZombie(GetFunctionByName(GetMyHandle(), "ZRCInfect_ClientToZombie"));
-    IInfection_SetClientToHuman(GetFunctionByName(GetMyHandle(), "ZRCInfect_ClientToHuman"));
-    IInfection_SetAreZombiesPresent(GetFunctionByName(GetMyHandle(), "ZRCInfect_AreZombiesPresent"));
+    if (module == g_moduleZRCInfect)
+    {
+        // Set up infection interface.
+        IInfection_SetClientToZombie(GetFunctionByName(GetMyHandle(), "ZRCInfect_ClientToZombie"));
+        IInfection_SetClientToHuman(GetFunctionByName(GetMyHandle(), "ZRCInfect_ClientToHuman"));
+        IInfection_SetAreZombiesPresent(GetFunctionByName(GetMyHandle(), "ZRCInfect_AreZombiesPresent"));
+    }
 }
 
 /**
@@ -282,6 +288,10 @@ public ZRCInfect_RoundEnd()
  */
 public ZRCInfect_PlayerSpawn(client)
 {
+    // player_spawn is fired during the connection process, this is how we filter it out.
+    if (!Util_IsClientOnTeam(client))
+        return;
+    
     // Automatically turn a client into a zombie or human depending on their virtual team.
     if (TLib_IsClientZombie(client))
     {

@@ -29,6 +29,8 @@ public <FuncPrefix>_OnEventsRegister()
 
 /**
  * Called when a game mode is shutting down right before <FuncPrefix>_OnMyCoreActivate.
+ * 
+ * @param module    The core module being shut down.
  */
 public <FuncPrefix>_OnMyCoreShutdown(Module:module)
 {
@@ -36,7 +38,9 @@ public <FuncPrefix>_OnMyCoreShutdown(Module:module)
 
 /**
  * Called when a game mode is activating.
+ * 
+ * @param module    The core module being activated.
  */
-public <FuncPrefix>_OnMyCoreActivate()
+public <FuncPrefix>_OnMyCoreActivate(Module:module)
 {
 }

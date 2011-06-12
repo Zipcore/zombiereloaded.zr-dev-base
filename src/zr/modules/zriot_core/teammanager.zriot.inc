@@ -74,7 +74,7 @@ public ZRiotTM_OnEventsRegister()
     
     #if defined PROJECT_GAME_CSS
     
-    EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_RoundStart",                 "ZRiotTM_RoundStart");
+    EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_RoundEnd",                   "ZRiotTM_RoundEnd");
     EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_PlayerTeamPre",              "ZRiotTM_PlayerTeamPre");
     EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_PlayerTeam",                 "ZRiotTM_PlayerTeam");
     EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_PlayerSpawn",                "ZRiotTM_PlayerSpawn");
@@ -126,7 +126,6 @@ public ZRiotTM_OnClientPutInServer(client)
  */
 public ZRiotTM_OnClientInfected(client, attacker, bool:mzombie)
 {
-    Util_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Zombie));
 }
 
 /**
@@ -136,19 +135,19 @@ public ZRiotTM_OnClientInfected(client, attacker, bool:mzombie)
  */
 public ZRiotTM_OnClientHuman(client)
 {
-    Util_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Human));
 }
 
 #if defined PROJECT_GAME_CSS
 
 /**
- * Round has started.
+ * Round has ended.
  */
-public ZRiotTM_RoundStart()
+public ZRiotTM_RoundEnd()
 {
     // Update the zombie team every round start.
     // This shouldn't be updated real-time with the cvar, or else zombies would be on both teams during the round.
     ZRiotTM_UpdateZombieTeam();
+    TLib_UpdateClientTeams();
 }
 
 
@@ -165,7 +164,9 @@ public ZRiotTM_RoundStart()
 public Action:ZRiotTM_PlayerTeamPre(client, team, oldteam, bool:disconnect)
 {
     // Prevent this from being broadcasted to clients.
-    return Plugin_Handled;
+    if (!disconnect && team > TEAM_1)
+        return Plugin_Handled;
+    return Plugin_Continue;
 }
 
 /**
@@ -178,11 +179,26 @@ public Action:ZRiotTM_PlayerTeamPre(client, team, oldteam, bool:disconnect)
  */
 public ZRiotTM_PlayerTeam(client, team, oldteam, bool:disconnect)
 {
-    if (team == TEAM_1)
-        TLib_SetClientTeam(client, VTeam_Spectator);
-    // If client isn't already in the game, then assign them to human by default.
-    else if (team > TEAM_1 && !TLib_IsClientPlaying(client))
-        TLib_SetClientTeam(client, VTeam_Human);
+    // Set the client's virtual team to the proper virtual team.
+    if (!disconnect)
+    {
+        if (team == 0)
+            TLib_SetClientTeam(client, VTeam_Unassigned);
+        else if (team == 1)
+            TLib_SetClientTeam(client, VTeam_Spectator);
+        else if (team == TLib_GetGameTeamIndex(VTeam_Zombie))
+        {
+            TLib_SetClientTeam(client, VTeam_Zombie);
+            TransMgr_PrintTextAll(false, false, MsgFormat_None, MsgType_Chat, INVALID_MODULE, false, "ZRiot join team zombies", client);
+        }
+        else if (team == TLib_GetGameTeamIndex(VTeam_Human))
+        {
+            TLib_SetClientTeam(client, VTeam_Human);
+            TransMgr_PrintTextAll(false, false, MsgFormat_None, MsgType_Chat, INVALID_MODULE, false, "ZRiot join team humans", client);
+        }
+        else
+            TLib_SetClientTeam(client, VTeam_Invalid);
+    }
 }
 
 /**

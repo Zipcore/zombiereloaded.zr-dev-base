@@ -238,12 +238,16 @@ public ZRCWeps_PlayerSpawn(client)
  */
 public Action:ZRCWeps_CanUse(client, weapon)
 {
+   #if defined PROJECT_GAME_CSS
+    
     new String:weaponentity[64];
     GetEdictClassname(weapon, weaponentity, sizeof(weaponentity));
     
     // Knife should never be restricted.
     if (StrEqual(weaponentity, "weapon_knife"))
         return Plugin_Continue;
+    
+    #endif
     
     // The flat override for stopping a client from picking up a weapon.
     if (g_bZRCWepsBlockWeapon[client])

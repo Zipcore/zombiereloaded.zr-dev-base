@@ -69,8 +69,8 @@ ZRiotStages_Register()
 public ZRiotStages_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_OnEventsReady",           "ZRiotStages_OnEventsReady");
-    EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_OnMyModuleEnable",        "ZRiotStages_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_OnEventsReady",          "ZRiotStages_OnEventsReady");
+    //EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_OnMyModuleEnable",       "ZRiotStages_OnMyModuleEnable");
     //EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_OnMyModuleDisable",       "ZRiotStages_OnMyModuleDisable");
     //EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_OnMapStart",              "ZRiotStages_OnMapStart");
     //EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_OnClientInfect",          "ZRiotStages_OnClientInfect");

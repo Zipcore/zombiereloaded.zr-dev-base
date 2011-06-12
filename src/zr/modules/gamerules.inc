@@ -581,7 +581,7 @@ stock GameRules_ApplyRuleSet(ruleSet)
     if (g_iCurGameRuleSet != -1 && GRULESET_CORE != INVALID_MODULE)
     {
         eventdata[0][0] = GRULESET_CORE;
-        EventMgr_Forward(g_EvOnMyCoreShutdown, g_CommonEventData1, sizeof(g_CommonEventData1), sizeof(g_CommonEventData1[]), g_CommonDataType2);
+        EventMgr_Forward(g_EvOnMyCoreShutdown, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
     }
     
     GetArrayArray(g_hGameRules, ruleSet, g_RuleSetCache[0], sizeof(g_RuleSetCache));
@@ -632,7 +632,7 @@ stock GameRules_ApplyRuleSet(ruleSet)
     if (GRULESET_CORE != INVALID_MODULE)
     {
         eventdata[0][0] = GRULESET_CORE;
-        EventMgr_Forward(g_EvOnMyCoreActivate, g_CommonEventData1, 0, 0, g_CommonDataType1);
+        EventMgr_Forward(g_EvOnMyCoreActivate, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
     }
 }
 

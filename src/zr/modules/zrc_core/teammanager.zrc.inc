@@ -175,7 +175,9 @@ public ZRCTM_RoundEnd()
 public Action:ZRCTM_PlayerTeamPre(client, team, oldteam, bool:disconnect)
 {
     // Prevent this from being broadcasted to clients.
-    return Plugin_Handled;
+    if (!disconnect && team > TEAM_1)
+        return Plugin_Handled;
+    return Plugin_Continue;
 }
 
 /**

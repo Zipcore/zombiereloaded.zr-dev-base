@@ -15,7 +15,7 @@
 // These are the different options for each stage:
 // "count"		- The number of zombies that need to be killed to advance to next stage.
 // "respawn"		- Whether or not zombies are respawned until the 'count' is reached, or if we stop respawning zombies when there are 'count' left alive.
-// "cfg"		- The executable .cfg file relative to cfg to execute when this stage is reached.
+// "cfg"		- The executable .cfg file relative to cfg to execute when this stage is reached.  Ignored if set to empty.
 // "zombies"		- Zombie-specific settings.
 //	"playermax"	- Max players allowed on zombie team.  If < 1.0 it will be read as a percentage of the current number of players in the server.
 //	"alivemax"	- Max alive players allowed on zombie team.  Same rule as 'playermax' for values < 1.0.

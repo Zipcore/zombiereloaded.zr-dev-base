@@ -142,6 +142,7 @@ GameRules_Register()
 public GameRules_OnEventsRegister()
 {
     // Register all the events needed for this module.
+    EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnPluginEnd",              "GameRules_OnPluginEnd");
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnEventsReady",            "GameRules_OnEventsReady");
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnModuleEnable",           "GameRules_OnModuleEnable");
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnModuleDisable",          "GameRules_OnModuleDisable");
@@ -170,6 +171,16 @@ GameRules_OnPluginStart()
     
     // Create array.
     g_hGameRules = CreateArray(sizeof(g_RuleSetCache));
+}
+
+/**
+ * Plugin is ending.
+ */
+public GameRules_OnPluginEnd()
+{
+    // Clean up data.
+    GameRules_CleanCache();
+    CloseHandle(g_hGameRules);
 }
 
 /**
@@ -242,7 +253,7 @@ public Action:GameRules_OnMyModuleDisable(String:refusalmsg[], maxlen)
     return Plugin_Handled;
 }
 
-stock CleanupGameRulesData()
+static stock GameRules_CleanCache()
 {
     // Cleanup tries in gamerules data.
     new gameRuleSet[GameRuleSet];
@@ -257,7 +268,6 @@ stock CleanupGameRulesData()
             CloseHandle(gameRuleSet[GameRuleSet_ModuleCmds]);
     }
 }
-    
 
 /**
  * Loops through each section of the keyvalues tree.
@@ -297,18 +307,23 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
     {
         decl String:name[MM_DATA_SHORTNAME];
         decl String:strFilePath[PLATFORM_MAX_PATH];
-        KvGotoFirstSubKey(kv, false);
-        do
+        if (KvGotoFirstSubKey(kv, false))
         {
-            KvGetSectionName(kv, name, sizeof(name));
-            KvGoBack(kv);
-            KvGetString(kv, name, strFilePath, sizeof(strFilePath));
-            KvJumpToKey(kv, name);
-            
-            if (!SetTrieString(gameRuleSet[GameRuleSet_Configs], name, strFilePath, false))
-                LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Duplicate entry in ruleset \"%s\" section \"configs\": \"%s\"", sectionname, name);
-        } while (KvGotoNextKey(kv, false));
-        KvGoBack(kv);   // Go back to 2nd level.
+            do
+            {
+                KvGetSectionName(kv, name, sizeof(name));
+                KvGoBack(kv);
+                KvGetString(kv, name, strFilePath, sizeof(strFilePath));
+                KvJumpToKey(kv, name);
+                
+                if (!SetTrieString(gameRuleSet[GameRuleSet_Configs], name, strFilePath, false))
+                {
+                    LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Duplicate entry in ruleset \"%s\" section \"configs\": \"%s\".  The plugin had to break, meaning config paths defined after this one are ignored.", sectionname, name);
+                    break;
+                }
+            } while (KvGotoNextKey(kv, false));
+            KvGoBack(kv);   // Go back to 2nd level.
+        }
         
         // Go back to 1st level.
         KvGoBack(kv);
@@ -385,7 +400,7 @@ GameRules_CacheGameRulesData()
         return;
     }
     
-    CleanupGameRulesData();
+    GameRules_CleanCache();
     ClearArray(g_hGameRules);
     g_iGameRuleCount = ConfigMgr_CacheKv(g_moduleGameRules, CM_CONFIGINDEX_FIRST, "GameRules_Cache");
     
@@ -401,7 +416,7 @@ GameRules_CacheGameRulesData()
  */
 stock bool:GameRules_IsConfigCached()
 {
-    return (GetArraySize(g_hGameRules) > 0);
+    return (g_iGameRuleCount > 0);
 }
 
 /**

@@ -347,7 +347,6 @@ public KvCache:Weapons_Cache(Handle:kv, sectionindex, const String:sectionname[]
 
 /**
  * Re-cache all weapon data from disk.
- * Never use this before OnConfigsExecuted!
  * 
  * @return      True if cached successfully, false if the file couldn't be found or no usable data was inside.
  */
@@ -361,7 +360,7 @@ bool:Weapons_CacheWeaponData()
         ConfigMgr_WriteString(g_moduleWeapons, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);
     else
     {
-        LogMgr_Print(g_moduleWeapons, LogType_Fatal_Module, "Config Validation", "Invalid config file path in cvar zr_weapons_configfile: \"%s\".  Disabling module.", configfile);
+        LogMgr_Print(g_moduleWeapons, LogType_Fatal_Module, "Config Validation", "Invalid config file path defined in gamerules: \"%s\".  Disabling module.", configfile);
         return false;
     }
     

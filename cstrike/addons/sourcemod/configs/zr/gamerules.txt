@@ -55,6 +55,7 @@
 		"configs"
 		{
 			"cfg"		"sourcemod/zombiereloaded/zriot.cfg"
+			"stages"	"configs/zr/stages.txt"
 			"weapons"	"configs/zr/weapons.txt"
 		}
 

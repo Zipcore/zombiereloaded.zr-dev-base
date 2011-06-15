@@ -46,16 +46,16 @@ stock Module:ZRiotStages_GetIdentifier() { return g_moduleZRiotStages; }
  */
 enum ZRiotStage
 {
-    Stage_Count,                        // Number of zombies to kill for this stage.
-    bool:Stage_Respawn,                 // Should zombies continuously spawn with force end round when last zombie is killed
+    ZStage_Count,                        // Number of zombies to kill for this stage.
+    bool:ZStage_Respawn,                 // Should zombies continuously spawn with force end round when last zombie is killed
                                         // or will it stop respawning when the number of bots in-game is <= number of zombies to kill.
-    String:Stage_Cfg[STAGE_DATA_CFG],   // Path to config file relative to cfg/ folder.
-    Stage_ZombiePlayerMax,              // Max number of players to allow on zombie team.
-    Stage_ZombieAliveMax,               // Max number of live zombies at any moment.
-    Handle:Stage_ZombieAttributes,      // A trie containing attribute modifiers for zombies.
-    Stage_HumanPlayerMax,               // ^^ for humans.
-    Stage_HumanAliveMax,
-    Handle:Stage_HumanAttributes
+    String:ZStage_Cfg[STAGE_DATA_CFG],   // Path to config file relative to cfg/ folder.
+    ZStage_ZombiePlayerMax,              // Max number of players to allow on zombie team.
+    ZStage_ZombieAliveMax,               // Max number of live zombies at any moment.
+    Handle:ZStage_ZombieAttributes,      // A trie containing attribute modifiers for zombies.
+    ZStage_HumanPlayerMax,               // ^^ for humans.
+    ZStage_HumanAliveMax,
+    Handle:ZStage_HumanAttributes
 }
 
 /**
@@ -67,6 +67,13 @@ new Handle:g_hZRiotStageData;
  * The number of stages that are defined in the stages config file.
  */
 new g_iZRiotStageCount;
+
+/**
+ * Variable/function set to check/set if zombies are present.
+ */
+new g_iCurStageIndex;
+stock ZRiotStages_GetCurrentStage() { return g_iCurStageIndex; }
+stock ZRiotStages_SetCurrentStage(stage) { g_iCurStageIndex = stage; }
 
 /**
  * Register this module.
@@ -106,7 +113,7 @@ public ZRiotStages_OnEventsRegister()
     
     #if defined PROJECT_GAME_CSS
     
-    //EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_RoundStart",              "ZRiotStages_RoundStart");
+    EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_RoundStart",              "ZRiotStages_RoundStart");
     //EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_RoundFreezeEnd",          "ZRiotStages_RoundFreezeEnd");
     //EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_RoundEnd",                "ZRiotStages_RoundEnd");
     
@@ -162,9 +169,14 @@ public Action:ZRiotStages_OnMyModuleEnable(String:refusalmsg[], maxlen)
  */
 public ZRiotStages_OnMapStart()
 {
+    g_iCurStageIndex = 0;   // Reset current stage.
     if (!ZRiotStages_CacheData())
-        LogMgr_Print(g_moduleZRiotStages, LogType_Normal, "Config Validation", "There will be no stages in-game!");
+        LogMgr_Print(g_moduleZRiotStages, LogType_Error, "Config Validation", "Error loading stage data, there will be no stages in-game!");
 }
+
+// ---------------------------------
+//     Data storage functions
+// ---------------------------------
 
 /**
  * Check if the stage config has ever been cached.
@@ -184,11 +196,11 @@ static stock ZRiotStages_CleanCache()
     {
         GetArrayArray(g_hZRiotStageData, sindex, stagedata[0], sizeof(stagedata));
         
-        if (stagedata[Stage_ZombieAttributes] != INVALID_HANDLE)
-            CloseHandle(stagedata[Stage_ZombieAttributes]);
+        if (stagedata[ZStage_ZombieAttributes] != INVALID_HANDLE)
+            CloseHandle(stagedata[ZStage_ZombieAttributes]);
         
-        if (stagedata[Stage_HumanAttributes] != INVALID_HANDLE)
-            CloseHandle(stagedata[Stage_HumanAttributes]);
+        if (stagedata[ZStage_HumanAttributes] != INVALID_HANDLE)
+            CloseHandle(stagedata[ZStage_HumanAttributes]);
     }
 }
 
@@ -239,16 +251,16 @@ public KvCache:ZRiotStages_Cache(Handle:kv, sectionindex, const String:sectionna
     new stagedata[ZRiotStage];
     
     // Non-team-specific data.
-    stagedata[Stage_Count] = KvGetNum(kv, "count");
-    stagedata[Stage_Respawn] = bool:TransMgr_KvPhraseToBoolEx(kv, BoolPhrase_YesNo, "respawn", "yes");
-    KvGetString(kv, "cfg", stagedata[Stage_Cfg], sizeof(stagedata[Stage_Cfg]));
+    stagedata[ZStage_Count] = KvGetNum(kv, "count");
+    stagedata[ZStage_Respawn] = bool:TransMgr_KvPhraseToBoolEx(kv, BoolPhrase_YesNo, "respawn", "yes");
+    KvGetString(kv, "cfg", stagedata[ZStage_Cfg], sizeof(stagedata[ZStage_Cfg]));
     
     // Zombie data.
     if (KvJumpToKey(kv, "zombies"))
     {
-        stagedata[Stage_ZombiePlayerMax] = KvGetNum(kv, "playermax");
-        stagedata[Stage_ZombieAliveMax] = KvGetNum(kv, "alivemax");
-        stagedata[Stage_ZombieAttributes] = ZRiotStages_CacheAttributes(kv, sectionname, "zombies");
+        stagedata[ZStage_ZombiePlayerMax] = KvGetNum(kv, "playermax");
+        stagedata[ZStage_ZombieAliveMax] = KvGetNum(kv, "alivemax");
+        stagedata[ZStage_ZombieAttributes] = ZRiotStages_CacheAttributes(kv, sectionname, "zombies");
         KvGoBack(kv);  // Jump back to previous level.
     }
     else
@@ -260,9 +272,9 @@ public KvCache:ZRiotStages_Cache(Handle:kv, sectionindex, const String:sectionna
     // Human data.
     if (KvJumpToKey(kv, "humans"))
     {
-        stagedata[Stage_HumanPlayerMax] = KvGetNum(kv, "playermax");
-        stagedata[Stage_HumanAliveMax] = KvGetNum(kv, "alivemax");
-        stagedata[Stage_HumanAttributes] = ZRiotStages_CacheAttributes(kv, sectionname, "humans");
+        stagedata[ZStage_HumanPlayerMax] = KvGetNum(kv, "playermax");
+        stagedata[ZStage_HumanAliveMax] = KvGetNum(kv, "alivemax");
+        stagedata[ZStage_HumanAttributes] = ZRiotStages_CacheAttributes(kv, sectionname, "humans");
         KvGoBack(kv);  // Jump back to previous level.
     }
     else
@@ -309,3 +321,56 @@ bool:ZRiotStages_CacheData()
     
     return true;
 }
+
+/**
+ * Get a cell from stage data.  (bools, ints, handles)
+ * 
+ * @param stageindex    Index the stage data is at.
+ * @param data          The data you want to return.  See enum ZRiotStage.
+ * 
+ * @return              A cell of data.
+ */
+stock ZRiotStages_GetStageDataCell(stageindex, ZRiotStage:data)
+{
+    new stagedata[ZRiotStage];
+    GetArrayArray(g_hZRiotStageData, stageindex, stagedata[0], sizeof(stagedata));
+    
+    return _:stagedata[data];
+}
+
+/**
+ * Get a string from stage data.
+ * 
+ * @param stageindex    Index the stage data is at.
+ * @param data          The data you want to return.  Must be String type.  See enum ZRiotStage.
+ * @param output        The string to set the output string in.
+ * @param maxlen        Max length of the output.
+ */
+stock ZRiotStages_GetStageDataString(stageindex, ZRiotStage:data, String:output[], maxlen)
+{
+    new stagedata[ZRiotStage];
+    GetArrayArray(g_hZRiotStageData, stageindex, stagedata[0], sizeof(stagedata));
+    
+    strcopy(output, maxlen, String:stagedata[data]);
+}
+
+// ---------------------------------
+//              Events
+// ---------------------------------
+
+#if defined PROJECT_GAME_CSS
+
+/**
+ * Round has started.
+ */
+public ZRiotStages_RoundStart()
+{
+    // Get cfg file path and execute if it's not empty.
+    decl String:cfg[STAGE_DATA_CFG];
+    ZRiotStages_GetStageDataString(g_iCurStageIndex, ZStage_Cfg, cfg, sizeof(cfg));
+    if (cfg[0])
+        ServerCommand("exec %s", cfg);
+    
+}
+
+#endif

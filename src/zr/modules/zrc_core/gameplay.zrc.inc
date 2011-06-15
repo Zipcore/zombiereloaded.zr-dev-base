@@ -305,8 +305,10 @@ public Action:ZRCGPlay_RoundEndTimer(Handle:timer)
 
 /**
  * Round has ended.
+ * 
+ * @param winner    The index of the winning team.
  */
-public ZRCGPlay_RoundEnd()
+public ZRCGPlay_RoundEnd(winner)
 {
     // Stop round timer.
     Util_CloseHandle(g_hZRCRoundTimer);

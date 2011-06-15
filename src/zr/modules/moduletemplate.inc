@@ -266,8 +266,10 @@ public <FuncPrefix>_RoundFreezeEnd()
 
 /**
  * Round has ended.
+ * 
+ * @param winner    The index of the winning team.
  */
-public <FuncPrefix>_RoundEnd()
+public <FuncPrefix>_RoundEnd(winner)
 {
 }
 

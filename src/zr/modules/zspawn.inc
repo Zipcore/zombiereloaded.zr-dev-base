@@ -169,8 +169,10 @@ public ZSpawn_RoundFreezeEnd()
 
 /**
  * Round has ended.
+ * 
+ * @param winner    The index of the winning team.
  */
-public ZSpawn_RoundEnd()
+public ZSpawn_RoundEnd(winner)
 {
     // End the timer.
     Util_CloseHandle(g_hZSpawnTimer);

@@ -312,8 +312,10 @@ public Action:ZRiotGPlay_RoundEndTimer(Handle:timer)
 
 /**
  * Round has ended.
+ * 
+ * @param winner    The index of the winning team.
  */
-public ZRiotGPlay_RoundEnd()
+public ZRiotGPlay_RoundEnd(winner)
 {
     // Stop round timer.
     Util_CloseHandle(g_hZRiotRoundTimer);

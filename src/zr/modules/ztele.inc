@@ -300,8 +300,10 @@ public ZTele_RoundFreezeEnd()
 
 /**
  * Round has ended.
+ * 
+ * @param winner    The index of the winning team.
  */
-public ZTele_RoundEnd()
+public ZTele_RoundEnd(winner)
 {
     g_bZTeleRoundInProgress = false;
 }

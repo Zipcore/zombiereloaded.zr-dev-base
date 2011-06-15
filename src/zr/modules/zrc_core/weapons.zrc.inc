@@ -195,8 +195,10 @@ public ZRCWeps_OnClientInfected(client, attacker, bool:motherzombie)
 /**
  * Round has ended.
  * Note: This needs to be BEFORE the event that sets all clients back to human.
+ * 
+ * @param winner    The index of the winning team.
  */
-public ZRCWeps_RoundEnd()
+public ZRCWeps_RoundEnd(winner)
 {
     if (!GetConVarBool(g_hCvarZRCWepsEndEquip))
         return;

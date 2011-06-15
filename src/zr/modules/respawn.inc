@@ -136,8 +136,10 @@ public Respawn_OnClientDisconnect(client)
 
 /**
  * Round has ended.
+ * 
+ * @param winner    The index of the winning team.
  */
-public Respawn_RoundEnd()
+public Respawn_RoundEnd(winner)
 {
     for (new client = 1; client <= MaxClients; client++)
     {

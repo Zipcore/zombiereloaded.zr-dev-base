@@ -156,8 +156,10 @@ public ZRCTM_RoundStart()
 
 /**
  * Round has ended.
+ * 
+ * @param winner    The index of the winning team.
  */
-public ZRCTM_RoundEnd()
+public ZRCTM_RoundEnd(winner)
 {
     ZRCTM_BalanceTeams();
 }

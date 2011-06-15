@@ -141,8 +141,10 @@ public ZRiotTM_OnClientHuman(client)
 
 /**
  * Round has ended.
+ * 
+ * @param winner    The index of the winning team.
  */
-public ZRiotTM_RoundEnd()
+public ZRiotTM_RoundEnd(winner)
 {
     // Update the zombie team every round start.
     // This shouldn't be updated real-time with the cvar, or else zombies would be on both teams during the round.

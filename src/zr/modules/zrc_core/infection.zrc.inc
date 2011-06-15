@@ -255,8 +255,10 @@ public ZRCInfect_RoundFreezeEnd()
 
 /**
  * Round has ended.
+ * 
+ * @param winner    The index of the winning team.
  */
-public ZRCInfect_RoundEnd()
+public ZRCInfect_RoundEnd(winner)
 {
     // Stop timers.
     Util_CloseHandle(g_hMotherInfect);

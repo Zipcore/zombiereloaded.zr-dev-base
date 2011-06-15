@@ -1,13 +1,13 @@
 /*
  * ============================================================================
  *
- *  Project
+ *  SourceMod Project Base
  *
  *  File:          translationsmanager.inc
  *  Type:          Base
  *  Description:   Manages translations throughout the project.
  *
- *  Copyright (C) 2009-2010  Greyscale
+ *  Copyright (C) 2009-2011  Greyscale
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -497,10 +497,9 @@ stock TransMgr_LoadTranslations()
                 // Format a path to the file, relative to the "translations" folder.
                 Format(transfilepath, sizeof(transfilepath), "%s/%s", TM_BASE_DIR, filename);
                 LoadTranslations(transfilepath);
-                
-                LogMessage("[Translations Manager] Loaded \"%s\"", transfilepath);
             }
         }
+        LogMessage("[Translations Manager] Successfully loaded all translation files from %s", fulltransfilepath);
     #endif
     
     // Loads extra translations from the main project.inc file.

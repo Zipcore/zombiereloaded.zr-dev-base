@@ -25,6 +25,9 @@
  * ============================================================================
  */
 
+// Include libraries.
+#include "zr/libraries/teamlib"
+
 /**
  * This module's identifier.
  */
@@ -38,24 +41,43 @@ stock Module:ZRiotStages_GetIdentifier() { return g_moduleZRiotStages; }
 /**
  * Cvar handles.
  */
+new Handle:g_hCvarZRiotStagesRegress;
 
+/**
+ * Max string length values.
+ */
 #define STAGE_DATA_CFG PLATFORM_MAX_PATH
+#define STAGE_DATA_MSGS 192
+
+/**
+ * What each index in the ZStage_Messages array means.
+ */
+#define STAGE_MSGS_GLOBAL_START 0
+#define STAGE_MSGS_GLOBAL_ZWIN 1
+#define STAGE_MSGS_GLOBAL_HWIN 2
+#define STAGE_MSGS_ZOMBIE_START 3
+#define STAGE_MSGS_ZOMBIE_ZWIN 4
+#define STAGE_MSGS_ZOMBIE_HWIN 5
+#define STAGE_MSGS_HUMAN_START 6
+#define STAGE_MSGS_HUMAN_ZWIN 7
+#define STAGE_MSGS_HUMAN_HWIN 8
 
 /**
  * Data for a stage.
  */
 enum ZRiotStage
 {
-    ZStage_Count,                        // Number of zombies to kill for this stage.
-    bool:ZStage_Respawn,                 // Should zombies continuously spawn with force end round when last zombie is killed
+    Handle:ZStage_Messages,             // Messages that are printed for each stage at round start or when a round is won.
+    ZStage_Count,                       // Number of zombies to kill for this stage.
+    bool:ZStage_Respawn,                // Should zombies continuously spawn with force end round when last zombie is killed
                                         // or will it stop respawning when the number of bots in-game is <= number of zombies to kill.
-    String:ZStage_Cfg[STAGE_DATA_CFG],   // Path to config file relative to cfg/ folder.
-    ZStage_ZombiePlayerMax,              // Max number of players to allow on zombie team.
-    ZStage_ZombieAliveMax,               // Max number of live zombies at any moment.
-    Handle:ZStage_ZombieAttributes,      // A trie containing attribute modifiers for zombies.
-    ZStage_HumanPlayerMax,               // ^^ for humans.
-    ZStage_HumanAliveMax,
-    Handle:ZStage_HumanAttributes
+    String:ZStage_Cfg[STAGE_DATA_CFG],  // Path to config file relative to cfg/ folder.
+    ZStage_ZombiePlayerMax,             // Max number of players to allow on zombie team.
+    ZStage_ZombieAliveMax,              // Max number of live zombies at any moment.
+    Handle:ZStage_ZombieAttributes,     // A trie containing attribute modifiers for zombies.
+    ZStage_HumanPlayerMax,              // ^^ for humans.
+    ZStage_HumanAliveMax,               //
+    Handle:ZStage_HumanAttributes       //
 }
 
 /**
@@ -115,7 +137,7 @@ public ZRiotStages_OnEventsRegister()
     
     EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_RoundStart",              "ZRiotStages_RoundStart");
     //EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_RoundFreezeEnd",          "ZRiotStages_RoundFreezeEnd");
-    //EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_RoundEnd",                "ZRiotStages_RoundEnd");
+    EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_RoundEnd",                "ZRiotStages_RoundEnd");
     
     #endif
 }
@@ -127,6 +149,9 @@ ZRiotStages_OnPluginStart()
 {
     // Register the module.
     ZRiotStages_Register();
+    
+    // Create cvars.
+    g_hCvarZRiotStagesRegress = CreateConVar("zriot_stages_regress", "1", "Whether or not to go to the previous stage if humans lose the round.");
     
     // Create array.
     g_hZRiotStageData = CreateArray(sizeof(g_RuleSetCache));
@@ -201,6 +226,9 @@ static stock ZRiotStages_CleanCache()
         
         if (stagedata[ZStage_HumanAttributes] != INVALID_HANDLE)
             CloseHandle(stagedata[ZStage_HumanAttributes]);
+        
+        if (stagedata[ZStage_Messages] != INVALID_HANDLE)
+            CloseHandle(stagedata[ZStage_Messages]);
     }
 }
 
@@ -251,6 +279,17 @@ public KvCache:ZRiotStages_Cache(Handle:kv, sectionindex, const String:sectionna
     new stagedata[ZRiotStage];
     
     // Non-team-specific data.
+    decl String:buffer[STAGE_DATA_MSGS];
+    
+    // Store messages.
+    stagedata[ZStage_Messages] = CreateArray(STAGE_DATA_MSGS, 9);
+    KvGetString(kv, "roundstart", buffer, sizeof(buffer));
+    SetArrayString(stagedata[ZStage_Messages], STAGE_MSGS_GLOBAL_START, buffer);
+    KvGetString(kv, "zombiewin", buffer, sizeof(buffer));
+    SetArrayString(stagedata[ZStage_Messages], STAGE_MSGS_GLOBAL_ZWIN, buffer);
+    KvGetString(kv, "humanwin", buffer, sizeof(buffer));
+    SetArrayString(stagedata[ZStage_Messages], STAGE_MSGS_GLOBAL_HWIN, buffer);
+    
     stagedata[ZStage_Count] = KvGetNum(kv, "count");
     stagedata[ZStage_Respawn] = bool:TransMgr_KvPhraseToBoolEx(kv, BoolPhrase_YesNo, "respawn", "yes");
     KvGetString(kv, "cfg", stagedata[ZStage_Cfg], sizeof(stagedata[ZStage_Cfg]));
@@ -258,6 +297,14 @@ public KvCache:ZRiotStages_Cache(Handle:kv, sectionindex, const String:sectionna
     // Zombie data.
     if (KvJumpToKey(kv, "zombies"))
     {
+        // Store messages.
+        KvGetString(kv, "roundstart", buffer, sizeof(buffer));
+        SetArrayString(stagedata[ZStage_Messages], STAGE_MSGS_ZOMBIE_START, buffer);
+        KvGetString(kv, "zombiewin", buffer, sizeof(buffer));
+        SetArrayString(stagedata[ZStage_Messages], STAGE_MSGS_ZOMBIE_ZWIN, buffer);
+        KvGetString(kv, "humanwin", buffer, sizeof(buffer));
+        SetArrayString(stagedata[ZStage_Messages], STAGE_MSGS_ZOMBIE_HWIN, buffer);
+        
         stagedata[ZStage_ZombiePlayerMax] = KvGetNum(kv, "playermax");
         stagedata[ZStage_ZombieAliveMax] = KvGetNum(kv, "alivemax");
         stagedata[ZStage_ZombieAttributes] = ZRiotStages_CacheAttributes(kv, sectionname, "zombies");
@@ -272,6 +319,14 @@ public KvCache:ZRiotStages_Cache(Handle:kv, sectionindex, const String:sectionna
     // Human data.
     if (KvJumpToKey(kv, "humans"))
     {
+        // Store messages.
+        KvGetString(kv, "roundstart", buffer, sizeof(buffer));
+        SetArrayString(stagedata[ZStage_Messages], STAGE_MSGS_HUMAN_START, buffer);
+        KvGetString(kv, "zombiewin", buffer, sizeof(buffer));
+        SetArrayString(stagedata[ZStage_Messages], STAGE_MSGS_HUMAN_ZWIN, buffer);
+        KvGetString(kv, "humanwin", buffer, sizeof(buffer));
+        SetArrayString(stagedata[ZStage_Messages], STAGE_MSGS_HUMAN_HWIN, buffer);
+        
         stagedata[ZStage_HumanPlayerMax] = KvGetNum(kv, "playermax");
         stagedata[ZStage_HumanAliveMax] = KvGetNum(kv, "alivemax");
         stagedata[ZStage_HumanAttributes] = ZRiotStages_CacheAttributes(kv, sectionname, "humans");
@@ -365,12 +420,94 @@ stock ZRiotStages_GetStageDataString(stageindex, ZRiotStage:data, String:output[
  */
 public ZRiotStages_RoundStart()
 {
+    // Print round start message(s).
+    ZRiotStages_PrintStageMessage(STAGE_MSGS_GLOBAL_START);
+    ZRiotStages_PrintStageMessage(STAGE_MSGS_ZOMBIE_START);
+    ZRiotStages_PrintStageMessage(STAGE_MSGS_HUMAN_START);
+    
     // Get cfg file path and execute if it's not empty.
     decl String:cfg[STAGE_DATA_CFG];
     ZRiotStages_GetStageDataString(g_iCurStageIndex, ZStage_Cfg, cfg, sizeof(cfg));
     if (cfg[0])
         ServerCommand("exec %s", cfg);
-    
+}
+
+/**
+ * Round has ended.
+ * 
+ * @param winner    The index of the winning team.
+ */
+public ZRiotStages_RoundEnd(winner)
+{
+    new zteam = TLib_GetGameTeamIndex(VTeam_Zombie);
+    new hteam = TLib_GetGameTeamIndex(VTeam_Human);
+    if (winner == zteam) // Zombies win
+    {
+        // Print round win message(s).
+        ZRiotStages_PrintStageMessage(STAGE_MSGS_GLOBAL_ZWIN);
+        ZRiotStages_PrintStageMessage(STAGE_MSGS_ZOMBIE_ZWIN);
+        ZRiotStages_PrintStageMessage(STAGE_MSGS_HUMAN_ZWIN);
+        
+        // Check if regression is enabled.
+        if (GetConVarBool(g_hCvarZRiotStagesRegress))
+            if (g_iCurStageIndex > 0) g_iCurStageIndex--;
+    }
+    else if (winner == hteam) // Humans win
+    {
+        // Print round win message(s).
+        ZRiotStages_PrintStageMessage(STAGE_MSGS_GLOBAL_HWIN);
+        ZRiotStages_PrintStageMessage(STAGE_MSGS_ZOMBIE_HWIN);
+        ZRiotStages_PrintStageMessage(STAGE_MSGS_HUMAN_HWIN);
+        
+        // Check if they beat the final stage.
+        if (g_iCurStageIndex < g_iZRiotStageCount - 1)
+            g_iCurStageIndex++;
+        else // Humans beat the final stage.
+        {
+            // TODO
+        }
+    }
 }
 
 #endif
+
+// ---------------------------------
+//            Utilities
+// ---------------------------------
+
+/**
+ * Prints a message to the proper clients depending on message index.
+ * 
+ * @param index     ZStage_Messages array index.
+ */
+static stock ZRiotStages_PrintStageMessage(index)
+{
+    // Get the message array handle.
+    new Handle:hMessages = Handle:ZRiotStages_GetStageDataCell(g_iCurStageIndex, ZStage_Messages);
+    decl String:message[STAGE_DATA_MSGS];
+    GetArrayString(hMessages, index, message, sizeof(message));
+    if (message[0])
+    {
+        // Print to the right audience.
+        if (index >=0 && index <= 2)
+        {
+            TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, _, true, message);
+        }
+        else if (index >=3 && index <= 5)
+        {
+            for(new client = 1; client <= MaxClients; client++)
+            {
+                if (IsClientInGame(client) && TLib_GetClientTeam(client) == VTeam_Zombie)
+                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, true, message);
+            }
+        }
+        else if (index >=6 && index <= 8)
+        {
+            for(new client = 1; client <= MaxClients; client++)
+            {
+                if (IsClientInGame(client) && TLib_GetClientTeam(client) == VTeam_Human)
+                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, true, message);
+            }
+        }
+    }
+}

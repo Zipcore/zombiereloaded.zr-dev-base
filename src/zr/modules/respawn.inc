@@ -106,10 +106,10 @@ Respawn_OnPluginStart()
     Respawn_Register();
     
     // Create cvars.
-    g_hCvarRespawn = CreateConVar("zr_respawn", "0", "Players will respawn after they are killed.");
-    g_hCvarRespawnDelay = CreateConVar("zr_respawn_delay", "5", "Time player will wait after dying before they respawn.");
-    g_hCvarRespawnTeam = CreateConVar("zr_respawn_team", "zombie", "Team to respawn player on. ['zombie' = zombie team | 'human' = human team]");
-    g_hCvarRespawnZombieIfSuicide = CreateConVar("zr_respawn_zombie_if_suicide", "1", "Respawn player as a zombie if player suicides regardless of other settings.");
+    g_hCvarRespawn = Project_CreateConVar("respawn", "0", "Players will respawn after they are killed.");
+    g_hCvarRespawnDelay = Project_CreateConVar("respawn_delay", "5", "Time player will wait after dying before they respawn.");
+    g_hCvarRespawnTeam = Project_CreateConVar("respawn_team", "zombie", "Team to respawn player on. ['zombie' = zombie team | 'human' = human team]");
+    g_hCvarRespawnZombieIfSuicide = Project_CreateConVar("respawn_zombie_if_suicide", "1", "Respawn player as a zombie if player suicides regardless of other settings.");
 }
 
 /**

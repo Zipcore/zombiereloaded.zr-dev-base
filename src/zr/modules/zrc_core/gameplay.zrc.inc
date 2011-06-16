@@ -26,12 +26,6 @@
  */
 
 /**
- * TODO:
- * Unhook cvar hooks when module is disabled.
- * Waiting for SM to not error when i do this on OnPluginEnd
- */
-
-/**
  * This module's identifier.
  */
 new Module:g_moduleZRCGPlay;
@@ -77,7 +71,7 @@ public ZRCGPlay_OnEventsRegister()
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnEventsReady",             "ZRCGPlay_OnEventsReady");
     EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnMyModuleEnable",          "ZRCGPlay_OnMyModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnMyModuleDisable",         "ZRCGPlay_OnMyModuleDisable");
+    EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnMyModuleDisable",         "ZRCGPlay_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnClientDisconnect",        "ZRCGPlay_OnClientDisconnect");
     EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnMapStart",                "ZRCGPlay_OnMapStart");
     EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnClientInfected",          "ZRCGPlay_OnClientInfected");

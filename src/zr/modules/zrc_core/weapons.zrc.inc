@@ -84,9 +84,8 @@ public ZRCWeps_OnEventsRegister()
 {
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnEventsReady",              "ZRCWeps_OnEventsReady");
-    //EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnPluginEnd",                "ZRCWeps_OnPluginEnd");
     EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnMyModuleEnable",           "ZRCWeps_OnMyModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnMyModuleDisable",          "ZRCWeps_OnMyModuleDisable");
+    EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnMyModuleDisable",          "ZRCWeps_OnMyModuleDisable");
     
     #if defined PROJECT_GAME_CSS
     

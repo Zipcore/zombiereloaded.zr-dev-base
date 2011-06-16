@@ -26,12 +26,6 @@
  */
 
 /**
- * TODO:
- * Unhook cvar hooks when module is disabled.
- * Waiting for SM to not error when i do this on OnPluginEnd
- */
-
-/**
  * This module's identifier.
  */
 new Module:g_moduleZRiotGPlay;
@@ -82,7 +76,7 @@ public ZRiotGPlay_OnEventsRegister()
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnEventsReady",           "ZRiotGPlay_OnEventsReady");
     EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnMyModuleEnable",        "ZRiotGPlay_OnMyModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnMyModuleDisable",       "ZRiotGPlay_OnMyModuleDisable");
+    EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnMyModuleDisable",       "ZRiotGPlay_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnMapStart",              "ZRiotGPlay_OnMapStart");
     EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnClientDisconnect",      "ZRiotGPlay_OnClientDisconnect");
     EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnClientInfected",        "ZRiotGPlay_OnClientInfected");

@@ -26,12 +26,6 @@
  */
 
 /**
- * TODO:
- * Unhook listeners when module is disabled.
- * Waiting for SM to not error when i do this on OnPluginEnd
- */
-
-/**
  * This module's identifier.
  */
 new Module:g_moduleZRiotWeapons;
@@ -84,9 +78,8 @@ public ZRiotWeps_OnEventsRegister()
 {
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnEventsReady",         "ZRiotWeps_OnEventsReady");
-    //EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnPluginEnd",           "ZRiotWeps_OnPluginEnd");
     EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnMyModuleEnable",      "ZRiotWeps_OnMyModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnMyModuleDisable",     "ZRiotWeps_OnMyModuleDisable");
+    EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnMyModuleDisable",     "ZRiotWeps_OnMyModuleDisable");
     
     #if defined PROJECT_GAME_CSS
     

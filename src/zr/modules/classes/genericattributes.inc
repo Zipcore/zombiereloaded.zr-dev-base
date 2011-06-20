@@ -160,7 +160,8 @@ public ClsGeneric_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassAttribLoad",           "ClsGeneric_OnClassAttribLoad");
     EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassValidate",             "ClsGeneric_OnClassValidate");
     EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassAllLoaded",            "ClsGeneric_OnClassAllLoaded");
-    //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassPlayerPreload",      "ClsGeneric_OnClassPlayerPreload");
+    EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassPlayerPreload",        "ClsGeneric_OnClassPlayerPreload");
+    EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassPlayerLoad",           "ClsGeneric_OnClassPlayerLoad");
     //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassApply",              "ClsGeneric_OnClassApply");
     //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassPlayerInfect",       "ClsGeneric_OnClassPlayerInfect");
     //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassPlayerHuman",        "ClsGeneric_OnClassPlayerHuman");
@@ -351,6 +352,7 @@ public ClsGeneric_OnClassAllLoaded(classCount)
  */
 public ClsGeneric_OnClassPlayerPreload(client, classIndex)
 {
+    ClsGeneric_LoadPlayerCache(client, classIndex);
 }
 
 /**
@@ -363,94 +365,8 @@ public ClsGeneric_OnClassPlayerPreload(client, classIndex)
  */
 public ClsGeneric_OnClassPlayerLoad(client, classIndex)
 {
+    ClsGeneric_LoadPlayerCache(client, classIndex);
 }
-
-/**
- * Class attributes are applied. Attribute modules should apply their own attributes
- * on the player now.
- *
- * @param client        Client index.
- */
-public ClsGeneric_OnClassApply(client)
-{
-}
-
-/**
- * A player was infected. This event is fired AFTER class attributes are applied.
- * Attribute modules should use this event and not the infection module's event when
- * initializing zombie specific features.
- *
- * @param client        Client index.
- * @param attacker      Attacker client index.
- * @param motherZombie  Specifies whether the attacker was a mother zombie.
- */
-public ClsGeneric_OnClassPlayerInfect(client, attacker, bool:motherZombie)
-{
-}
-
-/**
- * A player was turned back into a human. This event is fired AFTER class attributes
- * are applied. Attribute modules should use this event and not the infection module's
- * event when initializing human specific features.
- *
- * @param client        Client index.
- */
-public ClsGeneric_OnClassPlayerHuman(client)
-{
-}
-
-/**
- * All modules and events have been registered by this point.  Event priority can be changed here.
- */
-public ClsGeneric_OnEventsReady()
-{
-}
-
-/**
- * The module that hooked this event callback has been enabled.
- * 
- * @return      Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
- */
-public Action:ClsGeneric_OnMyModuleEnable()
-{
-}
-
-/**
- * The module that hooked this event callback has been disabled.
- * 
- * @return      Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
- */
-public Action:ClsGeneric_OnMyModuleDisable()
-{
-    // Force enabled.
-    return Plugin_Handled;
-}
-
-/**
- * All convars are set, cvar-dependent code should use this.
- */
-public ClsGeneric_OnConfigsExecuted()
-{
-}
-
-/**
- * Client has joined the server.
- * 
- * @param client    The client index.
- */
-public ClsGeneric_ClientPutInServer(client)
-{
-}
-
-/**
- * Client is disconnecting from the server.
- * 
- * @param client    The client index.
- */
-public ClsGeneric_OnClientDisconnect(client)
-{
-}
-
 
 /**
  * Enables the specified class in the writable cache.
@@ -522,7 +438,6 @@ static ClsGeneric_LoadPlayerCache(client, classIndex, ClassCacheType:cache = Cla
             strcopy(ClassPlayerData[client][ClassAttrib_Description], CLASS_STRING_LEN, ClassGenericData2[classIndex][ClassAttrib_Description]);
         }
     }
-    
 }
 
 /**

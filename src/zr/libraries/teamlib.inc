@@ -1,0 +1,215 @@
+/*
+ * ============================================================================
+ *
+ *  Zombie:Reloaded
+ *
+ *  File:          teamlib.inc
+ *  Type:          Library
+ *  Description:   Virtual team managing API.
+ *
+ *  Copyright (C) 2009-2011  Greyscale, Richard Helgeby
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ============================================================================
+ */
+
+/**
+ * Team defines.
+ */
+#if defined PROJECT_GAME_CSS
+  #define TEAM_0 CS_TEAM_NONE
+  #define TEAM_1 CS_TEAM_SPECTATOR
+  #define TEAM_2 CS_TEAM_T
+  #define TEAM_3 CS_TEAM_CT
+#endif
+
+#if defined PROJECT_GAME_TF2
+  #define TEAM_0 _:TFTeam_Unassigned
+  #define TEAM_1 _:TFTeam_Spectator
+  #define TEAM_2 _:TFTeam_Red
+  #define TEAM_3 _:TFTeam_Blue
+#endif
+
+// Include libraries.
+#include "zr/libraries/sdktoolslib"
+#include "zr/libraries/utilities"
+
+/**
+ * Virtual teams.
+ */
+enum VTeam
+{
+    VTeam_Invalid = -1,     /** Invalid team. */
+    VTeam_Unassigned = 0,   /** Client isn't on a team. */
+    VTeam_Spectator,        /** Client is a spectator. */
+    VTeam_Zombie,           /** Client is a zombie. */
+    VTeam_Human             /** Client is a human. */
+}
+
+/**
+ * A string representation of the virtual teams.  Think cvar values or settings that specify a virtual team.
+ */
+new String:g_strTLibVTeamNames[VTeam][] = { "unassigned", "spec", "zombie", "human" };
+
+/**
+ * Global array to store each client's virtual team.
+ */
+new VTeam:g_TLibClientTeam[MAXPLAYERS + 1];
+
+/**
+ * Function to return the client's virtual team.
+ */
+stock VTeam:TLib_GetClientTeam(client) { return g_TLibClientTeam[client]; }
+
+/**
+ * Check client's virtual team via boolean return type.
+ */
+stock bool:TLib_IsClientUnassigned(client) { return (g_TLibClientTeam[client] == VTeam_Unassigned); }
+stock bool:TLib_IsClientSpectator(client) { return (g_TLibClientTeam[client] == VTeam_Spectator); }
+stock bool:TLib_IsClientZombie(client) { return (g_TLibClientTeam[client] == VTeam_Zombie); }
+stock bool:TLib_IsClientHuman(client) { return (g_TLibClientTeam[client] == VTeam_Human); }
+
+/**
+ * Check if a client is either a human or zombie.
+ * 
+ * @param client    The client index.
+ * 
+ * @return          True if client is a zombie or human, false if not.
+ */
+stock bool:TLib_IsClientPlaying(client)
+{
+    return (TLib_IsClientZombie(client) || TLib_IsClientHuman(client));
+}
+
+/**
+ * Set a client's team.
+ * 
+ * @param client    The client index.
+ * @param team      The team from enum VTeam to set.
+ */
+stock TLib_SetClientTeam(client, VTeam:team) { g_TLibClientTeam[client] = team; }
+
+/**
+ * Count clients on a specific virtual team.
+ * 
+ * @param team  The team to count clients of.
+ * @param alive Only count client if they're alive. 
+ * 
+ * @return      The number of clients on this team.  
+ */
+stock TLib_CountTeam(VTeam:team, bool:alive)
+{
+    new count;
+    for (new client = 1; client <= MaxClients; client++)
+    {
+        if (!IsClientInGame(client))
+            continue;
+        
+        // Skip dead players if they must be alive.
+        if (alive && !IsPlayerAlive(client))
+            continue;
+        
+        if (team == g_TLibClientTeam[client])
+            count++;
+    }
+    
+    return count;
+}
+
+/**
+ * Stores the game team index for a given virtual team.
+ */
+new g_iTLibGameTeamIndex[VTeam];
+
+/**
+ * Function to return the game team index for a virtual team.
+ */
+stock TLib_GetGameTeamIndex(VTeam:team) { return g_iTLibGameTeamIndex[team]; }
+
+/**
+ * Set a game team index to a virtual team.
+ * 
+ * @param client    The client index.
+ * @param team      The team from enum VTeam to set.
+ */
+stock TLib_SetGameTeamIndex(VTeam:team, teamindex) { g_iTLibGameTeamIndex[team] = teamindex; }
+
+/**
+ * Convert a game team string into a game team index.
+ * 
+ * @param teamstring    The game team string to convert to a game team index.
+ * 
+ * @return              The game team index, -1 if no team index is associated with the team string.
+ */
+stock TLib_GTeamStringToIndex(const String:teamstring[])
+{
+    #if defined PROJECT_GAME_CSS
+        if (StrEqual(teamstring, "spec", false) || StrEqual(teamstring, "spectators", false))
+            return TEAM_1;
+        else if (StrEqual(teamstring, "t", false) || StrEqual(teamstring, "terrorists", false))
+            return TEAM_2;
+        else if (StrEqual(teamstring, "ct", false) || StrEqual(teamstring, "counter-terrorists", false))
+            return TEAM_3;
+        
+        return -1;
+    #else
+        ThrowError("TLib_GTeamStringToIndex doesn't support this game");
+        return -1;
+    #endif
+}
+
+/**
+ * Convert a virtual team string into an index.
+ * 
+ * @param teamstring    The virtual team string to convert to a virtual team symbol.
+ * 
+ * @return              The virtual team index, -1 if no symbol is associated with the team string.
+ */
+stock VTeam:TLib_VTeamStringToIndex(const String:teamstring[])
+{
+    for (new vteam = 0; vteam < sizeof(g_strTLibVTeamNames); vteam++)
+    {
+        if (StrEqual(teamstring, g_strTLibVTeamNames[VTeam:vteam], false))
+            return VTeam:vteam;
+    }
+    return VTeam_Invalid;
+}
+
+/**
+ * Set a client's game team to the one bound to their virtual team.
+ * 
+ * @param client    The client index.
+ */
+stock TLib_UpdateClientTeam(client)
+{
+    // Can't switch a player to any team index lessthan 1 in any game.
+    new teamindex = g_iTLibGameTeamIndex[TLib_GetClientTeam(client)];
+    if (teamindex > 0)
+        Util_SwitchTeam(client, teamindex);
+}
+
+/**
+ * Set all clients' game teams to the one bound to their virtual team.
+ */
+stock TLib_UpdateClientTeams()
+{
+    for (new client = 1; client <= MaxClients; client++)
+    {
+        if (!IsClientInGame(client))
+            continue;
+        
+        TLib_UpdateClientTeam(client);
+    }
+}

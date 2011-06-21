@@ -304,9 +304,8 @@ public ZRCInfect_PlayerSpawn(client)
         }
         else
         {
-            // This shouldn't happen, correct their team to human and log an error.
-            TLib_SetClientTeam(client, VTeam_Human);
-            LogMgr_Print(g_moduleZRCInfect, LogType_Error, "Rogue zombies", "%N spawned as a zombie before an outbreak.  Contact the plugin developer(s).", client);
+            ZRCInfect_ClientToZombie(client, 0, true);
+            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC client to mother zombie");
         }
     }
     
@@ -366,17 +365,10 @@ public ZRCInfect_ClientToZombie(client, attacker, bool:mzombie)
         TLib_UpdateClientTeams();
     
     g_bZombiesPresent = true;
-    g_bMotherZombie[client] = mzombie;
     
-    // Forward event to all modules.
-    static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell, DataType_Cell};
-    new any:eventdata[sizeof(eventdatatypes)][1];
-    
-    eventdata[0][0] = client;
-    eventdata[1][0] = attacker;
-    eventdata[2][0] = mzombie;
-    
-    EventMgr_Forward(g_EvOnClientInfected, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    // Set to true if mzombie is true, but don't set to false if mzombie is false, because they could have been re-infected by other means.
+    if (mzombie)
+        g_bMotherZombie[client] = true;
     
     // Last thing we do because teams need to be set before this is fired.
     #if defined PROJECT_GAME_CSS
@@ -391,6 +383,16 @@ public ZRCInfect_ClientToZombie(client, attacker, bool:mzombie)
             FireEvent(hEventPlayerDeath);
         }
     #endif
+    
+    // Forward event to all modules.
+    static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell, DataType_Cell};
+    new any:eventdata[sizeof(eventdatatypes)][1];
+    
+    eventdata[0][0] = client;
+    eventdata[1][0] = attacker;
+    eventdata[2][0] = mzombie;
+    
+    EventMgr_Forward(g_EvOnClientInfected, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
 }
 
 /**
@@ -610,9 +612,7 @@ public Action:ZRCInfect_HumanCommand(client, argc)
 {
     // Check if the this core module is disabled, if so then don't do anything with it.
     if (ModuleMgr_IsDisabled(g_moduleZRCInfect))
-    {
         return Plugin_Continue;
-    }
     
     // Check if the client has permission to use this.
     if (!AccessMgr_HasAccess(client, g_moduleZRCInfect))

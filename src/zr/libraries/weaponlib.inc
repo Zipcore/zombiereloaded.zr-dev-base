@@ -37,6 +37,7 @@
 
 // Include libraries
 #include "zr/libraries/sdktoolslib"
+#include "zr/libraries/utilities"
 
 /**
  * The number of slots for weapons to be stored in.  (CS:S)

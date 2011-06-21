@@ -26,12 +26,6 @@
  */
 
 /**
- * TODO:
- * Unhook listeners when module is disabled.
- * Waiting for SM to not error when i do this on OnPluginEnd
- */
-
-/**
  * This module's identifier.
  */
 new Module:g_moduleZRCWeps;
@@ -90,13 +84,13 @@ public ZRCWeps_OnEventsRegister()
     #if defined PROJECT_GAME_CSS
     
     EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_RoundEnd",                   "ZRCWeps_RoundEnd");
-    EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_PlayerSpawn",                "ZRCWeps_PlayerSpawn");
     
     #endif
     
     // Register custom events.
     EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnClientInfected",           "ZRCWeps_OnClientInfected");
     EventMgr_RegisterEvent(g_moduleZRCWeps, "Hook_WeaponCanUse",                "ZRCWeps_CanUse");
+    EventMgr_RegisterEvent(g_moduleZRCWeps, "Hook_Spawn",                       "ZRCWeps_Spawn");
 }
 
 /**
@@ -212,22 +206,23 @@ public ZRCWeps_RoundEnd(winner)
     }
 }
 
+#endif
+
 /**
- * Client has spawned.
+ * Called BEFORE a client spawns, as opposed to the event which is after.
  * 
- * @param client    The client index.
+ * @param entity    The spawning entity.
  * 
+ * @noreturn
  */
-public ZRCWeps_PlayerSpawn(client)
+public ZRCWeps_Spawn(entity)
 {
-    if (!Util_IsClientOnTeam(client))
+    if (!Util_IsClientOnTeam(entity))
         return;
     
     // Reset block weapons flag.
-    g_bZRCWepsBlockWeapon[client] = false;
+    g_bZRCWepsBlockWeapon[entity] = false;
 }
-
-#endif
 
 /**
  * Called when a client is trying to pick up a weapon.

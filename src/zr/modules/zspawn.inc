@@ -120,8 +120,8 @@ public ZSpawn_OnMapStart()
     Util_CloseHandle(g_hZSpawnAuthCache);
     g_hZSpawnAuthCache = AuthCache_Create();
     
-    // End the timer.
-    Util_CloseHandle(g_hZSpawnTimer);
+    // Reset the timer handle.
+    g_hZSpawnTimer = INVALID_HANDLE;
 }
 
 /**
@@ -296,84 +296,6 @@ public Action:ZSpawn_SayCommand(client, argc)
 }
 
 // *********************************************************************************************
-
-// STUFF BELOW THIS IS NO LONGER PART OF ZSPAWN MODULE.  IT SHOULD BE MOVED TO RESPAWN MODULE
-// BECAUSE ITS BASICALLY JUST A RESPAWN COMMAND
-
-/**
- * Command callback: zr_zspawn_force
- * Force ZSpawn on a client.
- * 
- * @param client    The client index.
- * @param argc      Argument count.
- */
-/*
-public Action:Command_ZSpawnForce(client, argc)
-{
-    // Check if privileged.
-    if (!ZRIsClientPrivileged(client, OperationType_Generic))
-    {
-        TranslationReplyToCommand(client, "No access to command");
-        return Plugin_Handled;
-    }
-    
-    // If not enough arguments given, then stop.
-    if (argc < 1)
-    {
-        TranslationReplyToCommand(client, "ZSpawn command force syntax");
-        return Plugin_Handled;
-    }
-    
-    decl String:target[MAX_NAME_LENGTH], String:targetname[MAX_NAME_LENGTH];
-    new targets[MAXPLAYERS], bool:tn_is_ml, result;
-    
-    // Get targetname.
-    GetCmdArg(1, target, sizeof(target));
-    
-    // Find a target.
-    result = ProcessTargetString(target, client, targets, sizeof(targets), COMMAND_FILTER_DEAD, targetname, sizeof(targetname), tn_is_ml);
-        
-    // Check if there was a problem finding a client.
-    if (result <= 0)
-    {
-        ZRReplyToTargetError(client, result);
-        return Plugin_Handled;
-    }
-    
-    // Get item to give to client.
-    decl String:strZombie[4];
-    GetCmdArg(2, strZombie, sizeof(strZombie));
-    
-    // Copy value of second (optional) parameter to 'zombie'.
-    // It will be false if the parameter wasn't specified.
-    new bool:zombie = bool:StringToInt(strZombie);
-    
-    // x = Client index.
-    for (new x = 0; x < result; x++)
-    {
-        // Give client the item.
-        new bool:success = ZSpawnClient(targets[x], true, zombie);
-        
-        // Tell admin the outcome of the command if only 1 client was targetted.
-        if (result == 1)
-        {
-            if (success)
-            {
-                TranslationReplyToCommand(client, "ZSpawn command force successful", targetname);
-            }
-            else
-            {
-                TranslationReplyToCommand(client, "ZSpawn command force unsuccessful", targetname);
-            }
-        }
-    }
-    
-    // Log action to game events.
-    LogEvent(false, LogTypeOld_Normal, LOG_GAME_EVENTS, LogModule_ZSpawn, "Force ZSpawn", "Admin \"%L\" forced player(s) to spawn. (zr_zspawn_force)", client);
-    
-    return Plugin_Handled;
-}
-*/
 
 /**
  * Menu callback (zspawn_force)

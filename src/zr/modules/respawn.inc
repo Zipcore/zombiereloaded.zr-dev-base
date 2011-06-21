@@ -110,6 +110,9 @@ Respawn_OnPluginStart()
     g_hCvarRespawnDelay = Project_CreateConVar("respawn_delay", "5", "Time player will wait after dying before they respawn.");
     g_hCvarRespawnTeam = Project_CreateConVar("respawn_team", "zombie", "Team to respawn player on. ['zombie' = zombie team | 'human' = human team]");
     g_hCvarRespawnZombieIfSuicide = Project_CreateConVar("respawn_zombie_if_suicide", "1", "Respawn player as a zombie if player suicides regardless of other settings.");
+    
+    // Create commands.
+    Project_RegConsoleCmd("spawn", Respawn_Command, "Respawn a client on a given team.  Usage: <prefix>_spawn <client> <zombie|human>");
 }
 
 /**
@@ -155,6 +158,10 @@ public Respawn_RoundEnd(winner)
  */
 public Respawn_PlayerSpawn(client)
 {
+    // Reset this variable since they're alive now.
+    g_bDeathBySuicide[client] = false;
+    
+    // Kill the timer that respawns them.
     Util_CloseHandle(g_hRespawnTimer[client]);
 }
 
@@ -203,10 +210,7 @@ public Action:Respawn_Timer(Handle:timer, any:client)
     
     // If the client suicided and the cvar is enabled, they will be respawned as zombie.
     if (GetConVarBool(g_hCvarRespawnZombieIfSuicide) && g_bDeathBySuicide[client])
-    {
-        g_bDeathBySuicide[client] = false;
-        TLib_SetClientTeam(client, VTeam_Zombie);
-    }
+        TLib_SpawnOnTeam(client, VTeam_Zombie);
     else
     {
         // Update the client's virtual team with the one defined in this cvar.
@@ -218,8 +222,88 @@ public Action:Respawn_Timer(Handle:timer, any:client)
             LogMgr_Print(g_moduleRespawn, LogType_Fatal_Module, "Cvar zr_respawn_team", "Invalid value (%s) set in cvar,", respawn_team);
             return;
         }
-        TLib_SetClientTeam(client, team);
+        TLib_SpawnOnTeam(client, team);
     }
-    TLib_UpdateClientTeam(client); // Switch them to the right team and then spawn.
-    CS_RespawnPlayer(client);
+}
+
+/**
+ * Command callback: zr_(re)spawn
+ * Spawn a client on a given team.
+ * 
+ * @param client    The client index. 
+ * @param argc      The number of arguments that the server sent with the command.
+ */
+public Action:Respawn_Command(client, argc)
+{
+    // Check if the this core module is disabled, if so then don't do anything with it.
+    if (ModuleMgr_IsDisabled(g_moduleRespawn))
+        return Plugin_Continue;
+    
+    // Check if the client has permission to use this.
+    if (!AccessMgr_HasAccess(client, g_moduleRespawn))
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
+        return Plugin_Handled;
+    }
+    
+    // If not enough arguments given, then stop.
+    if (argc < 1)
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Respawn command syntax", PROJECT_CMD_PREFIX);
+        return Plugin_Handled;
+    }
+    
+    decl String:target[MAX_NAME_LENGTH], String:targetname[MAX_NAME_LENGTH];
+    new targets[MAXPLAYERS], bool:tn_is_ml, result;
+    
+    // Get targetname.
+    GetCmdArg(1, target, sizeof(target));
+    
+    // Find a target.
+    result = ProcessTargetString(target, client, targets, sizeof(targets), COMMAND_FILTER_DEAD, targetname, sizeof(targetname), tn_is_ml);
+    
+    // Check if there was a problem finding a client.
+    if (result <= 0)
+    {
+        TransMgr_ReplyToTargetError(client, result);
+        return Plugin_Handled;
+    }
+    
+    // Check optional parameters.
+    decl String:strTeam[32];
+    GetCmdArg(2, strTeam, sizeof(strTeam));
+    new VTeam:team = VTeam_Invalid;
+    if (strTeam[0])
+    {
+        team = VTeam:TLib_VTeamStringToIndex(strTeam);
+        if (team == VTeam_Invalid)
+        {
+            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Respawn command invalid team");
+            return Plugin_Handled;
+        }
+    }
+    
+    new VTeam:respawnteam;
+    for (new tindex = 0; tindex < result; tindex++)
+    {
+        // Set the variable to the team this client should respawn on.
+        if (team == VTeam_Zombie || team == VTeam_Human)
+            respawnteam = team;
+        else
+            respawnteam = TLib_GetClientTeam(targets[tindex]);
+        
+        if (respawnteam == VTeam_Zombie || respawnteam == VTeam_Human)
+        {
+            TLib_SpawnOnTeam(targets[tindex], respawnteam);
+            if (result == 1)
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Respawn command success", targets[tindex]);
+        }
+        else
+        {
+            if(result == 1)
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Respawn command fail", targets[tindex]);
+        }
+    }
+    
+    return Plugin_Handled;
 }

@@ -215,9 +215,7 @@ public ZRiotTM_PlayerSpawn(client)
     if (!Util_IsClientOnTeam(client))
         return;
     
-    // Move client the right team for their virtual team if there are zombies present.
-    if (g_bZombiesPresent)
-        TLib_UpdateClientTeam(client);
+    TLib_UpdateClientTeam(client);
 }
 
 #endif

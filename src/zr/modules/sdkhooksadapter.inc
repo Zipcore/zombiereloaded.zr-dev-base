@@ -35,12 +35,13 @@ new Module:g_moduleSDKHAdapt;
 /**
  * Event ID variables.
  */
-new ProjectEvent:g_EvPreThinkPost;
-new ProjectEvent:g_EvTraceAttack;
-new ProjectEvent:g_EvOnTakeDamage;
-new ProjectEvent:g_EvWeaponCanUse;
-new ProjectEvent:g_EvWeaponEquip;
-new ProjectEvent:g_EvWeaponDrop;
+new ProjectEvent:g_HkSpawn;
+new ProjectEvent:g_HkPreThinkPost;
+new ProjectEvent:g_HkTraceAttack;
+new ProjectEvent:g_HkOnTakeDamage;
+new ProjectEvent:g_HkWeaponCanUse;
+new ProjectEvent:g_HkWeaponEquip;
+new ProjectEvent:g_HkWeaponDrop;
 
 /**
  * Register this module.
@@ -62,15 +63,16 @@ SDKHAdapt_Register()
     
     // Create custom events.
     
-    g_EvPreThinkPost =      EventMgr_CreateEvent("Hook_PreThinkPost");
-    g_EvTraceAttack =       EventMgr_CreateEvent("Hook_TraceAttack");
-    g_EvOnTakeDamage =      EventMgr_CreateEvent("Hook_OnTakeDamage");
-    g_EvWeaponCanUse =      EventMgr_CreateEvent("Hook_WeaponCanUse");
-    g_EvWeaponEquip =       EventMgr_CreateEvent("Hook_WeaponEquip");
-    g_EvWeaponDrop =        EventMgr_CreateEvent("Hook_WeaponDrop");
+    g_HkSpawn =             EventMgr_CreateEvent("Hook_Spawn");
+    g_HkPreThinkPost =      EventMgr_CreateEvent("Hook_PreThinkPost");
+    g_HkTraceAttack =       EventMgr_CreateEvent("Hook_TraceAttack");
+    g_HkOnTakeDamage =      EventMgr_CreateEvent("Hook_OnTakeDamage");
+    g_HkWeaponCanUse =      EventMgr_CreateEvent("Hook_WeaponCanUse");
+    g_HkWeaponEquip =       EventMgr_CreateEvent("Hook_WeaponEquip");
+    g_HkWeaponDrop =        EventMgr_CreateEvent("Hook_WeaponDrop");
     
     // Register the OnEventsRegister event to register all events in it.
-    EventMgr_RegisterEvent(g_moduleSDKHAdapt, "Event_OnEventsRegister",      "SDKHAdapt_OnEventsRegister");
+    EventMgr_RegisterEvent(g_moduleSDKHAdapt, "Event_OnEventsRegister",         "SDKHAdapt_OnEventsRegister");
 }
 
 /**
@@ -110,6 +112,7 @@ public Action:SDKHAdapt_OnMyModuleEnable()
         if (!IsClientInGame(client))
             continue;
         
+        SDKHook(client, SDKHook_Spawn, SDKHAdapt_Spawn);
         SDKHook(client, SDKHook_PreThinkPost, SDKHAdapt_PreThinkPost);
         SDKHook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
         SDKHook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
@@ -137,6 +140,7 @@ public Action:SDKHAdapt_OnMyModuleDisable()
         if (!IsClientInGame(client))
             continue;
         
+        SDKUnhook(client, SDKHook_Spawn, SDKHAdapt_Spawn);
         SDKUnhook(client, SDKHook_PreThinkPost, SDKHAdapt_PreThinkPost);
         SDKUnhook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
         SDKUnhook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
@@ -155,6 +159,7 @@ public Action:SDKHAdapt_OnMyModuleDisable()
  */
 public SDKHAdapt_OnClientPutInServer(client)
 {
+    SDKHook(client, SDKHook_Spawn, SDKHAdapt_Spawn);
     SDKHook(client, SDKHook_PreThinkPost, SDKHAdapt_PreThinkPost);
     SDKHook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
     SDKHook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
@@ -170,12 +175,30 @@ public SDKHAdapt_OnClientPutInServer(client)
  */
 public SDKHAdapt_OnClientDisconnect(client)
 {
+    SDKUnhook(client, SDKHook_Spawn, SDKHAdapt_Spawn);
     SDKUnhook(client, SDKHook_PreThinkPost, SDKHAdapt_PreThinkPost);
     SDKUnhook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
     SDKUnhook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
     SDKUnhook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
     SDKUnhook(client, SDKHook_WeaponEquip, SDKHAdapt_WeaponEquip);
     SDKUnhook(client, SDKHook_WeaponDrop, SDKHAdapt_WeaponDrop);
+}
+
+/**
+ * Called BEFORE a client spawns, as opposed to the event which is after.
+ * 
+ * @param entity    The spawning entity.
+ * 
+ * @noreturn
+ */
+public SDKHAdapt_Spawn(entity)
+{
+    // Forward event to all modules.
+    new any:eventdata[1][1];
+    
+    eventdata[0][0] = entity;
+    
+    EventMgr_Forward(g_HkSpawn, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
 }
 
 /**
@@ -192,7 +215,7 @@ public SDKHAdapt_PreThinkPost(client)
     
     eventdata[0][0] = client;
     
-    EventMgr_Forward(g_EvPreThinkPost, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+    EventMgr_Forward(g_HkPreThinkPost, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
 }
 
 /**
@@ -222,7 +245,7 @@ public Action:SDKHAdapt_TraceAttack(victim, &attacker, &inflictor, &Float:damage
     eventdata[2][0] = damage;
     eventdata[3][0] = damagetype;
     
-    new Action:result = EventMgr_Forward(g_EvTraceAttack, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    new Action:result = EventMgr_Forward(g_HkTraceAttack, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
     
     // Copy event data back to this hook's variables, to let the engine use the new values.
     victim = eventdata[0][0];
@@ -257,7 +280,7 @@ public Action:SDKHAdapt_OnTakeDamage(victim, &attacker, &inflictor, &Float:damag
     eventdata[2][0] = damage;
     eventdata[3][0] = damagetype;
     
-    new Action:result = EventMgr_Forward(g_EvOnTakeDamage, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    new Action:result = EventMgr_Forward(g_HkOnTakeDamage, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
     
     // Copy event data back to this hook's variables, to let the engine use the new values.
     victim = eventdata[0][0];
@@ -285,7 +308,7 @@ public Action:SDKHAdapt_WeaponCanUse(client, weapon)
     eventdata[0][0] = client;
     eventdata[1][0] = weapon;
     
-    return EventMgr_Forward(g_EvWeaponCanUse, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    return EventMgr_Forward(g_HkWeaponCanUse, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
 }
 
 /**
@@ -305,7 +328,7 @@ public Action:SDKHAdapt_WeaponEquip(client, weapon)
     eventdata[0][0] = client;
     eventdata[1][0] = weapon;
     
-    return EventMgr_Forward(g_EvWeaponEquip, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    return EventMgr_Forward(g_HkWeaponEquip, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
 }
 
 /**
@@ -325,5 +348,5 @@ public Action:SDKHAdapt_WeaponDrop(client, weapon)
     eventdata[0][0] = client;
     eventdata[1][0] = weapon;
     
-    return EventMgr_Forward(g_EvWeaponDrop, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    return EventMgr_Forward(g_HkWeaponDrop, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
 }

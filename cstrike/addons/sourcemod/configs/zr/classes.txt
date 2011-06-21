@@ -16,7 +16,8 @@
 //
 // SHORT DESCRIPTIONS
 //
-// Section name: Unique user defined name to identify the class.
+// Section name: Unique user defined name to identify the class. The name is
+//               case insensitive.
 //
 // Attribute:               Values:     Description:
 // ----------------------------------------------------------------------------
@@ -99,30 +100,30 @@
         "alpha_max_dist"        "0"
         
         // Hud
-        "overlay_path"          "overlays/zr/zvision"
-        "nvgs"                  "no"
-        "fov"                   "90"
+        //"overlay_path"          "overlays/zr/zvision"
+        //"nvgs"                  "no"
+        //"fov"                   "90"
         
         // Effects
-        "has_napalm"            "no"
-        "napalm_time"           "10.0"
+        //"has_napalm"            "no"
+        //"napalm_time"           "10.0"
         
         // Player behaviour
-        "immunity_mode"         "0"
-        "immunity_amount"       "0.0"
-        "no_fall_damage"        "yes"
-        "weapon_profile"        ""
+        //"immunity_mode"         "0"
+        //"immunity_amount"       "0.0"
+        //"no_fall_damage"        "yes"
+        //"weapon_profile"        ""
         
-        "health"                "1000"
-        "health_regen_interval" "0.0"
-        "health_regen_amount"   "0"
-        "health_infect_gain"    "700"
-        "kill_bonus"            "2"
+        //"health"                "1000"
+        //"health_regen_interval" "0.0"
+        //"health_regen_amount"   "0"
+        //"health_infect_gain"    "700"
+        //"kill_bonus"            "2"
         
-        "speed"                 "75"
-        "knockback"             "4"
-        "jump_height"           "1.1"
-        "jump_distance"         "1.2"
+        //"speed"                 "75"
+        //"knockback"             "4"
+        //"jump_height"           "1.1"
+        //"jump_distance"         "1.2"
     }
     
     "zombie_fast"
@@ -152,30 +153,30 @@
         "alpha_max_dist"        "0"
         
         // Hud
-        "overlay_path"          "overlays/zr/zvision"
-        "nvgs"                  "no"
-        "fov"                   "90"
+        //"overlay_path"          "overlays/zr/zvision"
+        //"nvgs"                  "no"
+        //"fov"                   "90"
         
         // Effects
-        "has_napalm"            "no"
-        "napalm_time"           "5.0"
+        //"has_napalm"            "no"
+        //"napalm_time"           "5.0"
         
         // Player behaviour
-        "immunity_mode"         "0"
-        "immunity_amount"       "0.0"
-        "no_fall_damage"        "yes"
-        "weapon_profile"        ""
+        //"immunity_mode"         "0"
+        //"immunity_amount"       "0.0"
+        //"no_fall_damage"        "yes"
+        //"weapon_profile"        ""
         
-        "health"                "750"
-        "health_regen_interval" "0.0"
-        "health_regen_amount"   "0"
-        "health_infect_gain"    "500"
-        "kill_bonus"            "2"
+        //"health"                "750"
+        //"health_regen_interval" "0.0"
+        //"health_regen_amount"   "0"
+        //"health_infect_gain"    "500"
+        //"kill_bonus"            "2"
         
-        "speed"                 "100"
-        "knockback"             "4.5"
-        "jump_height"           "1.3"
-        "jump_distance"         "1.2"
+        //"speed"                 "100"
+        //"knockback"             "4.5"
+        //"jump_height"           "1.3"
+        //"jump_distance"         "1.2"
     }
     
     "zombie_mutated"
@@ -205,30 +206,30 @@
         "alpha_max_dist"        "0"
         
         // Hud
-        "overlay_path"          "overlays/zr/zvision"
-        "nvgs"                  "no"
-        "fov"                   "90"
+        //"overlay_path"          "overlays/zr/zvision"
+        //"nvgs"                  "no"
+        //"fov"                   "90"
         
         // Effects
-        "has_napalm"            "no"
-        "napalm_time"           "15.0"
+        //"has_napalm"            "no"
+        //"napalm_time"           "15.0"
         
         // Player behaviour
-        "immunity_mode"         "0"
-        "immunity_amount"       "0.0"
-        "no_fall_damage"        "yes"
-        "weapon_profile"        ""
+        //"immunity_mode"         "0"
+        //"immunity_amount"       "0.0"
+        //"no_fall_damage"        "yes"
+        //"weapon_profile"        ""
         
-        "health"                "1300"
-        "health_regen_interval" "0.0"
-        "health_regen_amount"   "0"
-        "health_infect_gain"    "850"
-        "kill_bonus"            "2"
+        //"health"                "1300"
+        //"health_regen_interval" "0.0"
+        //"health_regen_amount"   "0"
+        //"health_infect_gain"    "850"
+        //"kill_bonus"            "2"
         
-        "speed"                 "-25"
-        "knockback"             "4.5"
-        "jump_height"           "1.3"
-        "jump_distance"         "1.3"
+        //"speed"                 "-25"
+        //"knockback"             "4.5"
+        //"jump_height"           "1.3"
+        //"jump_distance"         "1.3"
     }
     
     "zombie_heavy"
@@ -258,30 +259,30 @@
         "alpha_max_dist"        "0"
         
         // Hud
-        "overlay_path"          "overlays/zr/zvision"
-        "nvgs"                  "no"
-        "fov"                   "90"
+        //"overlay_path"          "overlays/zr/zvision"
+        //"nvgs"                  "no"
+        //"fov"                   "90"
         
         // Effects
-        "has_napalm"            "no"
-        "napalm_time"           "20.0"
+        //"has_napalm"            "no"
+        //"napalm_time"           "20.0"
         
         // Player behaviour
-        "immunity_mode"         "0"
-        "immunity_amount"       "0.0"
-        "no_fall_damage"        "yes"
-        "weapon_profile"        ""
+        //"immunity_mode"         "0"
+        //"immunity_amount"       "0.0"
+        //"no_fall_damage"        "yes"
+        //"weapon_profile"        ""
         
-        "health"                "2000"
-        "health_regen_interval" "0.0"
-        "health_regen_amount"   "0"
-        "health_infect_gain"    "1000"
-        "kill_bonus"            "2"
+        //"health"                "2000"
+        //"health_regen_interval" "0.0"
+        //"health_regen_amount"   "0"
+        //"health_infect_gain"    "1000"
+        //"kill_bonus"            "2"
         
-        "speed"                 "-20"
-        "knockback"             "2.5"
-        "jump_height"           "0.9"
-        "jump_distance"         "0.9"
+        //"speed"                 "-20"
+        //"knockback"             "2.5"
+        //"jump_height"           "0.9"
+        //"jump_distance"         "0.9"
     }
     
     "mother_zombie"
@@ -311,30 +312,30 @@
         "alpha_max_dist"        "0"
         
         // Hud
-        "overlay_path"          "overlays/zr/zvision"
-        "nvgs"                  "no"
-        "fov"                   "110"
+        //"overlay_path"          "overlays/zr/zvision"
+        //"nvgs"                  "no"
+        //"fov"                   "110"
         
         // Effects
-        "has_napalm"            "0"
-        "napalm_time"           "5.0"
+        //"has_napalm"            "0"
+        //"napalm_time"           "5.0"
         
         // Player behaviour
-        "immunity_mode"         "0"
-        "immunity_amount"       "0.0"
-        "no_fall_damage"        "yes"
-        "weapon_profile"        ""
+        //"immunity_mode"         "0"
+        //"immunity_amount"       "0.0"
+        //"no_fall_damage"        "yes"
+        //"weapon_profile"        ""
         
-        "health"                "2000"
-        "health_regen_interval" "0.25"
-        "health_regen_amount"   "10"
-        "health_infect_gain"    "700"
-        "kill_bonus"            "4"
+        //"health"                "2000"
+        //"health_regen_interval" "0.25"
+        //"health_regen_amount"   "10"
+        //"health_infect_gain"    "700"
+        //"kill_bonus"            "4"
         
-        "speed"                 "110"
-        "knockback"             "2.5"
-        "jump_height"           "1.2"
-        "jump_distance"         "1.3"
+        //"speed"                 "110"
+        //"knockback"             "2.5"
+        //"jump_height"           "1.2"
+        //"jump_distance"         "1.3"
     }
     
     "mother_zombie_admin"
@@ -364,30 +365,30 @@
         "alpha_max_dist"        "0"
         
         // Hud
-        "overlay_path"          "overlays/zr/zvision"
-        "nvgs"                  "no"
-        "fov"                   "110"
+        //"overlay_path"          "overlays/zr/zvision"
+        //"nvgs"                  "no"
+        //"fov"                   "110"
         
         // Effects
-        "has_napalm"            "no"
-        "napalm_time"           "3.0"
+        //"has_napalm"            "no"
+        //"napalm_time"           "3.0"
         
         // Player behaviour
-        "immunity_mode"         "0"
-        "immunity_amount"       "0.0"
-        "no_fall_damage"        "yes"
-        "weapon_profile"        ""
+        //"immunity_mode"         "0"
+        //"immunity_amount"       "0.0"
+        //"no_fall_damage"        "yes"
+        //"weapon_profile"        ""
         
-        "health"                "3000"
-        "health_regen_interval" "0.25"
-        "health_regen_amount"   "10"
-        "health_infect_gain"    "700"
-        "kill_bonus"            "1"
+        //"health"                "3000"
+        //"health_regen_interval" "0.25"
+        //"health_regen_amount"   "10"
+        //"health_infect_gain"    "700"
+        //"kill_bonus"            "1"
         
-        "speed"                 "115"
-        "knockback"             "2.3"
-        "jump_height"           "1.2"
-        "jump_distance"         "1.3"
+        //"speed"                 "115"
+        //"knockback"             "2.3"
+        //"jump_height"           "1.2"
+        //"jump_distance"         "1.3"
     }
     
     // ------------------------------------------
@@ -423,30 +424,30 @@
         "alpha_max_dist"        "0"
         
         // Hud
-        "overlay_path"          ""
-        "nvgs"                  "no"
-        "fov"                   "90"
+        //"overlay_path"          ""
+        //"nvgs"                  "no"
+        //"fov"                   "90"
         
         // Effects
-        "has_napalm"            "yes"
-        "napalm_time"           "0.0"
+        //"has_napalm"            "yes"
+        //"napalm_time"           "0.0"
         
         // Player behaviour
-        "immunity_mode"         "0"
-        "immunity_amount"       "0.0"
-        "no_fall_damage"        "no"
-        "weapon_profile"        "default"
+        //"immunity_mode"         "0"
+        //"immunity_amount"       "0.0"
+        //"no_fall_damage"        "no"
+        //"weapon_profile"        "default"
         
-        "health"                "100"
-        "health_regen_interval" "0.0"
-        "health_regen_amount"   "0"
-        "health_infect_gain"    "0"
-        "kill_bonus"            "2"
+        //"health"                "100"
+        //"health_regen_interval" "0.0"
+        //"health_regen_amount"   "0"
+        //"health_infect_gain"    "0"
+        //"kill_bonus"            "2"
         
-        "speed"                 "0"
-        "knockback"             "0"
-        "jump_height"           "1.0"
-        "jump_distance"         "1.0"
+        //"speed"                 "0"
+        //"knockback"             "0"
+        //"jump_height"           "1.0"
+        //"jump_distance"         "1.0"
     }
     
     "human_vip"
@@ -476,30 +477,30 @@
         "alpha_max_dist"        "0"
         
         // Hud
-        "overlay_path"          ""
-        "nvgs"                  "no"
-        "fov"                   "90"
+        //"overlay_path"          ""
+        //"nvgs"                  "no"
+        //"fov"                   "90"
         
         // Effects
-        "has_napalm"            "yes"
-        "napalm_time"           "0.0"
+        //"has_napalm"            "yes"
+        //"napalm_time"           "0.0"
         
         // Player behaviour
-        "immunity_mode"         "0"
-        "immunity_amount"       "0.0"
-        "no_fall_damage"        "yes"
-        "weapon_profile"        "default"
+        //"immunity_mode"         "0"
+        //"immunity_amount"       "0.0"
+        //"no_fall_damage"        "yes"
+        //"weapon_profile"        "default"
         
-        "health"                "200"
-        "health_regen_interval" "1.0"
-        "health_regen_amount"   "10"
-        "health_infect_gain"    "0"
-        "kill_bonus"            "1"
+        //"health"                "200"
+        //"health_regen_interval" "1.0"
+        //"health_regen_amount"   "10"
+        //"health_infect_gain"    "0"
+        //"kill_bonus"            "1"
         
-        "speed"                 "25"
-        "knockback"             "0"
-        "jump_height"           "1.2"
-        "jump_distance"         "1.2"
+        //"speed"                 "25"
+        //"knockback"             "0"
+        //"jump_height"           "1.2"
+        //"jump_distance"         "1.2"
     }
     
     "human_admin"
@@ -529,30 +530,30 @@
         "alpha_max_dist"        "0"
         
         // Hud
-        "overlay_path"          ""
-        "nvgs"                  "no"
-        "fov"                   "90"
+        //"overlay_path"          ""
+        //"nvgs"                  "no"
+        //"fov"                   "90"
         
         // Effects
-        "has_napalm"            "yes"
-        "napalm_time"           "0.0"
+        //"has_napalm"            "yes"
+        //"napalm_time"           "0.0"
         
         // Player behaviour
-        "immunity_mode"         "0"
-        "immunity_amount"       "0.0"
-        "no_fall_damage"        "yes"
-        "weapon_profile"        "default"
+        //"immunity_mode"         "0"
+        //"immunity_amount"       "0.0"
+        //"no_fall_damage"        "yes"
+        //"weapon_profile"        "default"
         
-        "health"                "200"
-        "health_regen_interval" "1.0"
-        "health_regen_amount"   "10"
-        "health_infect_gain"    "0"
-        "kill_bonus"            "1"
+        //"health"                "200"
+        //"health_regen_interval" "1.0"
+        //"health_regen_amount"   "10"
+        //"health_infect_gain"    "0"
+        //"kill_bonus"            "1"
         
-        "speed"                 "25"
-        "knockback"             "0"
-        "jump_height"           "1.2"
-        "jump_distance"         "1.2"
+        //"speed"                 "25"
+        //"knockback"             "0"
+        //"jump_height"           "1.2"
+        //"jump_distance"         "1.2"
     }
     
     "human_speedy"
@@ -582,30 +583,30 @@
         "alpha_max_dist"        "0"
         
         // Hud
-        "overlay_path"          ""
-        "nvgs"                  "no"
-        "fov"                   "90"
+        //"overlay_path"          ""
+        //"nvgs"                  "no"
+        //"fov"                   "90"
         
         // Effects
-        "has_napalm"            "no"
-        "napalm_time"           "0.0"
+        //"has_napalm"            "no"
+        //"napalm_time"           "0.0"
         
         // Player behaviour
-        "immunity_mode"         "0"
-        "immunity_amount"       "0.0"
-        "no_fall_damage"        "no"
-        "weapon_profile"        "default"
+        //"immunity_mode"         "0"
+        //"immunity_amount"       "0.0"
+        //"no_fall_damage"        "no"
+        //"weapon_profile"        "default"
         
-        "health"                "100"
-        "health_regen_interval" "0.0"
-        "health_regen_amount"   "0"
-        "health_infect_gain"    "0"
-        "kill_bonus"            "1"
+        //"health"                "100"
+        //"health_regen_interval" "0.0"
+        //"health_regen_amount"   "0"
+        //"health_infect_gain"    "0"
+        //"kill_bonus"            "1"
         
-        "speed"                 "50"
-        "knockback"             "0"
-        "jump_height"           "1.0"
-        "jump_distance"         "1.0"
+        //"speed"                 "50"
+        //"knockback"             "0"
+        //"jump_height"           "1.0"
+        //"jump_distance"         "1.0"
     }
     
     "human_light"
@@ -635,29 +636,29 @@
         "alpha_max_dist"        "0"
         
         // Hud
-        "overlay_path"          ""
-        "nvgs"                  "no"
-        "fov"                   "90"
+        //"overlay_path"          ""
+        //"nvgs"                  "no"
+        //"fov"                   "90"
         
         // Effects
-        "has_napalm"            "yes"
-        "napalm_time"           "0.0"
+        //"has_napalm"            "yes"
+        //"napalm_time"           "0.0"
         
         // Player behaviour
-        "immunity_mode"         "0"
-        "immunity_amount"       "0.0"
-        "no_fall_damage"        "yes"
-        "weapon_profile"        "default"
+        //"immunity_mode"         "0"
+        //"immunity_amount"       "0.0"
+        //"no_fall_damage"        "yes"
+        //"weapon_profile"        "default"
         
-        "health"                "100"
-        "health_regen_interval" "0.0"
-        "health_regen_amount"   "0"
-        "health_infect_gain"    "0"
-        "kill_bonus"            "1"
+        //"health"                "100"
+        //"health_regen_interval" "0.0"
+        //"health_regen_amount"   "0"
+        //"health_infect_gain"    "0"
+        //"kill_bonus"            "1"
         
-        "speed"                 "0"
-        "knockback"             "0"
-        "jump_height"           "1.3"
-        "jump_distance"         "1.3"
+        //"speed"                 "0"
+        //"knockback"             "0"
+        //"jump_height"           "1.3"
+        //"jump_distance"         "1.3"
     }
 }

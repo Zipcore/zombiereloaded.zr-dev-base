@@ -138,11 +138,6 @@ new ProjectEvent:g_EvOnClassPlayerHuman;
  */
 
 /**
- * Function cache for API functions that this module use.
- */
-new Function:ClsMgr_GetDisplayNameFunc;
-
-/**
  * Cvar handles.
  */
 new Handle:g_hCvarClassFile;
@@ -150,7 +145,7 @@ new Handle:g_hCvarClassesMenuSpawn;
 new Handle:g_hCvarClassesMenuJoin;
 new Handle:g_hCvarClassesRandom;
 new Handle:g_hCvarClassesChangeTimelimit;
-//new Handle:g_hCvarClassesSave;
+new Handle:g_hCvarClassesSave;
 new Handle:g_hCvarClassesDefaultZombie;
 //new Handle:g_hCvarClassesDefaultMZombie;
 new Handle:g_hCvarClassesDefaultHuman;
@@ -231,9 +226,9 @@ static ClassDefaultClass[ClassTeam];
 /**
  * Specifies whether a player is allowed to change class with instant effect.
  * This is only used on human classes, and in combination with the
- * zr_classes_change_timelimit time limit, but could be used other places too.
- * The class menu will automatically check this setting and apply attributes if
- * set to true.
+ * zr_classes_change_timelimit cvar, but could be used other places too. The
+ * class menu will automatically check this setting and apply attributes if set
+ * to true.
  */
 new bool:g_ClassAllowInstantChange[MAXPLAYERS + 1];
 
@@ -243,10 +238,19 @@ new bool:g_ClassAllowInstantChange[MAXPLAYERS + 1];
 new Handle:g_hClassInstantChange[MAXPLAYERS + 1];
 
 /**
- * Specifies whether a player has spawned at least once, to check when a player
- * spawn for the first time.
+ * Specifies whether a player's next spawn will be the first one on the map.
  */
-new bool:g_ClassPlayerSpawned[MAXPLAYERS + 1];
+new bool:g_ClassFirstSpawn[MAXPLAYERS + 1];
+
+/**
+ * Stores whether the player has manually changed class since connecting.
+ */
+new bool:g_ClassChangedByPlayer[MAXPLAYERS + 1][ClassTeam];
+
+/**
+ * Trie handle to class name index.
+ */
+new Handle:g_hClassNameIndex;
 
 
 /**
@@ -331,9 +335,6 @@ ClassMgr_Register()
     g_EvOnClassPlayerInfect =       EventMgr_CreateEvent("Event_OnClassPlayerInfect");
     g_EvOnClassPlayerHuman =        EventMgr_CreateEvent("Event_OnClassPlayerHuman");
     
-    // Chache api function IDs that this module use.
-    ClsMgr_GetDisplayNameFunc = FuncLib_IsFunctionAvailable("ClsGeneric_GetDisplayName");
-    
     // Prepare attribute register.
     ClassAttribReg_Create();
 }
@@ -392,6 +393,9 @@ ClassMgr_LoadClasses()
         LogMgr_Print(g_moduleClassMgr, LogType_Fatal_Plugin, "Config Validation", "Error: Invalid config file path in cvar zr_classes_file: \"%s\"", configfile);
         return;
     }
+    
+    // Prepare class name index.
+    ClassMgr_PrepareNameIndex();
     
     // Log loading-message.
     LogMgr_Print(g_moduleClassMgr, LogType_Normal, "Config Loading", "Loading classes from file \"%s\".", configfile);
@@ -489,17 +493,22 @@ ClassMgr_OnPluginStart()
     //g_hCvarClassesMenuJoin =        Project_CreateConVar("classes_menu_join",               "0",                "Display class selection menu when a player spawn for the first time.");
     //g_hCvarClassesRandom =          Project_CreateConVar("classes_random",                  "0",                "Player is assigned a random class every spawn. [Override: <prefix>_classes_default_*]");
     //g_hCvarClassesChangeTimelimit = Project_CreateConVar("classes_change_timelimit",        "20",               "Time limit to change human class with instant change after spawning. Time is in seconds. Use 0 or negative to disable.");
-    //g_hCvarClassesSave =            Project_CreateConVar("classes_save",                    "1",                "Save players' class selections in server cookies and restore when connecting. [Override: zr_classes_default_*]");
-    //g_hCvarClassesDefaultZombie =   Project_CreateConVar("classes_default_zombie",          "random",           "Zombie class assigned to players on connect. [\"random\" = Random zombie class | \"\" = Class config default]");
+    g_hCvarClassesSave =            Project_CreateConVar("classes_save",                    "1",                "Save players' class selections in server cookies and restore when connecting. [Overrides: <prefix>_classes_default_*]");
+    g_hCvarClassesDefaultZombie =   Project_CreateConVar("classes_default_zombie",          "random",           "Name of zombie class that should be assigned to players on connect. [\"random\" = Random zombie class | \"\" = Class config default]");
     //g_hCvarClassesDefaultMZombie =  Project_CreateConVar("classes_default_mother_zombie",   "motherzombies",    "Zombie class assigned to mother zombies. [\"motherzombies\" = Random mother zombie class | \"random\" = Random regular zombie class | \"disabled\" = Don't change class on mother zombies]");
-    //g_hCvarClassesDefaultHuman =    Project_CreateConVar("classes_default_human",           "random",           "Human class assigned to players on connect. [\"random\" = Random human class | \"\" = Class config default]");
+    g_hCvarClassesDefaultHuman =    Project_CreateConVar("classes_default_human",           "random",           "Name of human class that should be assigned to players on connect. [\"random\" = Random human class | \"\" = Class config default]");
     //g_hCvarClassesDefaultAdmin =    Project_CreateConVar("classes_default_admin",           "default",          "(Not implemented!) Admin-only class assigned to admins on connect, if any. [\"default\" = Default human class | \"random\" = Random admin-only class]");
     //g_hCvarClassesZombieSelect =    Project_CreateConVar("classes_zombie_select",           "1",                "Allow players to select zombie classes.");
     //g_hCvarClassesHumanSelect =     Project_CreateConVar("classes_human_select",            "1",                "Allow players to select human classes.");
     
     // Forward plugin start event to attribute modules.
     ClsGeneric_OnPluginStart();
-    ClsModel_OnPluginStart();
+    
+    // Game dependent attribute modules. Some modules should work for multiple
+    // games, but CS:S is the only game we build for at the momemt.
+    #if defined PROJECT_GAME_CSS
+        ClsModel_OnPluginStart();
+    #endif
 }
 
 
@@ -533,7 +542,8 @@ public ClassMgr_OnConfigsExecuted()
         // Check for validation errors.
         if (result == Plugin_Handled)
         {
-            // TODO: Tell generic attribute module to disable class.
+            // Disable class.
+            ClsGeneric_SetEnabled(classIndex, false);
         }
     }
     
@@ -612,6 +622,7 @@ public Action:ClassMgr_OnModuleDisable(Module:module)
 public Action:ClassMgr_OnMyModuleDisable()
 {
     // TODO: Disable classes.
+    //       Unhook console and chat commands.
 }
 
 /**
@@ -634,8 +645,12 @@ public ClassMgr_OnConfigReload(configindex)
  */
 public ClassMgr_OnClientPutInServer(client)
 {
-    // Reset spawned flag.
-    g_ClassPlayerSpawned[client] = false;
+    // Not spawned yet.
+    g_ClassFirstSpawn[client] = true;
+    
+    // Classes aren't changed manually yet.
+    g_ClassChangedByPlayer[client][ClassTeam_Humans] = false;
+    g_ClassChangedByPlayer[client][ClassTeam_Zombies] = false;
     
     // Reset instant class change.
     ClassMgr_ResetInstantChange(client);
@@ -643,8 +658,27 @@ public ClassMgr_OnClientPutInServer(client)
     // Reset next-indexes.
     ClassMgr_ResetNextIndexes(client);
     
-    // Find clean class to preload.
-    // Send event OnClassPlayerPreload.
+    new eventdata[2][1];
+    static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell};
+    
+    // Cookies may be loaded late. Preload some clean classes.
+    
+    // Find clean human class. Send preload event.
+    new human = ClassMgr_GetDefaultSpawnClass(ClassTeam_Humans, g_ClassNoSpecialClasses);
+    if (ClassMgr_IsValidIndex(human))
+    {
+        // Send event OnClassPlayerPreload.
+        eventdata[0][0] = client;
+        eventdata[1][0] = human;
+        EventMgr_Forward(g_EvOnClassPlayerPreload, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    }
+    
+    // Find clean zombie class.
+    new zombie = ClassMgr_GetDefaultSpawnClass(ClassTeam_Zombies, g_ClassNoSpecialClasses);
+    
+    // Set selected class indexes.
+    g_ClassSelected[client][ClassTeam_Humans] = human;
+    g_ClassSelected[client][ClassTeam_Zombies] = zombie;
 }
 
 /**
@@ -665,7 +699,7 @@ public ClassMgr_OnClientDisconnect(client)
  */
 public ClassMgr_PlayerSpawn(client)
 {
-    // TODO
+    // TODO: Display menu (below).
     
     // Stop if classes aren't loaded.
     if (!g_ClassLoaded)
@@ -674,7 +708,8 @@ public ClassMgr_PlayerSpawn(client)
     }
     
     // Stop if not on a team. The spawn event is also triggered when clients
-    // connect (camera spawn).
+    // connect and spawn as spectators right before they're presented the team
+    // selection menu.
     if (!Util_IsClientOnTeam(client))
     {
         return;
@@ -719,12 +754,7 @@ public ClassMgr_PlayerSpawn(client)
         g_ClassSelected[client][ClassTeam_Zombies] = randomZombie;
         
         // Get zombie class name and inform player about class assignment.
-        Call_StartFunction(GetMyHandle(), ClsMgr_GetDisplayNameFunc);
-        Call_PushCell(randomZombie);
-        Call_PushStringEx(className, sizeof(className), 0, SM_PARAM_COPYBACK);
-        Call_PushCell(sizeof(className));
-        Call_PushCell(_:ClassCache_Modified);
-        Call_Finish();
+        ClsGeneric_GetDisplayName(randomZombie, className, sizeof(className), ClassCache_Modified);
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "Classes random assignment", className);
         
         // Set selected human class index.
@@ -732,21 +762,15 @@ public ClassMgr_PlayerSpawn(client)
         
         // Get human class name and inform player about class assignment.
         className[0] = 0;
-        Call_StartFunction(GetMyHandle(), ClsMgr_GetDisplayNameFunc);
-        Call_PushCell(randomHuman);
-        Call_PushStringEx(className, sizeof(className), 0, SM_PARAM_COPYBACK);
-        Call_PushCell(sizeof(className));
-        Call_PushCell(_:ClassCache_Modified);
-        Call_Finish();
+        ClsGeneric_GetDisplayName(randomHuman, className, sizeof(className), ClassCache_Modified);
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "Classes random assignment", className);
     }
     
     // Display class menu configs according to config.
     new bool:menuSpawn = GetConVarBool(g_hCvarClassesMenuSpawn);
     new bool:menuJoin = GetConVarBool(g_hCvarClassesMenuJoin);
-    if (menuSpawn || (menuJoin && !g_ClassPlayerSpawned[client]))
+    if (menuSpawn || (menuJoin && g_ClassFirstSpawn[client]))
     {
-        g_ClassPlayerSpawned[client] = true;
         // TODO: Display class menu.
     }
     
@@ -759,6 +783,9 @@ public ClassMgr_PlayerSpawn(client)
     
     // Setup instant class change if enabled.
     ClassMgr_CheckInstantChange(client);
+    
+    // No longer the first spawn.
+    g_ClassFirstSpawn[client] = false;
 }
 
 /**
@@ -774,8 +801,7 @@ public ClassMgr_PlayerSpawnPost(client)
         return;
     }
     
-    // Stop if not on a team.
-    // TODO: Use teamlib when the team manager is available.
+    // Stop if not on a team (spawning as spectator when connecting).
     if (!Util_IsClientOnTeam(client))
     {
         return;
@@ -808,10 +834,27 @@ public ClassMgr_PlayerDeath(victim, attacker, const String:weapon[], bool:headsh
  */
 public ClassMgr_OnClientReady(client)
 {
-    // Set class selection indexes if not already modified.
+    // Current classes selected are pure and public classes. Load the player's
+    // saved classes from cookies - unless the player already selected a class.
     
-    // Tell player.
-    // TranslationPrintToChat(client, "Classes Selection Loaded");
+    // Setup filter
+    // ------------
+    new filter[ClassFilter];
+    
+    // No mother zombies.
+    filter[ClassFilter_DenyFlags] = CLASS_FLAG_MOTHER_ZOMBIE;
+    
+    // Disallow admin classes if not admin.
+    filter[ClassFilter_DenyFlags] += !Auth_IsClientAdmin(client) ? CLASS_FLAG_ADMIN_ONLY : 0;
+    
+    // Do class authorization check.
+    filter[ClassFilter_Client] = client;
+    
+    
+    // Load classes
+    // ------------
+    ClassMgr_LoadInitialClass(client, ClassTeam_Humans, filter);
+    ClassMgr_LoadInitialClass(client, ClassTeam_Zombies, filter, false);    // Don't send event.
 }
 
 /**
@@ -966,6 +1009,97 @@ static ClassMgr_ValidateSelClasses(client = -1)
     }
 }
 
+/**
+ * Prepares the class name index.
+ */
+static ClassMgr_PrepareNameIndex()
+{
+    // Prepare trie.
+    if (g_hClassNameIndex == INVALID_HANDLE)
+    {
+        g_hClassNameIndex = CreateTrie();
+    }
+    else
+    {
+        ClearTrie(g_hClassNameIndex);
+    }
+}
+
+/**
+ * Loads a class from cookies (or config default) to a player when connected.
+ *
+ * @param client        Client index.
+ * @param team          Team to load.
+ * @param filter        Class filter settings.
+ * @param sendEvent     Optional. Send the Event_OnClassPlayerLoad event.
+ */
+static ClassMgr_LoadInitialClass(client, ClassTeam:team, filter[ClassFilter], bool:sendEvent = true)
+{
+    // Check if the player already slected a class for this team.
+    if (g_ClassChangedByPlayer[client][team])
+    {
+        // Abort loading. Another class is already loaded.
+        return;
+    }
+    
+    new bool:loadCookies = GetConVarBool(g_hCvarClassesSave);
+    new classIndex = -1;
+    
+    // Load saved class from cookies if enabled.
+    if (loadCookies)
+    {
+        // TODO: Implement cookies.
+        //classIndex = CookiesGetInt(...) - 1;
+        
+        // Check if team matches with loaded class.
+        if (ClassMgr_IsValidIndex(classIndex) && !ClsGeneric_TeamEqual(team, classIndex, ClassCache_Modified))
+        {
+            // Team doesn't match anymore (class config may have changed).
+            // Invalidate class so another one is choosen.
+            classIndex = -1;
+        }
+    }
+    
+    // Validate index.
+    if (!ClassMgr_IsValidIndex(classIndex))
+    {
+        // Fall back on default class specified in cvar.
+        classIndex = ClassMgr_GetDefaultSpawnClass(team, filter);
+    }
+    
+    // Validate again.
+    if (!ClassMgr_IsValidIndex(classIndex))
+    {
+        // Fall back on config default.
+        classIndex = ClassMgr_GetDefaultClass(team, filter);
+        
+        // Validate once more.
+        if (!ClassMgr_IsValidIndex(classIndex))
+        {
+            // Failed to fall back on config default. Nothing else to do.
+            // This should never happen because of class requirement validation.
+            decl String:strTeam[16];
+            ClassMgr_TeamToString(team, strTeam, sizeof(strTeam));
+            LogMgr_Print(g_moduleClassMgr, LogType_Error, "Config Validation", "Error: Unable to find a clean default class for team: %s. Check class config file.", strTeam);
+            return;
+        }
+    }
+    
+    // Mark class as selected.
+    g_ClassSelected[client][team] = classIndex;
+    
+    // Send event if enabled.
+    if (sendEvent)
+    {
+        static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell};
+        new eventdata[2][1];
+        
+        // Send event OnClassPlayerLoad.
+        eventdata[0][0] = client;
+        eventdata[1][0] = classIndex;
+        EventMgr_Forward(g_EvOnClassPlayerLoad, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    }
+}
 
 
 /*********************************
@@ -1082,6 +1216,30 @@ stock bool:ClassMgr_AllowSelection(client, ClassTeam:team = ClassTeam_All)
 }
 
 /**
+ * Returns whether a string is a reserwed keyword.
+ *
+ * Note: The string is not trimmed when checked.
+ *
+ * @return      True if reserved, false otherwise.
+ */
+stock bool:ClassMgr_IsReservedKeyword(const String:str[])
+{
+    if (ClassMgr_StringToTeam(str) != ClassTeam_Invalid)
+    {
+        // It's a team name.
+        return true;
+    }
+    
+    if (ClsGeneric_StringToAuthMode(str) != ClsGeneric_InvalidMode)
+    {
+        // It's a auth mode.
+        return true;
+    }
+    
+    return false;
+}
+
+/**
  * Logs a generic invalid attribute warning.
  *
  * @param module        Module responsible for the attribute.
@@ -1179,10 +1337,10 @@ ClassMgr_TeamToString(ClassTeam:team, String:buffer[], maxlen)
 {
     switch (team)
     {
-        case ClassTeamNew_Zombies: return strcopy(buffer, maxlen, "zombies");
-        case ClassTeamNew_Humans: return strcopy(buffer, maxlen, "humans");
-        case ClassTeamNew_All: return strcopy(buffer, maxlen, "all");
-        case ClassTeamNew_Invalid: return strcopy(buffer, maxlen, "INVALID_TEAM");
+        case ClassTeam_Zombies: return strcopy(buffer, maxlen, "zombies");
+        case ClassTeam_Humans: return strcopy(buffer, maxlen, "humans");
+        case ClassTeam_All: return strcopy(buffer, maxlen, "all");
+        case ClassTeam_Invalid: return strcopy(buffer, maxlen, "INVALID_TEAM");
     }
     
     return 0;

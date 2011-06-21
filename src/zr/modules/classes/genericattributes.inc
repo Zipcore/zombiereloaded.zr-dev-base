@@ -25,6 +25,7 @@
  * ============================================================================
  */
 
+#include <smlib/smlib_strings>
 #include "zr/libraries/authlib"
 #include "zr/libraries/utilities"
 
@@ -319,6 +320,36 @@ public Action:ClsGeneric_OnClassValidate(classIndex)
     {
         ClassMgr_LogAttribErrString(g_moduleClsGeneric, "description", className, classIndex, classCache[ClassAttrib_Description]);
         hasErrors = true;
+    }
+    
+    // Check for reserved keywords in class names.
+    if (ClassMgr_IsReservedKeyword(className))
+    {
+        LogMgr_Print(g_moduleClsGeneric, LogType_Error, "Config Validation", "Warning: Cannot use \"%s\" as class name in class at index %d. This is a reserved word.", buffer, classIndex);
+        hasErrors = true;
+    }
+    
+    // Check if name is numeric.
+    if (String_IsNumeric(className))
+    {
+        LogMgr_Print(g_moduleClsGeneric, LogType_Error, "Config Validation", "Warning: Cannot use \"%s\" as class name in class at index %d. Class name cannot be a number.", buffer, classIndex);
+        hasErrors = true;
+    }
+    
+    // Check for duplicate class names.
+    new dummy;
+    buffer[0] = 0;
+    String_ToLower(className, buffer, sizeof(buffer));  // Class names are case insensitive.
+    if (GetTrieValue(g_hClassNameIndex, buffer, dummy))
+    {
+        // Class name already in use.
+        LogMgr_Print(g_moduleClsGeneric, LogType_Error, "Config Validation", "Warning: Class name \"%s\" in class at index %d is already in use.", buffer, classIndex);
+        hasErrors = true;
+    }
+    else
+    {
+        // Add class to name index.
+        SetTrieValue(g_hClassNameIndex, buffer, classIndex);
     }
     
     if (hasErrors)
@@ -667,6 +698,17 @@ public bool:ClsGeneric_IsEnabled(index, ClassCacheType:cache)
 }
 
 /**
+ * Sets whether a class is enabled or not.
+ *
+ * @param index         Class index.
+ * @param enabled       Enabled state.
+ */
+public ClsGeneric_SetEnabled(index, bool:enabled)
+{
+    ClassGenericData2[index][ClassAttrib_Enabled] = enabled;
+}
+
+/**
  * Gets the team from the specified class.
  *
  * @param index         Class index or client index.
@@ -684,6 +726,24 @@ public ClassTeam:ClsGeneric_GetTeam(index, ClassCacheType:cache)
     }
     
     return ClassTeam_Invalid;
+}
+
+/**
+ * Returns whether the class is on the specified team.
+ *
+ * @param team          Team to compare.
+ * @param index         Class index or client index (client's class).
+ * @param cache         Specifies what class cache to read from. If player
+ *                      cache is used 'index' will be used as a client index.
+ */
+public bool:ClsGeneric_TeamEqual(ClassTeam:team, index, ClassCacheType:cache)
+{
+    switch (cache)
+    {
+        case ClassCache_Original, ClassCache_Modified: return ClassGenericData[index][ClassAttrib_Team] == team;
+        case ClassCache_Player: return ClassPlayerData[index][ClassAttrib_Team] == team;
+    }
+    return false;
 }
 
 /**
@@ -838,7 +898,7 @@ public ClsGeneric_AuthModes:ClsGeneric_GetAuthMode(index, ClassCacheType:cache)
  *
  * @return          Authorization blending mode, or ClsGeneric_InvalidMode on error.
  */
-static ClsGeneric_AuthModes:ClsGeneric_StringToAuthMode(const String:mode[])
+ClsGeneric_AuthModes:ClsGeneric_StringToAuthMode(const String:mode[])
 {
     if (strlen(mode) > 0)
     {

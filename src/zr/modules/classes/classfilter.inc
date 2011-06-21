@@ -34,11 +34,11 @@
  *                  cache is used 'index' will be used as a client index.
  *                  Default is modified cache.
  *
- * @return          The class index if successful.
- *                  -1 if no classes
- *                  -2 if no name specified
- *                  -3 if invalid class index specified (converted from string)
- *                  -4 if no class found
+ * @return          The class index if successful. On errors:
+ *                  -1: no classes
+ *                  -2: no name specified
+ *                  -3: invalid class index specified (converted from string)
+ *                  -4: invalid class name
  */
 stock ClassMgr_GetClass(const String:name[], ClassCacheType:cache = ClassCache_Modified)
 {
@@ -72,18 +72,13 @@ stock ClassMgr_GetClass(const String:name[], ClassCacheType:cache = ClassCache_M
         }
     }
     
-    // Loop through all classes.
-    for (classIndex = 0; classIndex < g_ClassCount; classIndex++)
+    // Lookup class name in trie index.
+    if (GetTrieValue(g_hClassNameIndex, name, classIndex))
     {
-        // Get its name and compare it with the specified class name.
-        ClsGeneric_GetName(classIndex, currentName, sizeof(currentName), cache);
-        if (StrEqual(name, currentName, false))
-        {
-            return classIndex;
-        }
+        return classIndex;
     }
     
-    // The class index wasn't found.
+    // The class name wasn't found in the index.
     return -4;
 }
 
@@ -174,6 +169,7 @@ stock bool:ClassMgr_FilterMatch(index, filter[ClassFilter], ClassCacheType:cache
     }
     
     // Check if client must be authorized.
+    // Note: Client 0 (the server) always have access.
     if (client > 0)
     {
         if (authMode != ClsGeneric_Disabled)
@@ -336,14 +332,16 @@ stock ClassMgr_GetRandomClass(ClassTeam:team = ClassTeam_All, filter[ClassFilter
  *                  player cache is used 'index' will be used as a client
  *                  index. Default is modified cache.
  *
- * @return          Class index, or -1 on error.
+ * @return          Class index. On errors:
+ *                  -1: no classes,
+ *                  -2: no matching class found
  */
 stock ClassMgr_GetFirstClass(ClassTeam:team = ClassTeam_All, filter[ClassFilter] = g_ClassNoSpecialClasses, ClassCacheType:cache = ClassCache_Modified)
 {
     // Check if there are no classes.
     if (g_ClassCount == 0)
     {
-        return false;
+        return -1;
     }
     
     new bool:hasTeamFilter = (team != ClassTeam_All);
@@ -374,7 +372,7 @@ stock ClassMgr_GetFirstClass(ClassTeam:team = ClassTeam_All, filter[ClassFilter]
         }
     }
     
-    return -1;
+    return -2;
 }
 
 /**
@@ -387,7 +385,9 @@ stock ClassMgr_GetFirstClass(ClassTeam:team = ClassTeam_All, filter[ClassFilter]
  *                  player cache is used 'index' will be used as a client
  *                  index. Default is modified cache.
  *
- * @return          Class index, or -1 on error.
+ * @return          Class index. On errors:
+ *                  -1: no classes found,
+ *                  -2: no default class found
  */
 stock ClassMgr_GetDefaultClass(ClassTeam:team, filter[ClassFilter] = g_ClassNoSpecialClasses, ClassCacheType:cache = ClassCache_Modified)
 {
@@ -422,7 +422,7 @@ stock ClassMgr_GetDefaultClass(ClassTeam:team, filter[ClassFilter] = g_ClassNoSp
     }
     
     CloseHandle(array);
-    return -1;
+    return -2;
 }
 
 /**
@@ -436,8 +436,11 @@ stock ClassMgr_GetDefaultClass(ClassTeam:team, filter[ClassFilter] = g_ClassNoSp
  *                  player cache is used 'index' will be used as a client
  *                  index. Default is modified cache.
  *
- * @return          Class index, or -1 on critical errors. Otherwise it will
- *                  try to fall back on the first class in the team.
+ * @return          Class index. On errors it will try to fall back on the first
+ *                  class in the team. On critical errors:
+ *                  -1: invalid team,
+ *                  -2: unable to find random class,
+ *                  -3: unable to fall back on another class
  */
 stock ClassMgr_GetDefaultSpawnClass(ClassTeam:team, filter[ClassFilter] = g_ClassNoSpecialClasses, ClassCacheType:cache = ClassCache_Modified)
 {
@@ -483,7 +486,7 @@ stock ClassMgr_GetDefaultSpawnClass(ClassTeam:team, filter[ClassFilter] = g_Clas
                 // Invalid index. The ClassMgr_GetRandomClass function is pretty
                 // failsafe. So if we can't get a class index here, it's a
                 // critical error. No reason to fall back on other solutions.
-                return -1;
+                return -2;
             }
         }
         else
@@ -509,7 +512,7 @@ stock ClassMgr_GetDefaultSpawnClass(ClassTeam:team, filter[ClassFilter] = g_Clas
                 teamString[0] = 0;
                 ClassMgr_TeamToString(team, teamString, sizeof(teamString));
                 
-                LogMgr_Print(g_moduleClassMgr, LogType_Error, "Default Spawn Class", "Warning: Failed to set \"%s\" as default spawn class for team \"%s\". The class doesn't exist or the teams doesn't match. Falling back to the first class in the team.", className, teamString);
+                LogMgr_Print(ClassMgr_GetIdentifier(), LogType_Error, "Default Spawn Class", "Warning: Failed to set \"%s\" as default class for team \"%s\". The class doesn't exist or the teams doesn't match. Falling back to the first available class in the team. Check spelling in <prefix>_classes_default_* cvars.", className, teamString);
                 
                 // Validate the new index.
                 if (ClassMgr_IsValidIndex(classIndex))
@@ -521,7 +524,7 @@ stock ClassMgr_GetDefaultSpawnClass(ClassTeam:team, filter[ClassFilter] = g_Clas
                 {
                     // Something went wrong. This is a critical error. There's
                     // probably missing classes with no special flags set.
-                    return -1;
+                    return -3;
                 }
             }
         }

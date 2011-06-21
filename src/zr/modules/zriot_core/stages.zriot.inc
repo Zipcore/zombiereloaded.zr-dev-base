@@ -385,7 +385,16 @@ bool:ZRiotStages_CacheData()
  * 
  * @return              A cell of data.
  */
-stock ZRiotStages_GetStageDataCell(stageindex, ZRiotStage:data)
+stock Handle:ZRiotStages_GetDataMessages(stageindex) { return Handle:ZRiotStages_GetDataCell(stageindex, ZStage_Messages); }
+stock ZRiotStages_GetDataCount(stageindex) { return ZRiotStages_GetDataCell(stageindex, ZStage_Count); }
+stock bool:ZRiotStages_GetDataRespawn(stageindex) { return bool:ZRiotStages_GetDataCell(stageindex, ZStage_Respawn); }
+stock ZRiotStages_GetDataZPlayerMax(stageindex) { return ZRiotStages_GetDataCell(stageindex, ZStage_ZombiePlayerMax); }
+stock ZRiotStages_GetDataZAliveMax(stageindex) { return ZRiotStages_GetDataCell(stageindex, ZStage_ZombieAliveMax); }
+stock Handle:ZRiotStages_GetDataZAttributes(stageindex) { return Handle:ZRiotStages_GetDataCell(stageindex, ZStage_ZombieAttributes); }
+stock ZRiotStages_GetDataHPlayerMax(stageindex) { return ZRiotStages_GetDataCell(stageindex, ZStage_HumanPlayerMax); }
+stock ZRiotStages_GetDataHAliveMax(stageindex) { return ZRiotStages_GetDataCell(stageindex, ZStage_HumanAliveMax); }
+stock Handle:ZRiotStages_GetDataHAttributes(stageindex) { return Handle:ZRiotStages_GetDataCell(stageindex, ZStage_HumanAttributes); }
+stock ZRiotStages_GetDataCell(stageindex, ZRiotStage:data)
 {
     new stagedata[ZRiotStage];
     GetArrayArray(g_hZRiotStageData, stageindex, stagedata[0], sizeof(stagedata));
@@ -401,7 +410,7 @@ stock ZRiotStages_GetStageDataCell(stageindex, ZRiotStage:data)
  * @param output        The string to set the output string in.
  * @param maxlen        Max length of the output.
  */
-stock ZRiotStages_GetStageDataString(stageindex, ZRiotStage:data, String:output[], maxlen)
+stock ZRiotStages_GetDataString(stageindex, ZRiotStage:data, String:output[], maxlen)
 {
     new stagedata[ZRiotStage];
     GetArrayArray(g_hZRiotStageData, stageindex, stagedata[0], sizeof(stagedata));
@@ -427,7 +436,7 @@ public ZRiotStages_RoundStart()
     
     // Get cfg file path and execute if it's not empty.
     decl String:cfg[STAGE_DATA_CFG];
-    ZRiotStages_GetStageDataString(g_iCurStageIndex, ZStage_Cfg, cfg, sizeof(cfg));
+    ZRiotStages_GetDataString(g_iCurStageIndex, ZStage_Cfg, cfg, sizeof(cfg));
     if (cfg[0])
         ServerCommand("exec %s", cfg);
 }
@@ -483,7 +492,7 @@ public ZRiotStages_RoundEnd(winner)
 static stock ZRiotStages_PrintStageMessage(index)
 {
     // Get the message array handle.
-    new Handle:hMessages = Handle:ZRiotStages_GetStageDataCell(g_iCurStageIndex, ZStage_Messages);
+    new Handle:hMessages = ZRiotStages_GetDataMessages(g_iCurStageIndex);
     decl String:message[STAGE_DATA_MSGS];
     GetArrayString(hMessages, index, message, sizeof(message));
     if (message[0])

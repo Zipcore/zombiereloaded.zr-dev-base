@@ -1,0 +1,5 @@
+// Changes, even subtle changes, from the latest released version.
+
+- zr_zspawn_force has been renamed to zr_(re)spawn (will probably register both, as they are easily confused).  All implementation has been moved to the respawn module.
+
+- New feature in respawn module: Allows random respawn team.

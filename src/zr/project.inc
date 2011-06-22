@@ -64,6 +64,7 @@ stock ForwardOnPluginStart()
     ZRC_OnPluginStart();
     ZRiot_OnPluginStart();
     SDKHAdapt_OnPluginStart();
+    SuiciIntcpt_OnPluginStart();
     Speed_OnPluginStart();
     Respawn_OnPluginStart();
     ZSpawn_OnPluginStart();

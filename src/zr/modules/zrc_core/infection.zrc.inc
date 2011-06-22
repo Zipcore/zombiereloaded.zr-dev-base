@@ -25,6 +25,9 @@
  * ============================================================================
  */
 
+// Include interfaces
+#include "zr/interfaces/infection.interface"
+
 /**
  * The weapon classname to fire player_death with.
  * Default: "zombie_claws_of_death" for compatibility.
@@ -66,6 +69,7 @@ new Handle:g_hMotherInfectCountdown;
  * Keeps track of who the mother zombies are for the current round.
  */
 new bool:g_bMotherZombie[MAXPLAYERS + 1];
+public bool:ZRCInfect_IsClientMZombie(client) { return g_bMotherZombie[client]; }
 
 /**
  * Keeps track of if a client was mother zombie in the previous round.
@@ -144,12 +148,13 @@ ZRCInfect_OnPluginStart()
  */
 public ZRCInfect_OnMyCoreShutdown(Module:module)
 {
-    if (module == g_moduleZRCInfect)
+    if (module == g_moduleZRCRoot)
     {
         // Reset infection interface for the next game mode to set up.
+        IInfection_SetAreZombiesPresent(INVALID_FUNCTION);
+        IInfection_SetIsClientMZombie(INVALID_FUNCTION);
         IInfection_SetClientToZombie(INVALID_FUNCTION);
         IInfection_SetClientToHuman(INVALID_FUNCTION);
-        IInfection_SetAreZombiesPresent(INVALID_FUNCTION);
     }
 }
 
@@ -158,12 +163,13 @@ public ZRCInfect_OnMyCoreShutdown(Module:module)
  */
 public ZRCInfect_OnMyCoreActivate(Module:module)
 {
-    if (module == g_moduleZRCInfect)
+    if (module == g_moduleZRCRoot)
     {
         // Set up infection interface.
+        IInfection_SetAreZombiesPresent(GetFunctionByName(GetMyHandle(), "ZRCInfect_AreZombiesPresent"));
+        IInfection_SetIsClientMZombie(GetFunctionByName(GetMyHandle(), "ZRCInfect_IsClientMZombie"));
         IInfection_SetClientToZombie(GetFunctionByName(GetMyHandle(), "ZRCInfect_ClientToZombie"));
         IInfection_SetClientToHuman(GetFunctionByName(GetMyHandle(), "ZRCInfect_ClientToHuman"));
-        IInfection_SetAreZombiesPresent(GetFunctionByName(GetMyHandle(), "ZRCInfect_AreZombiesPresent"));
     }
 }
 

@@ -25,6 +25,9 @@
  * ============================================================================
  */
 
+// Include interfaces
+#include "zr/interfaces/infection.interface"
+
 /**
  * This module's identifier.
  */
@@ -39,6 +42,7 @@ stock Module:ZRiotInfect_GetIdentifier() { return g_moduleZRiotInfect; }
  * For interfacing purposes.
  */
 public bool:ZRiotInfect_AreZombiesPresent() { return true; }
+public bool:ZRiotInfect_IsClientMZombie() { return false; }
 
 /**
  * Register this module.
@@ -93,12 +97,13 @@ ZRiotInfect_OnPluginStart()
  */
 public ZRiotInfect_OnMyCoreShutdown(Module:module)
 {
-    if (module == g_moduleZRiotInfect)
+    if (module == g_moduleZRiotRoot)
     {
         // Reset infection interface for the next game mode to set up.
+        IInfection_SetAreZombiesPresent(INVALID_FUNCTION);
+        IInfection_SetIsClientMZombie(INVALID_FUNCTION);
         IInfection_SetClientToZombie(INVALID_FUNCTION);
         IInfection_SetClientToHuman(INVALID_FUNCTION);
-        IInfection_SetAreZombiesPresent(INVALID_FUNCTION);
     }
 }
 
@@ -107,12 +112,13 @@ public ZRiotInfect_OnMyCoreShutdown(Module:module)
  */
 public ZRiotInfect_OnMyCoreActivate(Module:module)
 {
-    if (module == g_moduleZRiotInfect)
+    if (module == g_moduleZRiotRoot)
     {
         // Set up infection interface.
+        IInfection_SetAreZombiesPresent(GetFunctionByName(GetMyHandle(), "ZRiotInfect_AreZombiesPresent"));
+        IInfection_SetIsClientMZombie(GetFunctionByName(GetMyHandle(), "ZRiotInfect_IsClientMZombie"));
         IInfection_SetClientToZombie(GetFunctionByName(GetMyHandle(), "ZRiotInfect_ClientToZombie"));
         IInfection_SetClientToHuman(GetFunctionByName(GetMyHandle(), "ZRiotInfect_ClientToHuman"));
-        IInfection_SetAreZombiesPresent(GetFunctionByName(GetMyHandle(), "ZRiotInfect_AreZombiesPresent"));
     }
 }
 

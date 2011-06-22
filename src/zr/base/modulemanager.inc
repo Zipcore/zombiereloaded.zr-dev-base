@@ -991,9 +991,9 @@ public Action:ModuleMgr_BaseCommand(client, argc)
     strWho = (who == CommandFor_Server) ? "server" : "client";
     
     // Get all arguments.
-    new String:strArgs[argc + 1][16];
+    new String:strArgs[argc + 1][32];
     for (new arg = 0; arg <= argc; arg++)
-        GetCmdArg(arg, strArgs[arg], 16);
+        GetCmdArg(arg, strArgs[arg], 32);
     
     // Build directions from the arguments.
     
@@ -1140,7 +1140,7 @@ public BaseCmd_Enable(client, Handle:hParams, argc)
         return;
     }
     
-    decl String:strModuleID[16];
+    decl String:strModuleID[MM_DATA_SHORTNAME];
     GetArrayString(hParams, 0, strModuleID, sizeof(strModuleID));
     
     new Module:module = ModuleMgr_FindByID(StringToInt(strModuleID), strModuleID);
@@ -1181,7 +1181,7 @@ public BaseCmd_Disable(client, Handle:hParams, argc)
         return;
     }
     
-    decl String:strModuleID[16];
+    decl String:strModuleID[MM_DATA_SHORTNAME];
     GetArrayString(hParams, 0, strModuleID, sizeof(strModuleID));
     
     new Module:module = ModuleMgr_FindByID(StringToInt(strModuleID), strModuleID);
@@ -1238,7 +1238,7 @@ public BaseCmd_Info(client, Handle:hParams, argc)
         return;
     }
     
-    decl String:strModuleID[16];
+    decl String:strModuleID[MM_DATA_SHORTNAME];
     GetArrayString(hParams, 0, strModuleID, sizeof(strModuleID));
     
     new Module:module = ModuleMgr_FindByID(StringToInt(strModuleID), strModuleID);
@@ -1378,7 +1378,7 @@ public BaseCmd_Reload(client, Handle:hParams, argc)
         return;
     }
     
-    decl String:strModuleID[16];
+    decl String:strModuleID[MM_DATA_SHORTNAME];
     GetArrayString(hParams, 0, strModuleID, sizeof(strModuleID));
     
     new Module:module = ModuleMgr_FindByID(StringToInt(strModuleID), strModuleID);

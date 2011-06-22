@@ -30,6 +30,47 @@
 #endif
 #define _iinfection_included
 
+new Function:g_IInfectionAreZombiesPresent = INVALID_FUNCTION;
+stock IInfection_SetAreZombiesPresent(Function:func) { g_IInfectionAreZombiesPresent = func; }
+stock bool:IInfection_AreZombiesPresent(Module:module)
+{
+    if (g_IInfectionAreZombiesPresent != INVALID_FUNCTION)
+    {
+        Call_StartFunction(GetMyHandle(), g_IInfectionAreZombiesPresent);
+        new bool:value;
+        Call_Finish(value);
+        return value;
+    }
+    else
+    {
+        decl String:modulefullname[MM_DATA_FULLNAME];
+        ModuleMgr_ReadString(module, ModuleData_FullName, modulefullname, sizeof(modulefullname));
+        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_AreZombiesPresent which is not supported by current core, disabling.", modulefullname);
+    }
+    return false;
+}
+
+new Function:g_IInfectionIsClientMZombie = INVALID_FUNCTION;
+stock IInfection_SetIsClientMZombie(Function:func) { g_IInfectionIsClientMZombie = func; }
+stock bool:IInfection_IsClientMZombie(Module:module, client)
+{
+    if (g_IInfectionIsClientMZombie != INVALID_FUNCTION)
+    {
+        Call_StartFunction(GetMyHandle(), g_IInfectionIsClientMZombie);
+        Call_PushCell(client);
+        new bool:value;
+        Call_Finish(value);
+        return value;
+    }
+    else
+    {
+        decl String:modulefullname[MM_DATA_FULLNAME];
+        ModuleMgr_ReadString(module, ModuleData_FullName, modulefullname, sizeof(modulefullname));
+        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_IsClientMZombie which is not supported by current core, disabling.", modulefullname);
+    }
+    return false;
+}
+
 new Function:g_IInfectionClientToZombie = INVALID_FUNCTION;
 stock IInfection_SetClientToZombie(Function:func) { g_IInfectionClientToZombie = func; }
 stock IInfection_ClientToZombie(Module:module, client, attacker = 0, bool:mzombie)
@@ -46,7 +87,7 @@ stock IInfection_ClientToZombie(Module:module, client, attacker = 0, bool:mzombi
     {
         decl String:modulefullname[MM_DATA_FULLNAME];
         ModuleMgr_ReadString(module, ModuleData_FullName, modulefullname, sizeof(modulefullname));
-        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_ClientToZombie which is not supported by current game mode, disabling.", modulefullname);
+        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_ClientToZombie which is not supported by current core, disabling.", modulefullname);
     }
 }
 
@@ -64,26 +105,6 @@ stock IInfection_ClientToHuman(Module:module, client)
     {
         decl String:modulefullname[MM_DATA_FULLNAME];
         ModuleMgr_ReadString(module, ModuleData_FullName, modulefullname, sizeof(modulefullname));
-        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_ClientToHuman which is not supported by current game mode, disabling.", modulefullname);
+        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_ClientToHuman which is not supported by current core, disabling.", modulefullname);
     }
-}
-
-new Function:g_IInfectionAreZombiesPresent = INVALID_FUNCTION;
-stock IInfection_SetAreZombiesPresent(Function:func) { g_IInfectionAreZombiesPresent = func; }
-stock bool:IInfection_AreZombiesPresent(Module:module)
-{
-    if (g_IInfectionAreZombiesPresent != INVALID_FUNCTION)
-    {
-        Call_StartFunction(GetMyHandle(), g_IInfectionAreZombiesPresent);
-        new bool:value;
-        Call_Finish(value);
-        return value;
-    }
-    else
-    {
-        decl String:modulefullname[MM_DATA_FULLNAME];
-        ModuleMgr_ReadString(module, ModuleData_FullName, modulefullname, sizeof(modulefullname));
-        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_AreZombiesPresent which is not supported by current game mode, disabling.", modulefullname);
-    }
-    return false;
 }

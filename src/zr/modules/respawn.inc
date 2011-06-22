@@ -28,7 +28,6 @@
 /**
  * TODO:
  * Events
- * Respawn command
  */
 
 // Include interfaces.

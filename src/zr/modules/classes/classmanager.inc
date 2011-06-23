@@ -177,6 +177,7 @@ enum ClassTeam
     ClassTeam_Humans,
     ClassTeam_All               /** Not valid in a class! It's only used by filters. */
 }
+stock ClassTeamDummy[ClassTeam];
 
 /**
  * Authorization modes for classes.
@@ -252,6 +253,11 @@ new bool:g_ClassChangedByPlayer[MAXPLAYERS + 1][ClassTeam];
  */
 new Handle:g_hClassNameIndex;
 
+/**
+ * Cookies for saving selected classes when players disconnect.
+ */
+new Handle:g_hClassZombieCookie;
+new Handle:g_hClassHumanCookie;
 
 /**
  * @section Flags for special classes.
@@ -289,6 +295,7 @@ stock g_ClassNoSpecialClasses[ClassFilter] = {false, 0, CLASS_SPECIALFLAGS, -1};
 
 // Libraries.
 #include "zr/libraries/authlib"
+#include "zr/libraries/cookielib"
 
 // Utility and logic includes.
 #include "zr/modules/classes/attributeregister"
@@ -363,11 +370,9 @@ public ClassMgr_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnClientReady",             "ClassMgr_OnClientReady");
     
     #if defined PROJECT_GAME_CSS
-    
-    EventMgr_RegisterEvent(g_moduleClassMgr, "Event_PlayerSpawn",               "ClassMgr_PlayerSpawn");
-    EventMgr_RegisterEvent(g_moduleClassMgr, "Event_PlayerSpawnPost",           "ClassMgr_PlayerSpawnPost");
-    EventMgr_RegisterEvent(g_moduleClassMgr, "Event_PlayerDeath",               "ClassMgr_PlayerDeath");
-    
+        EventMgr_RegisterEvent(g_moduleClassMgr, "Event_PlayerSpawn",           "ClassMgr_PlayerSpawn");
+        EventMgr_RegisterEvent(g_moduleClassMgr, "Event_PlayerSpawnPost",       "ClassMgr_PlayerSpawnPost");
+        EventMgr_RegisterEvent(g_moduleClassMgr, "Event_PlayerDeath",           "ClassMgr_PlayerDeath");
     #endif
 }
 
@@ -501,6 +506,9 @@ ClassMgr_OnPluginStart()
     //g_hCvarClassesZombieSelect =    Project_CreateConVar("classes_zombie_select",           "1",                "Allow players to select zombie classes.");
     //g_hCvarClassesHumanSelect =     Project_CreateConVar("classes_human_select",            "1",                "Allow players to select human classes.");
     
+    // Setup cookies.
+    ClassMgr_PrepareCookies();
+    
     // Forward plugin start event to attribute modules.
     ClsGeneric_OnPluginStart();
     
@@ -571,7 +579,6 @@ public ClassMgr_OnAllPluginsLoaded()
 public ClassMgr_OnPluginEnd()
 {
 }
-
 
 /**
  * All modules and events have been registered by this point.  Event priority can be changed here.
@@ -1026,6 +1033,63 @@ static ClassMgr_PrepareNameIndex()
 }
 
 /**
+ * Creates cookies if they don't exist.
+ */
+static ClassMgr_PrepareCookies()
+{
+    if (g_hClassHumanCookie == INVALID_HANDLE)
+    {
+        g_hClassHumanCookie = RegClientCookie("zr_humanclass", "The last human class selected.", CookieAccess_Protected);
+    }
+    
+    if (g_hClassZombieCookie == INVALID_HANDLE)
+    {
+        g_hClassZombieCookie = RegClientCookie("zr_zombieclass", "The last zombie class selected.", CookieAccess_Protected);
+    }
+}
+
+/**
+ * Closes open cookie handles.
+ */
+static stock ClassMgr_CloseCookies()
+{
+    if (g_hClassHumanCookie != INVALID_HANDLE)
+    {
+        CloseHandle(g_hClassHumanCookie);
+        g_hClassHumanCookie = INVALID_HANDLE;
+    }
+    
+    if (g_hClassZombieCookie != INVALID_HANDLE)
+    {
+        CloseHandle(g_hClassZombieCookie);
+        g_hClassZombieCookie = INVALID_HANDLE;
+    }
+}
+
+/**
+ * Wrapper to get class cookie for a certain team.
+ *
+ * @param team      Team to get.
+ * @return          Cookie handle. INVALID_HANDLE if invalid team or not
+ *                  initialized.
+ */
+static Handle:ClassMgr_GetCookie(ClassTeam:team)
+{
+    switch (team)
+    {
+        case ClassTeam_Humans:
+        {
+            return g_hClassHumanCookie;
+        }
+        case ClassTeam_Zombies:
+        {
+            return g_hClassZombieCookie;
+        }
+    }
+    return INVALID_HANDLE;
+}
+
+/**
  * Loads a class from cookies (or config default) to a player when connected.
  *
  * @param client        Client index.
@@ -1048,10 +1112,10 @@ static ClassMgr_LoadInitialClass(client, ClassTeam:team, filter[ClassFilter], bo
     // Load saved class from cookies if enabled.
     if (loadCookies)
     {
-        // TODO: Implement cookies.
-        //classIndex = CookiesGetInt(...) - 1;
+        // Get saved class index in cookie.
+        classIndex = CookieLib_GetInt(client, ClassMgr_GetCookie(team)) - 1;
         
-        // Check if team matches with loaded class.
+        // Check if valid and team in cookie matches with team in class config.
         if (ClassMgr_IsValidIndex(classIndex) && !ClsGeneric_TeamEqual(team, classIndex, ClassCache_Modified))
         {
             // Team doesn't match anymore (class config may have changed).

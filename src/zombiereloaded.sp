@@ -29,6 +29,7 @@
 #pragma semicolon 1
 
 #include <sourcemod>
+#include <clientprefs>
 
 #include "zr/project"
 #include "zr/base/wrappers"

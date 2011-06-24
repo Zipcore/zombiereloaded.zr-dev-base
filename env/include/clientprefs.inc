@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2011 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -241,7 +241,7 @@ native GetClientCookieTime(client, Handle:cookie);
 /**
  * Do not edit below this line!
  */
-public Extension:__ext_clientprefs = 
+public Extension:__ext_cprefs = 
 {
 	name = "Client Preferences",
 	file = "clientprefs.ext",
@@ -252,3 +252,21 @@ public Extension:__ext_clientprefs =
 	required = 0,
 #endif
 };
+
+#if !defined REQUIRE_EXTENSIONS
+public __ext_cprefs_SetNTVOptional()
+{
+	MarkNativeAsOptional("RegClientCookie");
+	MarkNativeAsOptional("FindClientCookie");
+	MarkNativeAsOptional("SetClientCookie");
+	MarkNativeAsOptional("GetClientCookie");
+	MarkNativeAsOptional("AreClientCookiesCached");
+	MarkNativeAsOptional("SetCookiePrefabMenu");
+	MarkNativeAsOptional("SetCookieMenuItem");
+	MarkNativeAsOptional("ShowCookieMenu");
+	MarkNativeAsOptional("GetCookieIterator");
+	MarkNativeAsOptional("ReadCookieIterator");
+	MarkNativeAsOptional("GetCookieAccess");
+	MarkNativeAsOptional("GetClientCookieTime");
+}
+#endif

@@ -111,12 +111,12 @@ AntiStick_OnPluginStart()
  */
 public AntiStick_StartTouch(client, entity)
 {
-    if (Client_IsIngame(entity))
-    {
+    //if (Client_IsIngame(entity))
+    //{
         //new Float:vecMins[3] = {1.0, 1.0, 1.0};
         //new Float:vecMaxs[3] = {2.0, 2.0, 2.0};
         //Entity_SetMinMaxSize(client, vecMins, vecMaxs);
         //Entity_GetMaxSize(client, vecMins);
         //PrintToServer("%f %f %f",vecMins[0],vecMins[1],vecMins[2]);
-    }
+    //}
 }

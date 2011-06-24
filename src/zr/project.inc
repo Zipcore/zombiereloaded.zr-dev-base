@@ -64,13 +64,14 @@ stock ForwardOnPluginStart()
     ZRC_OnPluginStart();
     ZRiot_OnPluginStart();
     SDKHAdapt_OnPluginStart();
+    AntiStick_OnPluginStart();
     SuiciIntcpt_OnPluginStart();
     Speed_OnPluginStart();
     Respawn_OnPluginStart();
     ZSpawn_OnPluginStart();
     ZTele_OnPluginStart();
     StripObj_OnPluginStart();
-    ClassMgr_OnPluginStart();
+    //ClassMgr_OnPluginStart();
     
     #if defined PROJECT_GAME_CSS
         Weapons_OnPluginStart();

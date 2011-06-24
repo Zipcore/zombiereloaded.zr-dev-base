@@ -37,6 +37,7 @@ new Module:g_moduleSDKHAdapt;
  */
 new ProjectEvent:g_HkSpawn;
 new ProjectEvent:g_HkPreThinkPost;
+new ProjectEvent:g_HkStartTouch;
 new ProjectEvent:g_HkTraceAttack;
 new ProjectEvent:g_HkOnTakeDamage;
 new ProjectEvent:g_HkWeaponCanUse;
@@ -65,6 +66,7 @@ SDKHAdapt_Register()
     
     g_HkSpawn =             EventMgr_CreateEvent("Hook_Spawn");
     g_HkPreThinkPost =      EventMgr_CreateEvent("Hook_PreThinkPost");
+    g_HkStartTouch =        EventMgr_CreateEvent("Hook_StartTouch");
     g_HkTraceAttack =       EventMgr_CreateEvent("Hook_TraceAttack");
     g_HkOnTakeDamage =      EventMgr_CreateEvent("Hook_OnTakeDamage");
     g_HkWeaponCanUse =      EventMgr_CreateEvent("Hook_WeaponCanUse");
@@ -114,6 +116,7 @@ public Action:SDKHAdapt_OnMyModuleEnable()
         
         SDKHook(client, SDKHook_Spawn, SDKHAdapt_Spawn);
         SDKHook(client, SDKHook_PreThinkPost, SDKHAdapt_PreThinkPost);
+        SDKHook(client, SDKHook_StartTouch, SDKHAdapt_StartTouch);
         SDKHook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
         SDKHook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
         SDKHook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
@@ -142,6 +145,7 @@ public Action:SDKHAdapt_OnMyModuleDisable()
         
         SDKUnhook(client, SDKHook_Spawn, SDKHAdapt_Spawn);
         SDKUnhook(client, SDKHook_PreThinkPost, SDKHAdapt_PreThinkPost);
+        SDKUnhook(client, SDKHook_StartTouch, SDKHAdapt_StartTouch);
         SDKUnhook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
         SDKUnhook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
         SDKUnhook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
@@ -161,6 +165,7 @@ public SDKHAdapt_OnClientPutInServer(client)
 {
     SDKHook(client, SDKHook_Spawn, SDKHAdapt_Spawn);
     SDKHook(client, SDKHook_PreThinkPost, SDKHAdapt_PreThinkPost);
+    SDKHook(client, SDKHook_StartTouch, SDKHAdapt_StartTouch);
     SDKHook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
     SDKHook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
     SDKHook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
@@ -177,6 +182,7 @@ public SDKHAdapt_OnClientDisconnect(client)
 {
     SDKUnhook(client, SDKHook_Spawn, SDKHAdapt_Spawn);
     SDKUnhook(client, SDKHook_PreThinkPost, SDKHAdapt_PreThinkPost);
+    SDKUnhook(client, SDKHook_StartTouch, SDKHAdapt_StartTouch);
     SDKUnhook(client, SDKHook_TraceAttack, SDKHAdapt_TraceAttack);
     SDKUnhook(client, SDKHook_OnTakeDamage, SDKHAdapt_OnTakeDamage);
     SDKUnhook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
@@ -216,6 +222,26 @@ public SDKHAdapt_PreThinkPost(client)
     eventdata[0][0] = client;
     
     EventMgr_Forward(g_HkPreThinkPost, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+}
+
+/**
+ * Called when the hooked entity touches another entity.
+ * 
+ * @param entity    The hooked entity.
+ * @param other     The entity thats being touched.
+ * 
+ * @noreturn
+ */
+public SDKHAdapt_StartTouch(entity, other)
+{
+    // Forward event to all modules.
+    static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell};
+    new any:eventdata[sizeof(eventdatatypes)][1];
+    
+    eventdata[0][0] = entity;
+    eventdata[1][0] = other;
+    
+    EventMgr_Forward(g_HkStartTouch, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
 }
 
 /**

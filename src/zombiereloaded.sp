@@ -30,7 +30,7 @@
 
 #include <sourcemod>
 #include <sdkhooks>
-#include <smlib>
+//#include <smlib>
 #include <clientprefs>
 
 #include "zr/project"
@@ -62,7 +62,7 @@
 #include "zr/modules/zspawn"
 #include "zr/modules/ztele"
 #include "zr/modules/stripobjectives"
-//#include "zr/modules/classes/classmanager"
+#include "zr/modules/classes/classmanager"
 #include "zr/modules/models/modelmgr"
 
 // Game-specific modules

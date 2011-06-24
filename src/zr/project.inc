@@ -64,7 +64,7 @@ stock ForwardOnPluginStart()
     ZRC_OnPluginStart();
     ZRiot_OnPluginStart();
     SDKHAdapt_OnPluginStart();
-    //AntiStick_OnPluginStart();    // We have a ghost-file.
+    AntiStick_OnPluginStart();
     SuiciIntcpt_OnPluginStart();
     Speed_OnPluginStart();
     Respawn_OnPluginStart();

@@ -55,7 +55,7 @@
 #include "zr/modules/zrc_core/root.zrc"
 #include "zr/modules/zriot_core/root.zriot"
 #include "zr/modules/sdkhooksadapter"
-//#include "zr/modules/antistick"   // Where's antistick?
+#include "zr/modules/antistick"
 #include "zr/modules/suicideintercept"
 #include "zr/modules/speed"
 #include "zr/modules/respawn"

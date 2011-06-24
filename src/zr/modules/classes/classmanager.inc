@@ -177,7 +177,6 @@ enum ClassTeam
     ClassTeam_Humans,
     ClassTeam_All               /** Not valid in a class! It's only used by filters. */
 }
-stock ClassTeamDummy[ClassTeam];
 
 /**
  * Authorization modes for classes.
@@ -399,7 +398,7 @@ ClassMgr_LoadClasses()
         return;
     }
     
-    // Prepare class name index.
+    // Prepare class name index. Create or clear.
     ClassMgr_PrepareNameIndex();
     
     // Log loading-message.
@@ -908,7 +907,6 @@ public ClassMgr_OnClientHuman(client)
 /**
  * Validates the minimum class requirements.
  * Note: This function will log errors, but not stop the plugin.
- * Note: The class manager use this function, so it can't be private (static).
  *
  * @param cacheDefaults     Optional. Cache default class indexes.
  *                          Note: Writes -1 to cache if not found!
@@ -933,7 +931,7 @@ static bool:ClsMgr_ValidateRequirements(bool:cacheDefaults = false)
     new zombie = ClassMgr_GetDefaultClass(ClassTeam_Zombies, _, ClassCache_Original);
     if (zombie < 0)
     {
-        LogMgr_Print(g_moduleClassMgr, LogType_Error, "Config Validation", "Error: Unable to find a clean default zombie class. Check class config.");
+        LogMgr_Print(g_moduleClassMgr, LogType_Error, "Config Validation", "Error: Unable to find a clean default zombie class. Check class config. (Error code: %d)", zombie);
         if (cacheDefaults)
         {
             ClassDefaultClass[ClassTeam_Zombies] = -1;
@@ -953,7 +951,7 @@ static bool:ClsMgr_ValidateRequirements(bool:cacheDefaults = false)
     new human = ClassMgr_GetDefaultClass(ClassTeam_Humans, _, ClassCache_Original);
     if (human < 0)
     {
-        LogMgr_Print(g_moduleClassMgr, LogType_Error, "Config Validation", "Error: Unable to find a clean default human class. Check class config.");
+        LogMgr_Print(g_moduleClassMgr, LogType_Error, "Config Validation", "Error: Unable to find a clean default human class. Check class config. (Error code: %d)", human);
         if (cacheDefaults)
         {
             ClassDefaultClass[ClassTeam_Humans] = -1;

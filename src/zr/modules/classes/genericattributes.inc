@@ -322,34 +322,43 @@ public Action:ClsGeneric_OnClassValidate(classIndex)
         hasErrors = true;
     }
     
-    // Check for reserved keywords in class names.
-    if (ClassMgr_IsReservedKeyword(className))
+    // Check if name is empty.
+    if (strlen(className) == 0)
     {
-        LogMgr_Print(g_moduleClsGeneric, LogType_Error, "Config Validation", "Warning: Cannot use \"%s\" as class name in class at index %d. This is a reserved word.", buffer, classIndex);
-        hasErrors = true;
-    }
-    
-    // Check if name is numeric.
-    if (String_IsNumeric(className))
-    {
-        LogMgr_Print(g_moduleClsGeneric, LogType_Error, "Config Validation", "Warning: Cannot use \"%s\" as class name in class at index %d. Class name cannot be a number.", buffer, classIndex);
-        hasErrors = true;
-    }
-    
-    // Check for duplicate class names.
-    new dummy;
-    buffer[0] = 0;
-    String_ToLower(className, buffer, sizeof(buffer));  // Class names are case insensitive.
-    if (GetTrieValue(g_hClassNameIndex, buffer, dummy))
-    {
-        // Class name already in use.
-        LogMgr_Print(g_moduleClsGeneric, LogType_Error, "Config Validation", "Warning: Class name \"%s\" in class at index %d is already in use.", buffer, classIndex);
+        LogMgr_Print(g_moduleClsGeneric, LogType_Error, "Config Validation", "Warning: Invalid class name on class at index %d. Class name cannot be empty.", buffer, classIndex);
         hasErrors = true;
     }
     else
     {
-        // Add class to name index.
-        SetTrieValue(g_hClassNameIndex, buffer, classIndex);
+        // Check for reserved keywords in class names.
+        if (ClassMgr_IsReservedKeyword(className))
+        {
+            LogMgr_Print(g_moduleClsGeneric, LogType_Error, "Config Validation", "Warning: Cannot use \"%s\" as class name on class at index %d. This is a reserved word.", buffer, classIndex);
+            hasErrors = true;
+        }
+        
+        // Check if name is numeric.
+        if (String_IsNumeric(className))
+        {
+            LogMgr_Print(g_moduleClsGeneric, LogType_Error, "Config Validation", "Warning: Cannot use \"%s\" as class name on class at index %d. Class name cannot be a number.", buffer, classIndex);
+            hasErrors = true;
+        }
+        
+        // Check for duplicate class names.
+        new dummy;
+        buffer[0] = 0;
+        String_ToLower(className, buffer, sizeof(buffer));  // Class names are case insensitive.
+        if (GetTrieValue(g_hClassNameIndex, buffer, dummy))
+        {
+            // Class name already in use.
+            LogMgr_Print(g_moduleClsGeneric, LogType_Error, "Config Validation", "Warning: Class name \"%s\" in class at index %d is already in use.", buffer, classIndex);
+            hasErrors = true;
+        }
+        else
+        {
+            // Add class to name index.
+            SetTrieValue(g_hClassNameIndex, buffer, classIndex);
+        }
     }
     
     if (hasErrors)
@@ -492,6 +501,8 @@ static ClsGeneric_ClearClass(classIndex, ClassCacheType:cache = ClassCache_Origi
     attributes[ClassAttrib_Name][0] = 0;
     attributes[ClassAttrib_DisplayName][0] = 0;
     attributes[ClassAttrib_Description][0] = 0;
+    
+    ClassGotName[classIndex] = false;
     
     switch (cache)
     {

@@ -102,8 +102,11 @@ enum TFCond
 	TFCond_Bleeding,
 	TFCond_DefenseBuffed,
 	TFCond_Milked,
+	TFCond_MegaHeal,
 	TFCond_RegenBuffed,
-	TFCond_MarkedForDeath
+	TFCond_MarkedForDeath,
+	
+	TFCond_SpeedBuffAlly = 32
 };
 
 enum TFHoliday
@@ -227,11 +230,11 @@ native TF2_StunPlayer(client, Float:duration, Float:slowdown=0.0, stunflags, att
  * Induces the bleed effect on a client
  *
  * @param client		Player's index.
- * @param victim		Victim's index.
+ * @param attacker		Attacker's index.
  * @param float			Duration of bleeding (in seconds).
  * @noreturn
  */
-native TF2_MakeBleed(client, victim, Float:duration);
+native TF2_MakeBleed(client, attacker, Float:duration);
 
 /**
  * Retrieves the entity index of the CPlayerResource entity
@@ -282,6 +285,29 @@ forward Action:TF2_OnGetHoliday(&TFHoliday:holiday);
  * @return          Boolean of whether or not the client/player is dueling.
  */
 native bool:TF2_IsPlayerInDuel(client);
+
+/**
+ * Called after a condition is added to a player
+ *
+ * @note Actual duration can differ based on various events ingame.
+ *
+ * @param client		Index of the client to which the conditon is being added.
+ * @param condition     Condition that is being added.
+ * @param duration      Initial duration of the condition or -1 for infinite.
+ * @noreturn
+ */
+forward TF2_OnConditionAdded(client, TFCond:condition, Float:duration);
+
+/**
+ * Called after a condition is removed from a player
+ *
+ * @note This will never be called for the removal of TFCond_Taunting.
+ *
+ * @param client		Index of the client to which the condition is being removed.
+ * @param condition		Condition that is being removed.
+ * @noreturn
+ */
+forward TF2_OnConditionRemoved(client, TFCond:condition);
 
 /**
  * Called when the server enters the Waiting for Players round state

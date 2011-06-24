@@ -13,7 +13,7 @@
 // Actually it's 0.10.2. Seems like the developer forgot to update this one.
 #define SMLIB_VERSION "0.9.7"
 
-#include <smlib/general>
+#include <smlib/smlib_general>
 
 #include <smlib/smlib_arrays>
 #include <smlib/smlib_clients>

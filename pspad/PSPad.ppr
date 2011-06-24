@@ -38,6 +38,21 @@ ZR
 			..\src\zr\libraries\utilities.inc
 			..\src\zr\libraries\weaponlib.inc
 		-Modules
+			-Classes
+				..\src\zr\modules\classes\attributeregister.inc
+				..\src\zr\modules\classes\attributetemplate.inc
+				..\src\zr\modules\classes\classfilter.inc
+				..\src\zr\modules\classes\classmanager.inc
+				..\src\zr\modules\classes\genericattributes.inc
+				..\src\zr\modules\classes\instantchange.inc
+				..\src\zr\modules\classes\model.inc
+				..\src\zr\modules\classes\nextindexes.inc
+			-Models
+				..\src\zr\modules\models\modelcollections.inc
+				..\src\zr\modules\models\modelcommands.inc
+				..\src\zr\modules\models\modeldb.inc
+				..\src\zr\modules\models\modelfilter.inc
+				..\src\zr\modules\models\modelmgr.inc
 			-Weapons
 				..\src\zr\modules\weapons\gpbridge.inc
 				..\src\zr\modules\weapons\weapons.inc
@@ -64,9 +79,12 @@ ZR
 			..\src\zr\modules\gamerules.inc
 			..\src\zr\modules\mapconfig.inc
 			..\src\zr\modules\moduletemplate.inc
+			..\src\zr\modules\napalm.inc
 			..\src\zr\modules\respawn.inc
 			..\src\zr\modules\sdkhooksadapter.inc
+			..\src\zr\modules\speed.inc
 			..\src\zr\modules\stripobjectives.inc
+			..\src\zr\modules\suicideintercept.inc
 			..\src\zr\modules\zspawn.inc
 			..\src\zr\modules\ztele.inc
 	..\src\zr\project.inc
@@ -169,10 +187,49 @@ ZR
 		..\env\include\usermessages.inc
 		..\env\include\vector.inc
 		..\env\include\version.inc
+	-SMLib
+		..\env\include\smlib.inc
+		..\env\include\smlib\smlib_arrays.inc
+		..\env\include\smlib\smlib_clients.inc
+		..\env\include\smlib\smlib_colors.inc
+		..\env\include\smlib\smlib_concommands.inc
+		..\env\include\smlib\smlib_convars.inc
+		..\env\include\smlib\smlib_crypt.inc
+		..\env\include\smlib\smlib_debug.inc
+		..\env\include\smlib\smlib_dynarrays.inc
+		..\env\include\smlib\smlib_edicts.inc
+		..\env\include\smlib\smlib_effects.inc
+		..\env\include\smlib\smlib_entities.inc
+		..\env\include\smlib\smlib_files.inc
+		..\env\include\smlib\smlib_game.inc
+		..\env\include\smlib\smlib_general.inc
+		..\env\include\smlib\smlib_math.inc
+		..\env\include\smlib\smlib_server.inc
+		..\env\include\smlib\smlib_sql.inc
+		..\env\include\smlib\smlib_strings.inc
+		..\env\include\smlib\smlib_teams.inc
+		..\env\include\smlib\smlib_vehicles.inc
+		..\env\include\smlib\smlib_weapons.inc
+		..\env\include\smlib\smlib_world.inc
 	-Gamedata
 		..\cstrike\addons\sourcemod\gamedata\plugin.zombiereloaded.txt
 	-Translations
-		..\cstrike\addons\sourcemod\translations\zombiereloaded.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\zombiereloaded.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\basecmd.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\configmanager.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\gamerules.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\logmanager.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\modelmgr.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\projectbase.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\respawn.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\suicideintercept.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\weapons.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\zr.common.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\zrclassic.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\zriot.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\zspawn.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\ztele.phrases.txt
+
 [Open project files]
 0=..\src\zombiereloaded.sp
 [Selected Project Files]

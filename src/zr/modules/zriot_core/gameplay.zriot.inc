@@ -111,12 +111,12 @@ ZRiotGPlay_OnPluginStart()
     g_hCvarObeyRoundTime = CreateConVar("zriot_obey_roundtime", "0", "When the time set by mp_roundtime expires, then zombies win.  Otherwise, the only way to win is to eliminate the opposing team.");
     
     #if defined PROJECT_GAME_CSS || defined PROJECT_GAME_TF2
-        HookConVarChange(FindConVar("mp_restartgame"), ZRCGPlay_CvarHookMPRGame);
-        CvarLib_LockCvar("mp_autoteambalance", "0", true);
+        HookConVarChange(FindConVar("mp_restartgame"), ZRiotGPlay_CvarHookMPRGame);
+        CvarLib_LockCvar("mp_autoteambalance", "0");
     #endif
     
     #if defined PROJECT_GAME_CSS
-        CvarLib_LockCvar("mp_limitteams", "0", true);
+        CvarLib_LockCvar("mp_limitteams", "0");
     #endif
     
     // TODO: tf2 mp_limitteams?  -> mp_teams_unbalance_limit
@@ -132,10 +132,13 @@ ZRiotGPlay_OnPluginStart()
  */
 public Action:ZRiotGPlay_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
-    #if defined PROJECT_GAME_CSS
+    #if defined PROJECT_GAME_CSS || defined PROJECT_GAME_TF2
         HookConVarChange(FindConVar("mp_restartgame"), ZRiotGPlay_CvarHookMPRGame);
-        CvarLib_LockCvar("mp_limitteams", "0", true);
-        CvarLib_LockCvar("mp_autoteambalance", "0", true);
+        CvarLib_LockCvar("mp_autoteambalance", "0");
+    #endif
+    
+    #if defined PROJECT_GAME_CSS
+        CvarLib_LockCvar("mp_limitteams", "0");
     #endif
     
     return Plugin_Continue;
@@ -151,10 +154,13 @@ public Action:ZRiotGPlay_OnMyModuleEnable(String:refusalmsg[], maxlen)
  */
 public Action:ZRiotGPlay_OnMyModuleDisable(String:refusalmsg[], maxlen)
 {
-    #if defined PROJECT_GAME_CSS
+    #if defined PROJECT_GAME_CSS || defined PROJECT_GAME_TF2
         UnhookConVarChange(FindConVar("mp_restartgame"), ZRiotGPlay_CvarHookMPRGame);
-        CvarLib_UnlockCvar("mp_limitteams");
         CvarLib_UnlockCvar("mp_autoteambalance");
+    #endif
+    
+    #if defined PROJECT_GAME_CSS
+        CvarLib_UnlockCvar("mp_limitteams");
     #endif
     
     return Plugin_Continue;

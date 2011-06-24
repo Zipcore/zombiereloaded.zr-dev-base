@@ -29,6 +29,8 @@
 #pragma semicolon 1
 
 #include <sourcemod>
+#include <sdkhooks>
+#include <smlib>
 #include <clientprefs>
 
 #include "zr/project"
@@ -53,13 +55,14 @@
 #include "zr/modules/zrc_core/root.zrc"
 #include "zr/modules/zriot_core/root.zriot"
 #include "zr/modules/sdkhooksadapter"
+#include "zr/modules/antistick"
 #include "zr/modules/suicideintercept"
 #include "zr/modules/speed"
 #include "zr/modules/respawn"
 #include "zr/modules/zspawn"
 #include "zr/modules/ztele"
 #include "zr/modules/stripobjectives"
-#include "zr/modules/classes/classmanager"
+//#include "zr/modules/classes/classmanager"
 #include "zr/modules/models/modelmgr"
 
 // Game-specific modules

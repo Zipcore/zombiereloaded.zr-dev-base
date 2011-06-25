@@ -68,6 +68,7 @@ stock ForwardOnPluginStart()
     SuiciIntcpt_OnPluginStart();
     Speed_OnPluginStart();
     Respawn_OnPluginStart();
+    Fog_OnPluginStart();
     ZSpawn_OnPluginStart();
     ZTele_OnPluginStart();
     StripObj_OnPluginStart();

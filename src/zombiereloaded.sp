@@ -59,6 +59,7 @@
 #include "zr/modules/suicideintercept"
 #include "zr/modules/speed"
 #include "zr/modules/respawn"
+#include "zr/modules/fog"
 #include "zr/modules/zspawn"
 #include "zr/modules/ztele"
 #include "zr/modules/stripobjectives"

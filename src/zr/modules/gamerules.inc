@@ -396,7 +396,7 @@ GameRules_CacheGameRulesData()
     }
     else
     {
-        LogMgr_Print(g_moduleGameRules, LogType_Fatal_Module, "Config Validation", "Error: Missing critical gamerules config file: \"%s\"", GAMERULES_FILE);
+        LogMgr_Print(g_moduleGameRules, LogType_Fatal_Plugin, "Config Validation", "Error: Missing critical gamerules config file: \"%s\"", GAMERULES_FILE);
         return;
     }
     

@@ -47,6 +47,11 @@ new Handle:g_hCvarNapalmTimeReset;
 new Handle:g_hCvarNapalmDouse;
 
 /**
+ * Timer handle to track when to extinguish clients.
+ */
+new Handle:g_hNapalmTimer[MAXPLAYERS + 1];
+
+/**
  * Register this module.
  */
 Napalm_Register()
@@ -79,26 +84,28 @@ Napalm_Register()
 public Napalm_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnEventsReady,          "Napalm_OnEventsReady");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnAllPluginsLoaded,      "Napalm_OnAllPluginsLoaded");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnPluginEnd,             "Napalm_OnPluginEnd");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnAllModulesLoaded,      "Napalm_OnAllModulesLoaded");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnModuleEnable,          "Napalm_OnModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnMyModuleEnable,        "Napalm_OnMyModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnModuleDisable,         "Napalm_OnModuleDisable");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnMyModuleDisable,       "Napalm_OnMyModuleDisable");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnMapStart,              "Napalm_OnMapStart");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnMapEnd,                "Napalm_OnMapEnd");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnAutoConfigsBuffered,   "Napalm_OnAutoConfigsBuffered");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnConfigsExecuted,       "Napalm_OnConfigsExecuted");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnClientPutInServer,     "Napalm_OnClientPutInServer");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnClientDisconnect,      "Napalm_OnClientDisconnect");
+    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnEventsReady,                 "Napalm_OnEventsReady");
+    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnAllPluginsLoaded,            "Napalm_OnAllPluginsLoaded");
+    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnPluginEnd,                   "Napalm_OnPluginEnd");
+    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnAllModulesLoaded,            "Napalm_OnAllModulesLoaded");
+    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnModuleEnable,                "Napalm_OnModuleEnable");
+    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnMyModuleEnable,              "Napalm_OnMyModuleEnable");
+    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnModuleDisable,               "Napalm_OnModuleDisable");
+    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnMyModuleDisable,             "Napalm_OnMyModuleDisable");
+    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnMapStart,                    "Napalm_OnMapStart");
+    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnMapEnd,                      "Napalm_OnMapEnd");
+    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnAutoConfigsBuffered,         "Napalm_OnAutoConfigsBuffered");
+    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnConfigsExecuted,             "Napalm_OnConfigsExecuted");
+    EventMgr_RegisterEvent(g_moduleNapalm, "Event_OnClientPutInServer",         "Napalm_OnClientPutInServer");
+    EventMgr_RegisterEvent(g_moduleNapalm, "Event_OnClientDisconnect",          "Napalm_OnClientDisconnect");
     
     #if defined PROJECT_GAME_CSS
     
-    EventMgr_RegisterEvent(g_moduleNapalm, "Event_PlayerHurt", "Napalm_PlayerHurt");
-    EventMgr_RegisterEvent(g_moduleNapalm, "Event_WeaponFire", "Napalm_WeaponFire");
-    EventMgr_RegisterEvent(g_moduleNapalm, "Hook_OnTakeDamage", "Napalm_OnTakeDamage");
+    EventMgr_RegisterEvent(g_moduleNapalm, "Event_PlayerSpawn",                 "Napalm_PlayerSpawn");
+    EventMgr_RegisterEvent(g_moduleNapalm, "Event_PlayerHurt",                  "Napalm_PlayerHurt");
+    EventMgr_RegisterEvent(g_moduleNapalm, "Event_PlayerDeath",                 "Napalm_PlayerDeath");
+    EventMgr_RegisterEvent(g_moduleNapalm, "Event_WeaponFire",                  "Napalm_WeaponFire");
+    EventMgr_RegisterEvent(g_moduleNapalm, "Hook_OnTakeDamage",                 "Napalm_OnTakeDamage");
     
     #endif
 }
@@ -117,6 +124,148 @@ Napalm_OnPluginStart()
     g_hCvarNapalmIgnite =       Project_CreateConVar("napalm_ignite", "1", "Ignite grenade in mid-air after player throws it. [Dependency: Human Attribute 'has_napalm']");
     g_hCvarNapalmTimeReset =    Project_CreateConVar("napalm_time_reset", "1", "The burn timer is reset when being naded multiple times. [0: Original burn timer is used.]");
     g_hCvarNapalmDouse =        Project_CreateConVar("napalm_douse", "0", "Minimum water-saturation before any burning player is extinguished. ['0' = Disabled | '1' = Feet | '2' = Waist | '3' = Full submersion]");
+}
+
+/**
+ * Client has joined the server.
+ * 
+ * @param client    The client index.
+ */
+public Napalm_OnClientPutInServer(client)
+{
+    g_hNapalmTimer[client] = INVALID_HANDLE;
+}
+
+/**
+ * Client is disconnecting from the server.
+ * 
+ * @param client    The client index.
+ */
+public Napalm_OnClientDisconnect(client)
+{
+    Util_CloseHandle(g_hNapalmTimer[client]);
+}
+
+/**
+ * Client has spawned.
+ * 
+ * @param client    The client index.
+ */
+public Napalm_PlayerSpawn(client)
+{
+    Util_CloseHandle(g_hNapalmTimer[client]);
+}
+
+/**
+ * Client has been damaged.
+ * 
+ * @param victim        The index of the hurt client.
+ * @param attacker      The index of the attacking client.
+ * @param health        How much health the client has after the damage.
+ * @param armor         How much armor the client has after the damage.
+ * @param weapon        The weapon classname used to hurt the victim. (No weapon_ prefix)
+ * @param dmg_health    The amount of health the victim lost.
+ * @param dmg_armor     The amount of armor the victim lost.
+ * @param hitgroup      The hitgroup index of the victim that was damaged.
+ */
+public Napalm_PlayerHurt(victim, attacker, health, armor, const String:weapon[], dmg_health, dmg_armor, hitgroup)
+{
+    if (!GetConVarBool(g_hCvarNapalm))
+        return;
+    
+    if (attacker == 0)
+        return;
+    
+    // Check friendlyfire rules.
+    if (!GetConVarBool(g_hCvarNapalmFF) && !TLib_IsClientZombie(victim))
+        return;
+    
+    // If napalm time is invalid or 0, then stop.
+    //new Float:napalm_time = ClassGetNapalmTime(victim);
+    new Float:burntime = 10.0;
+    //if (napalm_time <= 0.0)
+        //return;
+    // TODO
+    // If the attacker can't throw napalm grenades, then stop.
+    //if (!ClassGetHasNapalm(attacker))
+        //return;
+    
+    #if defined PROJECT_GAME_CSS
+    
+    // If weapon is a grenade, then ignite player.
+    if (StrEqual(weapon, "hegrenade", false))
+    {
+        new bool:reset = GetConVarBool(g_hCvarNapalmTimeReset);
+        new flags = GetEntityFlags(victim);
+        
+        // If the timer is running, then we'll either reset the timer or stop.
+        if (g_hNapalmTimer[victim] != INVALID_HANDLE)
+        {
+            if (reset)
+                Util_CloseHandle(g_hNapalmTimer[victim]);
+            else
+                return;
+        }
+        else
+            g_hNapalmTimer[victim] = CreateTimer(burntime, Napalm_ExtinguishTimer, victim, TIMER_FLAG_NO_MAPCHANGE);
+        
+        if (~flags & FL_ONFIRE)
+            IgniteEntity(victim, 540.0); // I picked 540 because its 9 minutes, the max round time in CS:S.
+    }
+    
+    #endif
+}
+
+/**
+ * Timer callback, extinguishes a client.
+ * 
+ * @param timer     The timer handle.
+ * @param client    The client index.
+ */
+public Action:Napalm_ExtinguishTimer(Handle:timer, any:client)
+{
+    g_hNapalmTimer[client] = INVALID_HANDLE;
+    Napalm_SlowExtinguish(client);
+}
+
+/**
+ * Client has been killed.
+ * 
+ * @param victim    The index of the killed client.
+ * @param attacker  The killer of the victim.
+ * @param weapon    The weapon classname used to kill the victim. (No weapon_ prefix)
+ * @param headshot  True if the death was by headshot, false if not.
+ */
+public Napalm_PlayerDeath(victim, attacker, const String:weapon[], bool:headshot)
+{
+    Util_CloseHandle(g_hNapalmTimer[victim]);
+}
+
+/**
+ * Client has fired a weapon.
+ * 
+ * @param client        The client index.
+ * @param weapon        The weapon classname fired. (No weapon_ prefix)
+ */
+public Napalm_WeaponFire(client, const String:weapon[])
+{
+    if (!GetConVarBool(g_hCvarNapalm))
+        return;
+    
+    // Check if a grenade is being thrown.
+    if (!StrEqual(weapon, "hegrenade", false))
+        return;
+    
+    // If grenade fire is disabled, then stop.
+    new bool:ignite = GetConVarBool(g_hCvarNapalmIgnite);
+    if (!ignite)
+        return;
+    
+    // If human class can't throw napalm grenades, then stop.
+    //if (!ClassGetHasNapalm(client))
+        //return;
+    
+    CreateTimer(0.2, Napalm_IgniteGrenade);
 }
 
 /**
@@ -174,85 +323,25 @@ public Action:Napalm_OnTakeDamage(victim, &attacker, &Float:damage, &damagetype)
 }
 
 /**
- * Client has been damaged.
+ * Slow extinguish an entity (takes a frame)
  * 
- * @param victim        The index of the hurt client.
- * @param attacker      The index of the attacking client.
- * @param health        How much health the client has after the damage.
- * @param armor         How much armor the client has after the damage.
- * @param weapon        The weapon classname used to hurt the victim. (No weapon_ prefix)
- * @param dmg_health    The amount of health the victim lost.
- * @param dmg_armor     The amount of armor the victim lost.
- * @param hitgroup      The hitgroup index of the victim that was damaged.
+ * @param entity    Entity to extinguish.
  */
-public Napalm_PlayerHurt(victim, attacker, health, armor, const String:weapon[], dmg_health, dmg_armor, hitgroup)
+static stock Napalm_SlowExtinguish(entity)
 {
-    if (!GetConVarBool(g_hCvarNapalm))
-        return;
+    // Remove the burning flag from entity.
+    ExtinguishEntity(entity);
     
-    if (attacker == 0)
-        return;
-    
-    // Check friendlyfire rules.
-    if (!GetConVarBool(g_hCvarNapalmFF) && !TLib_IsClientZombie(victim))
-        return;
-    
-    // If napalm time is invalid or 0, then stop.
-    //new Float:napalm_time = ClassGetNapalmTime(victim);
-    new Float:burntime = 10.0;
-    //if (napalm_time <= 0.0)
-        //return;
-    // TODO
-    // If the attacker can't throw napalm grenades, then stop.
-    //if (!ClassGetHasNapalm(attacker))
-        //return;
-    
-    #if defined PROJECT_GAME_CSS
-    
-    // If weapon is a grenade, then ignite player.
-    if (StrEqual(weapon, "hegrenade", false))
+    new fire = GetEntPropEnt(entity, Prop_Data, "m_hEffectEntity");
+    if (IsValidEntity(fire))
     {
-        new bool:reset = GetConVarBool(g_hCvarNapalmTimeReset);
-        new flags = GetEntityFlags(victim);
-        
-        if (reset || ~flags & FL_ONFIRE)
-        {
-            // This stops the fire before re-ignition.
-            ExtinguishEntity(victim);
-            
-            // Ignite client.
-            IgniteEntity(victim, burntime);
-        }
+        decl String:classname[64];
+        GetEdictClassname(fire, classname, sizeof(classname));
+        if (StrEqual(classname, "entityflame", false))
+            SetEntPropFloat(fire, Prop_Data, "m_flLifetime", 0.0);  // This takes a game frame to finish.
+        else // Log what entity was in that property, for future reference.
+            LogMgr_Print(g_moduleNapalm, LogType_Normal, "Fire", "Found unexpected entity in prop \"m_hEffectEntity\": \"%s\"", classname);
     }
-    
-    #endif
-}
-
-/**
- * Client has fired a weapon.
- * 
- * @param client        The client index.
- * @param weapon        The weapon classname fired. (No weapon_ prefix)
- */
-public Napalm_WeaponFire(client, const String:weapon[])
-{
-    if (!GetConVarBool(g_hCvarNapalm))
-        return;
-    
-    // Check if a grenade is being thrown.
-    if (!StrEqual(weapon, "hegrenade", false))
-        return;
-    
-    // If grenade fire is disabled, then stop.
-    new bool:ignite = GetConVarBool(g_hCvarNapalmIgnite);
-    if (!ignite)
-        return;
-    
-    // If human class can't throw napalm grenades, then stop.
-    //if (!ClassGetHasNapalm(client))
-        //return;
-    
-    CreateTimer(0.2, NapalmIgniteGrenade);
 }
 
 /**
@@ -260,24 +349,18 @@ public Napalm_WeaponFire(client, const String:weapon[])
  * 
  * @param timer     The timer handle.
  */   
-public Action:NapalmIgniteGrenade(Handle:timer)
+public Action:Napalm_IgniteGrenade(Handle:timer)
 {
     decl String:classname[64];
-    
-    // Get max entities.
     new maxentities = GetMaxEntities();
-    
-    // x = entity index.
-    for (new x = 0; x <= maxentities; x++)
+    for (new entity = 0; entity <= maxentities; entity++)
     {
         // If entity is invalid, then stop.
-        if(!IsValidEntity(x) || !IsValidEdict(x))
+        if (IsValidEdict(entity) && IsValidEntity(entity))
         {
-            continue;
+            GetEdictClassname(entity, classname, sizeof(classname));
+            if (StrEqual(classname, "hegrenade_projectile"))
+                IgniteEntity(entity, 3.0);
         }
-        
-        GetEdictClassname(x, classname, sizeof(classname));
-        if(StrEqual(classname, "hegrenade_projectile"))
-            IgniteEntity(x, 3.0);
     }
 }

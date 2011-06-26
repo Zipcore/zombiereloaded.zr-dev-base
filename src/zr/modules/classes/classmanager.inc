@@ -457,8 +457,8 @@ public KvCache:ClassMgr_LoadClass(Handle:kv, sectionindex, const String:sectionn
             decl any:eventdata[sizeof(eventdatatypes)][CLASS_NAME_LEN];
             eventdata[0][0] = sectionindex;
             eventdata[1][0] = kv;
-            strcopy(eventdata[2][0], CLASS_NAME_LEN, attributeName);
-            strcopy(eventdata[3][0], CLASS_NAME_LEN, sectionname);
+            strcopy(eventdata[2], CLASS_NAME_LEN, attributeName);
+            strcopy(eventdata[3], CLASS_NAME_LEN, sectionname);
             new Module:eventFilter[2];
             eventFilter[0] = attributeModule;
             eventFilter[1] = INVALID_MODULE;

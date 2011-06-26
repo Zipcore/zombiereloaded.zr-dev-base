@@ -43,13 +43,25 @@ new Module:g_moduleRespawn;
  */
 new Handle:g_hCvarRespawn;
 new Handle:g_hCvarRespawnDelay;
+new Handle:g_hCvarRespawnCountdown;
 new Handle:g_hCvarRespawnTeam;
+new Handle:g_hCvarRespawnLimit;
 new Handle:g_hCvarRespawnZombieIfSuicide;
 
 /**
  * Per-client respawn timer handles.
  */
 new Handle:g_hRespawnTimer[MAXPLAYERS + 1];
+
+/**
+ * Number of respawns in the current round.
+ */
+new g_iRespawnCount[MAXPLAYERS + 1];
+
+/**
+ * Handle to store countdown timers.
+ */
+new Handle:g_hRespawnCountdownTimer[MAXPLAYERS + 1];
 
 /**
  * Keeps track of players who suicide
@@ -89,6 +101,7 @@ public Respawn_OnEventsRegister()
     
     #if defined PROJECT_GAME_CSS
     
+    EventMgr_RegisterEvent(g_moduleRespawn, "Event_RoundStart",                 "Respawn_RoundStart");
     EventMgr_RegisterEvent(g_moduleRespawn, "Event_RoundEnd",                   "Respawn_RoundEnd");
     EventMgr_RegisterEvent(g_moduleRespawn, "Event_PlayerSpawn",                "Respawn_PlayerSpawn");
     EventMgr_RegisterEvent(g_moduleRespawn, "Event_PlayerDeath",                "Respawn_PlayerDeath");
@@ -107,7 +120,9 @@ Respawn_OnPluginStart()
     // Create cvars.
     g_hCvarRespawn = Project_CreateConVar("respawn", "0", "Players will respawn after they are killed.");
     g_hCvarRespawnDelay = Project_CreateConVar("respawn_delay", "5", "Time player will wait after dying before they respawn.");
+    g_hCvarRespawnCountdown = Project_CreateConVar("respawn_countdown", "1", "Show a countdown of when the player will spawn again.");
     g_hCvarRespawnTeam = Project_CreateConVar("respawn_team", "zombie", "Team to respawn player on. ['zombie' = zombie team | 'human' = human team]");
+    g_hCvarRespawnLimit = Project_CreateConVar("respawn_limit", "0", "Max amount of respawns per round. ['0' = Unlimited respawns]");
     g_hCvarRespawnZombieIfSuicide = Project_CreateConVar("respawn_zombie_if_suicide", "1", "Respawn player as a zombie if player suicides regardless of other settings.");
     
     // Create commands.
@@ -122,7 +137,8 @@ Respawn_OnPluginStart()
 public Respawn_OnClientPutInServer(client)
 {
     g_hRespawnTimer[client] = INVALID_HANDLE;
-    
+    g_hRespawnCountdownTimer[client] = INVALID_HANDLE;
+    g_iRespawnCount[client] = 0;
     g_bDeathBySuicide[client] = false;
 }
 
@@ -134,6 +150,21 @@ public Respawn_OnClientPutInServer(client)
 public Respawn_OnClientDisconnect(client)
 {
     Util_CloseHandle(g_hRespawnTimer[client]);
+    Util_CloseHandle(g_hRespawnCountdownTimer[client]);
+}
+
+#if defined PROJECT_GAME_CSS
+
+/**
+ * Round has started.
+ */
+public Respawn_RoundStart()
+{
+    // Reset respawn counts.
+    for (new client = 1; client <= MaxClients; client++)
+    {
+        g_iRespawnCount[client] = 0;
+    }
 }
 
 /**
@@ -146,7 +177,10 @@ public Respawn_RoundEnd(winner)
     for (new client = 1; client <= MaxClients; client++)
     {
         if (IsClientInGame(client))
+        {
             Util_CloseHandle(g_hRespawnTimer[client]);
+            Util_CloseHandle(g_hRespawnCountdownTimer[client]);
+        }
     }
 }
 
@@ -160,8 +194,9 @@ public Respawn_PlayerSpawn(client)
     // Reset this variable since they're alive now.
     g_bDeathBySuicide[client] = false;
     
-    // Kill the timer that respawns them.
+    // Kill the timer that respawns them and the countdown timer.
     Util_CloseHandle(g_hRespawnTimer[client]);
+    Util_CloseHandle(g_hRespawnCountdownTimer[client]);
 }
 
 /**
@@ -179,14 +214,33 @@ public Respawn_PlayerDeath(victim, attacker, const String:weapon[], bool:headsho
     
     // Stop the timer just in case it's running. (it never should at this point.)
     Util_CloseHandle(g_hRespawnTimer[victim]);
+    Util_CloseHandle(g_hRespawnCountdownTimer[victim]);
     
     // Start timer to respawn them if enabled.
     if (GetConVarBool(g_hCvarRespawn))
     {
-        new Float:delay = GetConVarFloat(g_hCvarRespawnDelay);
-        g_hRespawnTimer[victim] = CreateTimer(delay, Respawn_Timer, victim, TIMER_FLAG_NO_MAPCHANGE);
+        new respawn_limit = GetConVarInt(g_hCvarRespawnLimit);
+        if (respawn_limit == 0 || g_iRespawnCount[victim] < respawn_limit)
+        {
+            new delay = GetConVarInt(g_hCvarRespawnDelay);
+            g_hRespawnTimer[victim] = CreateTimer(float(delay), Respawn_Timer, victim, TIMER_FLAG_NO_MAPCHANGE);
+            
+            // Start countdown if enabled.
+            if (GetConVarBool(g_hCvarRespawnCountdown))
+            {
+                // Create a pack of data to track countdown.
+                new Handle:hCountdownData = CreateDataPack();
+                WritePackCell(hCountdownData, victim);
+                WritePackCell(hCountdownData, 0);
+                WritePackCell(hCountdownData, delay);
+                g_hRespawnCountdownTimer[victim] = CreateTimer(1.0, Respawn_Countdown, hCountdownData, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
+                TransMgr_PrintText(victim, MsgFormat_None, MsgType_Center, g_moduleRespawn, false, "Respawn countdown", delay);
+            }
+        }
     }
 }
+
+#endif
 
 /**
  * Timer callback, respawns a player.
@@ -223,6 +277,53 @@ public Action:Respawn_Timer(Handle:timer, any:client)
         }
         TLib_SpawnOnTeam(client, team);
     }
+    g_iRespawnCount[client]++;  // Increment their spawn count.
+    
+    // Print number of respawns left if there's a limit.
+    new respawn_limit = GetConVarInt(g_hCvarRespawnLimit);
+    if (respawn_limit > 0)
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Center, g_moduleRespawn, false, "Respawn spawns left", respawn_limit - g_iRespawnCount[client]);
+}
+
+/**
+ * Timer callback
+ * Executed every second until a client respawns.
+ * 
+ * @param timer             The timer handle.
+ * @param hCountdownData    Stores length of the timer and seconds that have passed.
+ */
+public Action:Respawn_Countdown(Handle:timer, Handle:hCountdownData)
+{
+    // Read the info from the datapack.
+    ResetPack(hCountdownData);
+    new client = ReadPackCell(hCountdownData);
+    if (!IsClientInGame(client))
+        return Plugin_Stop;
+    
+    new counter = ReadPackCell(hCountdownData);
+    new total = ReadPackCell(hCountdownData);
+    
+    counter += 1; // Increment.
+    
+    // Print if the counter hasn't reached the end.
+    if (counter <= total)
+    {
+        TransMgr_PrintText(client, MsgFormat_None, MsgType_Center, g_moduleRespawn, false, "Respawn countdown", total - counter);
+    }
+    
+    // Stop if the countdown is finished.
+    if (counter >= total)
+    {
+        g_hRespawnCountdownTimer[client] = INVALID_HANDLE;
+        return Plugin_Stop;
+    }
+    
+    // Write the new counter value to the datapack.
+    ResetPack(hCountdownData);
+    WritePackCell(hCountdownData, client);
+    WritePackCell(hCountdownData, counter);
+    
+    return Plugin_Continue;
 }
 
 /**

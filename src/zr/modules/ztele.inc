@@ -46,6 +46,7 @@ new ProjectEvent:g_EvOnZTeleAutoCancelled;
 /**
  * Teleport convars.
  */
+new Handle:g_hCvarZTele;
 new Handle:g_hCvarZTeleRandom;
 new Handle:g_hCvarZTeleZombie;
 new Handle:g_hCvarZTeleHumanBefore;
@@ -150,6 +151,7 @@ ZTele_OnPluginStart()
     ZTele_Register();
     
     // Create cvars.
+    g_hCvarZTele =                      Project_CreateConVar("ztele", "1", "Allow clients to use ztele command to teleport back to spawn.");
     g_hCvarZTeleRandom =                Project_CreateConVar("ztele_random", "1", "Teleport back to a random spawnpoint on the map. ['0' = Teleports back to where you spawned during the round]");
     g_hCvarZTeleZombie =                Project_CreateConVar("ztele_zombie", "1", "Allow zombies to use ZTele.");
     g_hCvarZTeleHumanBefore =           Project_CreateConVar("ztele_human_before", "1", "Allow humans to use ZTele before the mother zombie has spawned. [This only applies to ZRC]");
@@ -163,7 +165,7 @@ ZTele_OnPluginStart()
     
     // Create commands
     RegConsoleCmd("ztele", ZTele_SayCommand, "Teleport to a known location by command.");
-    Project_RegConsoleCmd("ztele", ZTele_Command, "ZTele a client. Usage: <prefix>_ztele <client>");
+    Project_RegConsoleCmd("ztele_force", ZTele_ForceCommand, "ZTele a client. Usage: <prefix>_ztele_force <client>");
 }
 
 /**
@@ -326,6 +328,12 @@ public Action:ZTele_SayCommand(client, argc)
     // Check if the module is disabled.
     if (ModuleMgr_IsDisabled(g_moduleZTele))
         return Plugin_Continue;
+    
+    if (!GetConVarBool(g_hCvarZTele))
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZTele, _, "Feature is disabled");
+        return Plugin_Handled;
+    }
     
     if (client == SERVER_INDEX)
     {
@@ -629,13 +637,13 @@ public ZTele_ClientMenuHandle(Handle:menu_ztele, MenuAction:action, client, slot
 }
 
 /**
- * Command callback (zr_ztele)
- * Force ZSpawn on a client.
+ * Command callback (zr_ztele_force)
+ * Force a client to ZTele.
  * 
  * @param client    The client index.
  * @param argc      Argument count.
  */
-public Action:ZTele_Command(client, argc)
+public Action:ZTele_ForceCommand(client, argc)
 {
     // Check if the module is disabled.
     if (ModuleMgr_IsDisabled(g_moduleZTele))
@@ -673,6 +681,9 @@ public Action:ZTele_Command(client, argc)
     
     for (new tindex = 0; tindex < result; tindex++)
     {
+        // Stop the countdown if they were already ztele'ing.
+        Util_CloseHandle(g_hZTeleTimer[client]);
+        
         ZTele_StartTeleport(targets[tindex], 0);
         
         // Tell admin the outcome of the command if only 1 client was targetted.

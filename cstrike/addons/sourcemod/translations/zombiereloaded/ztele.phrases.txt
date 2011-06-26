@@ -67,7 +67,7 @@
 	"ZTele command ztele syntax"
 	{
 		"#format"	"{1:s}"
-		"en"		"ZTele a client. Usage: {1}_ztele <client>"
+		"en"		"ZTele a client. Usage: {1}_ztele_force <client>"
 
 	}
 

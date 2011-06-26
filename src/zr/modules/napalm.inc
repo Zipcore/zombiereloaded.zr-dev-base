@@ -292,29 +292,7 @@ public Action:Napalm_OnTakeDamage(victim, &attacker, &Float:damage, &damagetype)
         {
             // If the victim water-level is equal or higher than the given, then we want to extinguish the flame.
             if (OffsLib_GetClientWaterLevel(victim) >= douse)
-            {
-                // Put the fire out.
-                
-                //ExtinguishEntity(victim);  <-- Don't use this.  Takes off the FL_ONFIRE flag, but flame doesn't get extinguished.
-                
-                // This works.
-                new fire = GetEntPropEnt(victim, Prop_Data, "m_hEffectEntity");
-                if (IsValidEntity(fire))
-                {
-                    // Make sure the entity is a flame, so we can extinguish it.
-                    decl String:classname[64];
-                    GetEdictClassname(fire, classname, sizeof(classname));
-                    if (StrEqual(classname, "entityflame", false))
-                    {
-                        SetEntPropFloat(fire, Prop_Data, "m_flLifetime", 0.0);
-                    }
-                    // Log what entity was in that property, for future reference.
-                    else
-                    {
-                        LogMgr_Print(g_moduleNapalm, LogType_Normal, "Douse", "Found unexpected entity in prop \"m_flLifetime\": \"%s\"", classname);
-                    }
-                }
-            }
+                Napalm_SlowExtinguish(victim);
         }
     }
     

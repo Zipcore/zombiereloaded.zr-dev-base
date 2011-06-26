@@ -4,6 +4,22 @@
 	//                  Respawn Module
 	// **********************************************
 
+	// Center text.
+	// {1}: Seconds left until respawn.
+	"Respawn countdown"
+	{
+		"#format"	"{1:d}"
+		"en"		"Respawn in: {1} seconds"
+	}
+
+	// Center text.
+	// {1}: Number of respawns left, if there's a limit.
+	"Respawn spawns left"
+	{
+		"#format"	"{1:d}"
+		"en"		"Respawns left: {1}"
+	}
+
 	// {1}: PROJECT_CMD_PREFIX
 	"Respawn command syntax"
 	{

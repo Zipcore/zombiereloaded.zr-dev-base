@@ -348,16 +348,3 @@ static stock Fog_SetDensity(fog, Float:density)
 {
     DispatchKeyValueFloat(fog, "fogmaxdensity", density);
 }
-
-/**
- * Set the distance from the client at which the map stops rendering.
- * 
- * @param fog           env_fog_controller entity index.
- * @param farz          Value.
- */
-static stock Fog_SetFarZ(fog, farz)
-{
-    decl String:strFarZ[8];
-    IntToString(farz, strFarZ, sizeof(strFarZ));
-    DispatchKeyValue(fog, "farz", strFarZ);
-}

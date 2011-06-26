@@ -39,6 +39,7 @@ new Module:g_moduleZSpawn;
 /**
  * Cvar handles.
  */
+new Handle:g_hCvarZSpawn;
 new Handle:g_hCvarZSpawnTeam;
 new Handle:g_hCvarZSpawnTimeLimit;
 new Handle:g_hCvarZSpawnTimeLimitRules;
@@ -94,6 +95,7 @@ ZSpawn_OnPluginStart()
     ZSpawn_Register();
     
     // Create cvars.
+    g_hCvarZSpawn =                 Project_CreateConVar("zspawn", "1", "Allow players to use zspawn command to spawn late into a game.");
     g_hCvarZSpawnTeam =             Project_CreateConVar("zspawn_team_zombie", "0", "Team to spawn player on when using ZSpawn. ['0' = Zombie | '1' = Human]");
     g_hCvarZSpawnTimeLimit =        Project_CreateConVar("zspawn_timelimit", "120.0", "The amount of time from round start before ZSpawn changes its behavior. ['0' = No timelimit]");
     g_hCvarZSpawnTimeLimitRules =   Project_CreateConVar("zspawn_timelimit_rules", "1", "How ZSpawn should work after the timelimit has expired. ['-1' = Block ZSpawn | '0' = Spawn as zombie | '1' = Spawn as human | Dependency: zspawn_team_zombie&zspawn_timelimit]");
@@ -216,6 +218,9 @@ public Action:ZSpawn_SayCommand(client, argc)
 {
     // Check if the module is disabled.
     if (ModuleMgr_IsDisabled(g_moduleZSpawn))
+        return Plugin_Continue;
+    
+    if (!GetConVarBool(g_hCvarZSpawn))
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "Feature is disabled");
         return Plugin_Handled;

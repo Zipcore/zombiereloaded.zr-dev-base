@@ -46,6 +46,14 @@
 		"en"		"The last zombie left the game so the outbreak is restarting with you!"
 	}
 
+	// Center text
+	// {1}: Seconds until outbreak.
+	"ZRC infect countdown"
+	{
+		"#format"	"{1:d}"
+		"en"		"Zombie outbreak in: {1} seconds"
+	}
+
 	"ZRC command infect syntax"
 	{
 		"en"		"Turn a player into a zombie.  Usage: zr_infect <#userid|name> [respawn - 1/0]"

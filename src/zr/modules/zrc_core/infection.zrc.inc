@@ -51,6 +51,8 @@ new Handle:g_hCvarMZombieMinTime;
 new Handle:g_hCvarMZombieMaxTime;
 new Handle:g_hCvarMZombieRatio;
 new Handle:g_hCvarMZombieBlockConsecutive;
+new Handle:g_hCvarMZombieCountdown;
+new Handle:g_hCvarMZombieCountdownStart;
 
 /**
  * Variable/function set to check/set if zombies are present.
@@ -137,6 +139,8 @@ ZRCInfect_OnPluginStart()
     g_hCvarMZombieMaxTime =             CreateConVar("zrc_mzombie_max_time", "1.0", "Maximum time from the start of the round until picking the mother zombie(s).");
     g_hCvarMZombieRatio =               CreateConVar("zrc_mzombie_ratio", "5", "Number of humans to infect as mother zombies in proportion to number of humans on the server. ['0' = Always one mother zombie]");
     g_hCvarMZombieBlockConsecutive =    CreateConVar("zrc_mzombie_block_consecutive", "1", "Prevent a player from being chosen as mother zombie two rounds in a row.");
+    g_hCvarMZombieCountdown =           CreateConVar("zrc_mzombie_countdown", "1", "Shows a countdown to players until the outbreak.");
+    g_hCvarMZombieCountdownStart =      CreateConVar("zrc_mzombie_countdown_start", "15", "Start showing countdown when there are lessthan or equal to this amount of seconds before infection.");
     
     // Create commands.
     RegConsoleCmd("zrc_infect", ZRCInfect_InfectCommand, "Turn a player into a zombie. Usage: zrc_infect <#userid|name> [respawn - 1/0]");
@@ -255,7 +259,23 @@ public ZRCInfect_RoundFreezeEnd()
         new Float:maxtime = GetConVarFloat(g_hCvarMZombieMaxTime);
         new randomtime = RoundToNearest(GetRandomFloat(mintime, maxtime));
         
-        g_hMotherInfect = CreateTimer(float(randomtime), ZRCInfect_InitMZombieTimer, false, TIMER_FLAG_NO_MAPCHANGE);
+        g_hMotherInfect = CreateTimer(float(randomtime), ZRCInfect_OutbreakTimer, false, TIMER_FLAG_NO_MAPCHANGE);
+        
+        // Start countdown if enabled.
+        if (GetConVarBool(g_hCvarMZombieCountdown))
+        {
+            // Create a pack of data to track countdown.
+            new Handle:hCountdownData = CreateDataPack();
+            WritePackCell(hCountdownData, 0);
+            WritePackCell(hCountdownData, randomtime);
+            g_hMotherInfectCountdown = CreateTimer(1.0, ZRCInfect_Countdown, hCountdownData, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
+            
+            // Print first message if the time until infection is below the defined value.
+            if (randomtime <= GetConVarInt(g_hCvarMZombieCountdownStart))
+            {
+                TransMgr_PrintTextAll(false, false, MsgFormat_None, MsgType_Center, g_moduleZRCInfect, false, "ZRC infect countdown", randomtime);
+            }
+        }
     }
 }
 
@@ -507,16 +527,57 @@ ZRCInfect_MotherZombie(override_count = 0)
 
 /**
  * Timer callback.
- * Choose a mother zombie. 
+ * Choose the mother zombie(s).
  * 
  * @param timer     The timer handle.
  */
-public Action:ZRCInfect_InitMZombieTimer(Handle:timer)
+public Action:ZRCInfect_OutbreakTimer(Handle:timer)
 {
     g_hMotherInfect = INVALID_HANDLE;
     
     // Pick a random mother zombie.
     ZRCInfect_MotherZombie();
+}
+
+/**
+ * Timer callback
+ * Executed every second until the outbreak.
+ * 
+ * @param timer             The timer handle.
+ * @param hCountdownData    Stores length of the timer and seconds that have passed.
+ */
+public Action:ZRCInfect_Countdown(Handle:timer, Handle:hCountdownData)
+{
+    // Read the info from the datapack.
+    ResetPack(hCountdownData);
+    new counter = ReadPackCell(hCountdownData);
+    new total = ReadPackCell(hCountdownData);
+    
+    counter += 1; // Increment.
+    
+    // Print if the counter hasn't reached the end.
+    if (counter <= total)
+    {
+        // Print text if the time until infection is below the defined value.
+        new timeleft = total - counter;
+        if (timeleft <= GetConVarInt(g_hCvarMZombieCountdownStart))
+        {
+            TransMgr_PrintTextAll(false, false, MsgFormat_None, MsgType_Center, g_moduleZRCInfect, false, "ZRC infect countdown", timeleft);
+        }
+    }
+    
+    // Stop if the countdown is finished.
+    if (counter >= total)
+    {
+        g_hMotherInfectCountdown = INVALID_HANDLE;
+        return Plugin_Stop;
+    }
+    
+    // Write the new counter value to the datapack.
+    ResetPack(hCountdownData);
+    WritePackCell(hCountdownData, counter);
+    
+    return Plugin_Continue;
 }
 
 /**

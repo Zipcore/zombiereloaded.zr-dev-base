@@ -54,7 +54,7 @@ WepRestrict_Register()
     moduledata[ModuleData_Hidden] = false;
     strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "Weapon Restriction");
     strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "weprestrict");
-    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Controls weapon restrictions.  Sub-module of the weapons module.");
+    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Weapon restriction system.");
     moduledata[ModuleData_Dependencies][0] = Weapons_GetIdentifier();
     moduledata[ModuleData_Dependencies][1] = INVALID_MODULE;
     

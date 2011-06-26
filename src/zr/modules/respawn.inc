@@ -243,11 +243,11 @@ public Respawn_PlayerDeath(victim, attacker, const String:weapon[], bool:headsho
 #endif
 
 /**
- * Timer callback, respawns a player.
+ * Timer callback, respawns a client.
  * 
  * @param timer     The timer handle.
  * @param client    The client index.
- */    
+ */
 public Action:Respawn_Timer(Handle:timer, any:client)
 {
     g_hRespawnTimer[client] = INVALID_HANDLE;

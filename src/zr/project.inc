@@ -64,20 +64,21 @@ stock ForwardOnPluginStart()
     ZRC_OnPluginStart();
     ZRiot_OnPluginStart();
     SDKHAdapt_OnPluginStart();
+    ClassMgr_OnPluginStart();
+    DLR_OnPluginStart();
     AntiStick_OnPluginStart();
     SuiciIntcpt_OnPluginStart();
     Speed_OnPluginStart();
     Respawn_OnPluginStart();
     Fog_OnPluginStart();
-    ZSpawn_OnPluginStart();
     ZTele_OnPluginStart();
+    ZSpawn_OnPluginStart();
     StripObj_OnPluginStart();
-    ClassMgr_OnPluginStart();
     
     #if defined PROJECT_GAME_CSS
+        ModelMgr_OnPluginStart();
         Weapons_OnPluginStart();
         Napalm_OnPluginStart();
-        ModelMgr_OnPluginStart();
     #endif
     
     AutoExecConfig(true, "zombiereloaded/zombiereloaded");

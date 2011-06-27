@@ -30,6 +30,7 @@
 
 // Include libraries.
 #include "zr/libraries/conversionlib"
+#include "zr/libraries/menulib"
 
 /**
  * This module's identifier.

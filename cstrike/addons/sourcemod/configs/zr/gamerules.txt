@@ -39,6 +39,7 @@
 		"configs"
 		{
 			"cfg"		"sourcemod/zombiereloaded/zrclassic.cfg"
+			"downloader"	"configs/zr/downloads.txt"
 			"weapons"	"configs/zr/weapons.txt"
 		}
 
@@ -56,6 +57,7 @@
 		{
 			"cfg"		"sourcemod/zombiereloaded/zriot.cfg"
 			"stages"	"configs/zr/stages.txt"
+			"downloader"	"configs/zr/downloads.txt"
 			"weapons"	"configs/zr/weapons.txt"
 		}
 

@@ -63,6 +63,7 @@ new ModelCollectionCfgIndex;
 #include "zr/modules/models/modeldb"
 #include "zr/modules/models/modelcollections"
 #include "zr/modules/models/modelfilter"
+#include "zr/modules/models/modelparser"
 #include "zr/modules/models/modelcommands"
 
 

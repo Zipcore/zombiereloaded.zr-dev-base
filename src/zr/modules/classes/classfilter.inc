@@ -229,7 +229,7 @@ stock ClassMgr_GetClasses(Handle:array, ClassTeam:team = ClassTeam_All, filter[C
         // Validate filter settings.
         if (!ClassMgr_FilterMatch(classIndex, filter, cache))
         {
-            // The class is didn't pass the filter, skip class.
+            // The class didn't pass the filter, skip class.
             continue;
         }
         

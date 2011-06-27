@@ -801,6 +801,10 @@ public ClassMgr_PlayerSpawn(client)
  */
 public ClassMgr_PlayerSpawnPost(client)
 {
+    // Note: The OnPlayerHuman will be fired automatically by the core on spawn.
+    //       Applying class attributes here are no longer needed.
+    
+    /*
     // Stop if classes aren't loaded.
     if (!g_ClassLoaded)
     {
@@ -817,6 +821,7 @@ public ClassMgr_PlayerSpawnPost(client)
     decl any:eventdata[sizeof(g_CommonDataType2)][1];
     eventdata[0][0] = client;
     EventMgr_Forward(g_EvOnClassApply, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+    */
 }
 
 /**

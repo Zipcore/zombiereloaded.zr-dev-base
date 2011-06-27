@@ -424,7 +424,7 @@ public ClsGeneric_EnableClass(index)
  * @param classIndex    Class to load.
  */
 static ClsGeneric_LoadWritableCache(classIndex)
-{    
+{
     ClassGenericData2[classIndex][ClassAttrib_Enabled] = ClassGenericData[classIndex][ClassAttrib_Enabled];
     ClassGenericData2[classIndex][ClassAttrib_Team] = ClassGenericData[classIndex][ClassAttrib_Team];
     ClassGenericData2[classIndex][ClassAttrib_TeamDefault] = ClassGenericData[classIndex][ClassAttrib_TeamDefault];

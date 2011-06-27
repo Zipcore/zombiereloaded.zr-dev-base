@@ -72,16 +72,16 @@ ZSpawn_Register()
     g_moduleZSpawn = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnMyModuleDisable",        "ZSpawn_OnMyModuleDisable");
-    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnMapStart",               "ZSpawn_OnMapStart");
-    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnClientDisconnect",       "ZSpawn_OnClientDisconnect");
+    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnMyModuleDisable",           "ZSpawn_OnMyModuleDisable");
+    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnMapStart",                  "ZSpawn_OnMapStart");
+    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnClientDisconnect",          "ZSpawn_OnClientDisconnect");
     
     #if defined PROJECT_GAME_CSS
     
-    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_RoundStart",               "ZSpawn_RoundStart");
-    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_RoundFreezeEnd",           "ZSpawn_RoundFreezeEnd");
-    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_RoundEnd",                 "ZSpawn_RoundEnd");
-    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_PlayerDeath",              "ZSpawn_PlayerDeath");
+    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_RoundStart",                  "ZSpawn_RoundStart");
+    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_RoundFreezeEnd",              "ZSpawn_RoundFreezeEnd");
+    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_RoundEnd",                    "ZSpawn_RoundEnd");
+    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_PlayerDeath",                 "ZSpawn_PlayerDeath");
     
     #endif
 }

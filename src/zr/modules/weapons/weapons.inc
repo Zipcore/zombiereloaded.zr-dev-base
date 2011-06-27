@@ -164,8 +164,6 @@ public Weapons_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnPluginEnd",            "Weapons_OnPluginEnd");
     EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnMapStart",             "Weapons_OnMapStart");
     EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnMyModuleEnable",       "Weapons_OnMyModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnClientPutInServer",    "Weapons_OnClientPutInServer");
-    //EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnClientDisconnect",     "Weapons_OnClientDisconnect");
 }
 
 /**
@@ -243,25 +241,6 @@ public Weapons_OnConfigReload(configindex)
 {
     Weapons_CacheWeaponData();
 }
-
-/**
- * Client has joined the server.
- * 
- * @param client    The client index.
- */
-public Weapons_OnClientPutInServer(client)
-{
-}
-
-/**
- * Client is disconnecting from the server.
- * 
- * @param client    The client index.
- */
-public Weapons_OnClientDisconnect(client)
-{
-}
-
 
 /**
  * Loops through each section of the keyvalues tree.

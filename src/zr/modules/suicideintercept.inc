@@ -145,6 +145,7 @@ SuiciIntcpt_AddListeners()
         if (!FileToKeyValues(kv, path))
         {
             LogMgr_Print(g_moduleSuiciIntcpt, LogType_Error, "Gamedata file", "Can't open gamedata file: %s.txt", GAMEDATA_FILE);
+            CloseHandle(kv);
             return;
         }
         
@@ -166,6 +167,7 @@ SuiciIntcpt_AddListeners()
         {
             LogMgr_Print(g_moduleSuiciIntcpt, LogType_Error, "Gamedata file", "Invalid gamedata file: %s.txt", GAMEDATA_FILE);
         }
+        CloseHandle(kv);
     }
 }
 

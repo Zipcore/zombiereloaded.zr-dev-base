@@ -136,9 +136,9 @@ public Action:ZRCWeps_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
     #if defined PROJECT_GAME_CSS
         // Listen for buy commands.
-        AddCommandListener(ZRiotWeps_BuyListener, "buy");
-        AddCommandListener(ZRiotWeps_BuyListener, "autobuy");
-        AddCommandListener(ZRiotWeps_BuyListener, "rebuy");
+        AddCommandListener(ZRCWeps_BuyListener, "buy");
+        AddCommandListener(ZRCWeps_BuyListener, "autobuy");
+        AddCommandListener(ZRCWeps_BuyListener, "rebuy");
     #endif
 }
 
@@ -154,9 +154,9 @@ public Action:ZRCWeps_OnMyModuleDisable(String:refusalmsg[], maxlen)
 {
     #if defined PROJECT_GAME_CSS
         // Stop listening for buy commands.
-        RemoveCommandListener(ZRiotWeps_BuyListener, "buy");
-        RemoveCommandListener(ZRiotWeps_BuyListener, "autobuy");
-        RemoveCommandListener(ZRiotWeps_BuyListener, "rebuy");
+        RemoveCommandListener(ZRCWeps_BuyListener, "buy");
+        RemoveCommandListener(ZRCWeps_BuyListener, "autobuy");
+        RemoveCommandListener(ZRCWeps_BuyListener, "rebuy");
     #endif
 }
 

@@ -54,7 +54,6 @@ stock Module:Weapons_GetIdentifier() { return g_moduleWeapons; }
  * Cvar handles.
  */
 
-
 /**
  * The max string lengths of weapon config data variables.
  */
@@ -149,7 +148,7 @@ Weapons_Register()
     g_moduleWeapons = ModuleMgr_Register(moduledata);
     
     // Register the OnEventsRegister event to register all events in it.
-    EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnEventsRegister",       "Weapons_OnEventsRegister");
+    EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnEventsRegister",           "Weapons_OnEventsRegister");
     
     // Register config file(s) that this module will use.
     ConfigMgr_Register(g_moduleWeapons, "Weapons_OnConfigReload", "");

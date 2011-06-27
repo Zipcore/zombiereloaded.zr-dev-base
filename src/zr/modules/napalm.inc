@@ -64,18 +64,13 @@ Napalm_Register()
     strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "Napalm");
     strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "napalm");
     strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Light players on fire with \"napalm grenades\"");
-    //moduledata[ModuleData_Dependencies][0] = ;
-    // End the last one with INVALID_MODULE.
-    //moduledata[ModuleData_Dependencies][x] = INVALID_MODULE;
+    moduledata[ModuleData_Dependencies][0] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
     g_moduleNapalm = ModuleMgr_Register(moduledata);
     
     // Register the OnEventsRegister event to register all events in it.
     EventMgr_RegisterEvent(g_moduleNapalm, "Event_OnEventsRegister",     "Napalm_OnEventsRegister");
-    
-    // Register config file(s) that this module will use.
-    // ConfigMgr_Register(g_moduleNapalm, "Napalm_OnConfigReload", "configs/<projectshortname>/<config>.txt");
 }
 
 /**
@@ -84,18 +79,6 @@ Napalm_Register()
 public Napalm_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnEventsReady,                 "Napalm_OnEventsReady");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnAllPluginsLoaded,            "Napalm_OnAllPluginsLoaded");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnPluginEnd,                   "Napalm_OnPluginEnd");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnAllModulesLoaded,            "Napalm_OnAllModulesLoaded");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnModuleEnable,                "Napalm_OnModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnMyModuleEnable,              "Napalm_OnMyModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnModuleDisable,               "Napalm_OnModuleDisable");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnMyModuleDisable,             "Napalm_OnMyModuleDisable");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnMapStart,                    "Napalm_OnMapStart");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnMapEnd,                      "Napalm_OnMapEnd");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnAutoConfigsBuffered,         "Napalm_OnAutoConfigsBuffered");
-    //EventMgr_RegisterEvent(g_moduleNapalm, Event_OnConfigsExecuted,             "Napalm_OnConfigsExecuted");
     EventMgr_RegisterEvent(g_moduleNapalm, "Event_OnClientPutInServer",         "Napalm_OnClientPutInServer");
     EventMgr_RegisterEvent(g_moduleNapalm, "Event_OnClientDisconnect",          "Napalm_OnClientDisconnect");
     

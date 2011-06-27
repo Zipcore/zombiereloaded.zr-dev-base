@@ -54,15 +54,9 @@ Speed_Register()
     g_moduleSpeed = ModuleMgr_Register(moduledata);
     
     // Register all the events needed for this module.
-    //EventMgr_RegisterEvent(g_moduleSpeed, "Event_OnMyModuleEnable",         "Speed_OnMyModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleSpeed, "Event_OnMyModuleDisable",        "Speed_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleSpeed, "Event_OnClientPutInServer",      "Speed_OnClientPutInServer");
-    EventMgr_RegisterEvent(g_moduleSpeed, "Event_OnClientDisconnect",       "Speed_OnClientDisconnect");
     EventMgr_RegisterEvent(g_moduleSpeed, "Event_OnPlayerRunCmd",           "Speed_OnPlayerRunCmd");
     EventMgr_RegisterEvent(g_moduleSpeed, "Hook_PreThinkPost",              "Speed_PreThinkPost");
-    
-    // Register config file(s) that this module will use.
-    // ConfigMgr_Register(g_moduleSpeed, "Speed_OnConfigReload", "configs/<projectshortname>/<config>.txt");
 }
 
 /**
@@ -83,15 +77,6 @@ public Speed_OnClientPutInServer(client)
 {
     // Initialize to 0.
     g_flSpeedModifier[client] = 0.0;
-}
-
-/**
- * Client is disconnecting from the server.
- * 
- * @param client    The client index.
- */
-public Speed_OnClientDisconnect(client)
-{
 }
 
 public Speed_PreThinkPost(client)

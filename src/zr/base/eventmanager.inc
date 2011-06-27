@@ -1,13 +1,13 @@
 /*
  * ============================================================================
  *
- *  Project
+ *  SourceMod Project Base
  *
  *  File:          eventmanager.inc
  *  Type:          Base
  *  Description:   Manages project events.
  *
- *  Copyright (C) 2009-2010  Greyscale
+ *  Copyright (C) 2009-2011  Greyscale
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,7 +25,8 @@
  * ============================================================================
  */
 
-// All the event information we need is in this.
+// All the event information we need is in this. Update this path to your
+// project folder.
 #include "zr/project_events"
 
 /**
@@ -547,7 +548,7 @@ stock Module:EventMgr_GetEventOwner()
  * 
  * @return                  Returns whatever you defined the forward to return.
  */
-public Action:EventMgr_ForwardToPlugins(Handle:hForward, any:eventdata[][], numValues, size, EventDataTypes:eventdatatypes[])
+public any:EventMgr_ForwardToPlugins(Handle:hForward, any:eventdata[][], numValues, size, EventDataTypes:eventdatatypes[])
 {
     new Action:result;
     

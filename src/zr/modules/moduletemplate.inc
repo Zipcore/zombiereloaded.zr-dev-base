@@ -65,7 +65,7 @@ new Module:g_module<ModuleVarName>;
     g_module<ModuleVarName> = ModuleMgr_Register(moduledata);
     
     // Register the OnEventsRegister event to register all events in it.
-    //EventMgr_RegisterEvent(g_module<ModuleVarName>, Event_OnEventsRegister,       "<FuncPrefix>_OnEventsRegister");
+    //EventMgr_RegisterEvent(g_module<ModuleVarName>, "Event_OnEventsRegister",       "<FuncPrefix>_OnEventsRegister");
     
     // Register config file(s) that this module will use.
     //ConfigMgr_Register(g_module<ModuleVarName>, "<FuncPrefix>_OnConfigReload", "configs/<projectshortname>/<config>.txt");

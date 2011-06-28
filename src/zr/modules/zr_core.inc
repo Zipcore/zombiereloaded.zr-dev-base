@@ -38,9 +38,10 @@ new Module:g_moduleZRCore;
 stock Module:ZRCore_GetIdentifier() { return g_moduleZRCore; }
 
 /**
- * Cvar handles.
+ * Generic zombie gameplay events that cores can share.
  */
-new Handle:g_hCvarZombieTeam;
+new ProjectEvent:g_EvOnClientInfected;
+new ProjectEvent:g_EvOnClientHuman;
 
 /**
  * Register this module.
@@ -59,6 +60,10 @@ ZRCore_Register()
     
     // Send this array of data to the module manager.
     g_moduleZRCore = ModuleMgr_Register(moduledata);
+    
+    // Create events.
+    g_EvOnClientInfected =          EventMgr_CreateEvent("Event_OnClientInfected");         /** Client has become a zombie. */
+    g_EvOnClientHuman =             EventMgr_CreateEvent("Event_OnClientHuman");            /** Client has become a human. */
     
     // Register the OnEventsRegister event to register all events in it.
     EventMgr_RegisterEvent(g_moduleZRCore, "Event_OnEventsRegister",              "ZRCore_OnEventsRegister");

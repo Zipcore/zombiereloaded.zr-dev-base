@@ -114,7 +114,6 @@ bool:DLR_Cache()
     decl String:configfile[PLATFORM_MAX_PATH];
     GameRules_GetNamedConfig("downloader", configfile);
     
-    
     if (ConfigMgr_ValidateFile(configfile))
         ConfigMgr_WriteString(g_moduleDLR, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);
     else
@@ -132,7 +131,164 @@ bool:DLR_Cache()
     }
     
     // Process the cached data.
+    new downloadvalidcount;
+    new downloadinvalidcount;
+    
+    decl String:downloadpath[PLATFORM_MAX_PATH];
+    decl String:dir[PLATFORM_MAX_PATH];
+    decl String:filename[32];
+    new bool:regex;
+    new Handle:downloaddir;
+    decl String:iter_filename[32];
+    new FileType:filetype;
+    decl String:fullpath[PLATFORM_MAX_PATH];
+    
+    for (new i = 0; i < count; i++)
+    {
+        // Get download path
+        GetArrayString(hDLRData, i, downloadpath, sizeof(downloadpath));
+        
+        // If file exists, then add to the downloads table and increment valid count.
+        if (FileExists(downloadpath))
+        {
+            downloadvalidcount++;
+            AddFileToDownloadsTable(downloadpath);
+            continue;
+        }
+        
+        regex = DLR_HasWildcard(downloadpath);
+        
+        // Queue all files in the directory.
+        downloaddir = OpenDirectory(downloadpath);
+        if (downloaddir != INVALID_HANDLE)
+            strcopy(dir, sizeof(dir), downloadpath);
+        else
+        {
+            // Break this dir up into a path and the file it refers to.
+            DLR_GetFileFromPath(downloadpath, dir, sizeof(dir), filename, sizeof(filename));
+            downloaddir = OpenDirectory(dir);
+            if (downloaddir == INVALID_HANDLE || !regex)
+            {
+                downloadinvalidcount++;
+                LogMgr_Print(g_moduleDLR, LogType_Error, "File Parsing", "Could not find file(s) for line: \"%s\"", downloadpath);
+                continue;
+            }
+        }
+        
+        // Iterate through every file in the folder, ignoring folder names. (no recursive folder support)
+        while (ReadDirEntry(downloaddir, iter_filename, sizeof(iter_filename), filetype))
+        {
+            if (filetype != FileType_File)
+                continue;
+            
+            // If the file has regex in it and it doesn't pass, then this file should not be queued.
+            if (regex && !DLR_WildcardParse(filename, iter_filename))
+                continue;
+            
+            Format(fullpath, sizeof(fullpath), "%s/%s", dir, iter_filename);
+            if (FileExists(fullpath))
+            {
+                downloadvalidcount++;
+                AddFileToDownloadsTable(fullpath);
+            }
+            else
+            {
+                downloadinvalidcount++;
+                LogMgr_Print(g_moduleDLR, LogType_Error, "File Iteration", "File iteration failure: \"%s\"  Contact plugin support.", fullpath);
+            }
+        }
+    }
+    
+    LogMgr_Print(g_moduleDLR, LogType_Normal, "Downloader Report", "Files added to queue: %d | Invalid entries: %d", downloadvalidcount, downloadinvalidcount);
     
     CloseHandle(hDLRData);
     return true;
+}
+
+/**
+ * Breaks a path up into a folder structure and file.
+ *                   
+ * @param path              The full path (file not required, 'file' will be set to null.)
+ * @param folder_struct     The folder structure.
+ * @param maxlen            The max length of the folder structure.
+ * @param file              The file at the end of the path, null if none existed.
+ * @param maxlen2           The max length of the file name.
+ */
+static stock DLR_GetFileFromPath(const String:path[], String:folder_struct[], maxlen, String:file[], maxlen2)
+{
+    // This isn't a path, just a filename, so copy it to the part2 output string and nullify part1.
+    if (StrContains(path, "/") == -1 && StrContains(path, "\\") == -1)
+    {
+        folder_struct[0] = '\0';
+        strcopy(file, maxlen2, path);
+        return;
+    }
+    
+    // Get the position of the last "/" or "\" in the string.
+    new breakpoint = FindCharInString(path, '/', true);
+    if (breakpoint == -1)
+        FindCharInString(path, '\\', true);
+    
+    strcopy(folder_struct, breakpoint+1, path);
+    strcopy(file, maxlen, path[breakpoint+1]);
+}
+
+/**
+ * Parses a given input to see if it meets the condition specified with simplified regular expressions.
+ * 
+ * @param condition     The form the input needs to match. (ex. condition: filename.*  input: filename.ext = pass)
+ * @param input         The input to check against the condition.
+ * 
+ * @return              True if the input passes the given condition, false if not.
+ */
+static stock bool:DLR_WildcardParse(const String:condition[], const String:input[])
+{
+    // Prepare the regular expression.
+    decl String:regex[64];
+    DLR_ConvertToRegex(condition, regex, sizeof(regex));
+    
+    return (SimpleRegexMatch(input, regex, PCRE_CASELESS) > 0);
+}
+
+/**
+ * Takes a (custom) simplified regular expression and returns a valid regular expression.
+ * 
+ * @param input     The input string to be modified.
+ * @param regex     The regular expression to prepare.
+ * @param maxlen    Max length of the output.
+ */
+static stock DLR_ConvertToRegex(const String:input[], String:regex[], maxlen)
+{
+    strcopy(regex, maxlen, input);
+    
+    // All of these regex meta characters are not considered in our simplified version.
+    ReplaceString(regex, maxlen, "(", "\\(");
+    ReplaceString(regex, maxlen, ")", "\\)");
+    ReplaceString(regex, maxlen, "{", "\\{");
+    ReplaceString(regex, maxlen, "}", "\\}");
+    ReplaceString(regex, maxlen, "$", "\\$");
+    ReplaceString(regex, maxlen, "+", "\\+");
+    ReplaceString(regex, maxlen, ".", "\\.");
+    
+    // Replace simple wildcard characters with regex wildcard formatting.
+    ReplaceString(regex, maxlen, "*", ".*");
+    ReplaceString(regex, maxlen, "?", ".");
+    
+    // Adding a '$' to the end of the line in regular expressions ensures the end matches exactly.
+    // Without this, regex would match "The cat in the hat" with "The cat in the hat!!"
+    // That would accept ".mdl.ztmp" when putting ".mdl".
+    StrCat(regex, maxlen, "$");
+}
+
+/**
+ * Checks if a string contains any wildcard characters.
+ * 
+ * @param input     The input string to be checked.
+ */
+static stock bool:DLR_HasWildcard(const String:input[])
+{
+    return (StrContains(input, "*") >= 0 ||
+             StrContains(input, "?") >= 0 ||
+             StrContains(input, "[") >= 0 ||
+             StrContains(input, "]") >= 0);
 }

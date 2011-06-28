@@ -30,7 +30,7 @@
 
 #include <sourcemod>
 #include <sdkhooks>
-//#include <smlib>
+#include <smlib>
 #include <clientprefs>
 
 #include "zr/project"

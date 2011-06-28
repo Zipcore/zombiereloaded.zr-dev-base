@@ -25,7 +25,6 @@
  * ============================================================================
  */
 
-#include <smlib/smlib_strings>
 #include "zr/libraries/authlib"
 #include "zr/libraries/utilities"
 

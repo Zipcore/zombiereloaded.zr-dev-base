@@ -62,7 +62,7 @@ DLR_Register()
 public DLR_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    //EventMgr_RegisterEvent(g_moduleDLR, "Event_OnMyModuleEnable",               "DLR_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleDLR, "Event_OnMyModuleEnable",               "DLR_OnMyModuleEnable");
     EventMgr_RegisterEvent(g_moduleDLR, "Event_OnMapStart",                     "DLR_OnMapStart");
 }
 
@@ -85,6 +85,7 @@ DLR_OnPluginStart()
  */
 public Action:DLR_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
+    DLR_Cache();
 }
 
 /**
@@ -199,7 +200,7 @@ bool:DLR_Cache()
         }
     }
     
-    LogMgr_Print(g_moduleDLR, LogType_Normal, "Downloader Report", "Files added to queue: %d | Invalid entries: %d", downloadvalidcount, downloadinvalidcount);
+    LogMgr_Print(g_moduleDLR, LogType_Normal, "Downloader Report", "Downloads queued: %d | Invalid entries: %d", downloadvalidcount, downloadinvalidcount);
     
     CloseHandle(hDLRData);
     return true;

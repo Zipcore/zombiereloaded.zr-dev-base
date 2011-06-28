@@ -506,6 +506,7 @@ stock ExplodeString(const String:text[], const String:split[], String:buffers[][
 		reloc_idx += idx;
 		if (text[reloc_idx] == '\0')
 		{
+			total++;        // Bug fix by Richard.
 			break;
 		}
 		if (++total >= maxStrings)

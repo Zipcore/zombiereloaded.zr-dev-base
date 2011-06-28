@@ -57,9 +57,9 @@
 stock ForwardOnPluginStart()
 {
     // Forward the OnPluginStart event to all modules here.
+    GameRules_OnPluginStart();
     GameData_OnPluginStart();
     //ZRCore_OnPluginStart();
-    GameRules_OnPluginStart();
     MapConfig_OnPluginStart();
     ZRC_OnPluginStart();
     ZRiot_OnPluginStart();
@@ -74,6 +74,7 @@ stock ForwardOnPluginStart()
     ZTele_OnPluginStart();
     ZSpawn_OnPluginStart();
     StripObj_OnPluginStart();
+    
     
     #if defined PROJECT_GAME_CSS
         ModelMgr_OnPluginStart();

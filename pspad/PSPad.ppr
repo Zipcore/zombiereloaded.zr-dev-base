@@ -84,6 +84,7 @@ ZR
 			..\src\zr\modules\napalm.inc
 			..\src\zr\modules\respawn.inc
 			..\src\zr\modules\sdkhooksadapter.inc
+			..\src\zr\modules\sfx.inc
 			..\src\zr\modules\speed.inc
 			..\src\zr\modules\stripobjectives.inc
 			..\src\zr\modules\suicideintercept.inc

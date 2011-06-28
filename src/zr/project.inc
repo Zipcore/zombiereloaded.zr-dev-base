@@ -59,7 +59,7 @@ stock ForwardOnPluginStart()
     // Forward the OnPluginStart event to all modules here.
     GameRules_OnPluginStart();
     GameData_OnPluginStart();
-    //ZRCore_OnPluginStart();
+    ZRCore_OnPluginStart();
     MapConfig_OnPluginStart();
     ZRC_OnPluginStart();
     ZRiot_OnPluginStart();
@@ -70,6 +70,7 @@ stock ForwardOnPluginStart()
     SuiciIntcpt_OnPluginStart();
     Speed_OnPluginStart();
     Respawn_OnPluginStart();
+    SFX_OnPluginStart();
     Fog_OnPluginStart();
     ZTele_OnPluginStart();
     ZSpawn_OnPluginStart();

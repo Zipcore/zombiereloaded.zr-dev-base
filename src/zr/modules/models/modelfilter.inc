@@ -25,6 +25,8 @@
  * ============================================================================
  */
 
+#include <smlib/smlib_math>
+
 /**
  * @section Filtering flags.
  */
@@ -114,7 +116,7 @@ ModelDB_GetModel(client, filters, Handle:models = INVALID_HANDLE, bool:asList = 
     if (filters & MODEL_FILTER_RANDOM)
     {
         // Get random model.
-        new randIndex = GetRandomInt(0, filterCount - 1);
+        new randIndex = Math_GetRandomInt(0, filterCount - 1);
         model = GetArrayCell(filtered, randIndex); 
         CloseHandle(filtered);      // Temp array, NOT the list.
         
@@ -151,7 +153,7 @@ ModelDB_GetModel(client, filters, Handle:models = INVALID_HANDLE, bool:asList = 
  *
  * @return          True if passed, false otherwise.
  */
-bool:ModelDB_FilterTest(client, filters, model)
+public bool:ModelDB_FilterTest(client, filters, model)
 {
     // Cache relevant attributes for readability.
     new ModelTeam:team = ModelData[model][Model_Team];

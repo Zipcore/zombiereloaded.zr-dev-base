@@ -3,9 +3,9 @@
  *
  *  Zombie:Reloaded
  *
- *  File:          modelfilter.inc
+ *  File:          modelparser.inc
  *  Type:          Module include
- *  Description:   Model query parser the model db.
+ *  Description:   Model query parser for the model db.
  *
  *  Copyright (C) 2009-2011  Greyscale, Richard Helgeby
  *
@@ -53,12 +53,27 @@ enum ModelParserMode
 }
 
 /**
+ * @section Model parse error codes.
+ */
+#define MODEL_ERR_EMPTY                 1   /** Query string was empty. */
+#define MODEL_ERR_NOT_FOUND             2   /** No model found. */
+#define MODEL_ERR_INVALID_FILTER        3   /** Invalid filter name. */
+#define MODEL_ERR_INVALID_COLLECTION    4   /** Invalid collection name. */
+#define MODEL_ERR_INVALID_MODEL         5   /** Invalid model or filter name. */
+#define MODEL_ERR_EMPTY_ENTRY           6   /** Empty entry (double spaces). */
+/**
+ * @endsection
+ */
+
+/**
  * Separator for filter lists.
+ * Note: MUST be just one character. Otherwise parser must be updated too.
  */
 #define MODEL_FILTER_SEPARATOR ","
 
 /**
  * Prefix to separate filter list and collection name.
+ * Note: MUST be just one character. Otherwise parser must be updated too.
  */
 #define MODEL_COLLECTION_PREFIX ":"
 
@@ -81,17 +96,32 @@ enum ModelParserMode
  * @param query     Model query string.
  * @param mode      Parser mode.
  * @param list      Optional. List to put models in if mode is ModelParser_List.
+ * @param errCode   Output, optional. Error code.
+ * @param errPos    Output, optional. Position in query string where it failed.
  *
- * @return          -2 if it's a predefined option (mode).
+ * @return          -1 if it's a predefined option (mode).
+ *
  *                  If in list mode: Number of models added to the list.
- *                  Otherwise model index if found, or -1 if no models found.
+ *
+ *                  Default mode: Model index if found, or a negative number:
+ *                  -2 if empty query string,
+ *                  -3 if empty entry,
+ *                  -4 if invalid collection entry,
+ *                  -5 if invalid filter entry,
+ *                  -6 if no model found.
+ *                  -7 if invalid parser mode.
  */
-ModelDB_ParseQuery(client, const String:query[], ModelParserMode:mode = ModelParser_First, Handle:list = INVALID_HANDLE)
+ModelDB_ParseQuery(client, const String:query[], ModelParserMode:mode = ModelParser_First, Handle:list = INVALID_HANDLE, &errCode = 0, &errPos = 0)
 {
     new model = -1;
     new filters = 0;
     new bool:asList = (mode == ModelParser_List);
     new listCount = 0;
+    
+    // Reset error variables.
+    new tempErrPos = 0;
+    errPos = 0;
+    errCode = 0;
     
     new entryCount;
     decl String:entries[MODEL_MAX_ENTRIES][MODEL_STRING_LEN];
@@ -101,7 +131,7 @@ ModelDB_ParseQuery(client, const String:query[], ModelParserMode:mode = ModelPar
     if(option == ModelParser_Default || option == ModelParser_NoChange)
     {
         // Predefined option. Do nothing and leave it to other modules/plugins.
-        return asList ? 0 : -2;
+        return asList ? 0 : -1;
     }
     
     // Do a quick check for single model queries. If the query is longer than
@@ -132,18 +162,44 @@ ModelDB_ParseQuery(client, const String:query[], ModelParserMode:mode = ModelPar
     // Check if failed.
     if (entryCount == 0)
     {
-        return asList ? 0 : -1;
+        errCode = MODEL_ERR_EMPTY;
+        return asList ? 0 : -2;
     }
     
     // Loop through entries.
     for (new entry = 0; entry < entryCount; entry++)
     {
+        // Calculate entry position in query string.
+        if (entry > 0)
+        {
+            // Continue after last entry.
+            errPos += strlen(entries[entry - 1]);
+            
+            // MODEL_ENTRY_SEPARATOR, 1 character.
+            errPos++;
+        }
+        
+        // Check for empty entry (double spaces).
+        if (strlen(entries[entry]) == 0)
+        {
+            // (errPos is already set).
+            errCode = MODEL_ERR_EMPTY_ENTRY;
+            return asList ? 0 : -3;
+        }
+        
         // Determine entry type.
         if (StrContains(entries[entry], MODEL_COLLECTION_PREFIX) >= 0)
         {
             // It's a collection. The collection parser also parses filters
             // on collections.
-            model = ModelDB_ParseCollection(client, entries[entry], asList, list);
+            model = ModelDB_ParseCollection(client, entries[entry], asList, list, errCode, tempErrPos);
+            
+            // Check for parse errors.
+            if (errCode > 0)
+            {
+                errPos += tempErrPos;
+                return asList ? 0 : -4;
+            }
             
             if (asList)
             {
@@ -169,8 +225,21 @@ ModelDB_ParseQuery(client, const String:query[], ModelParserMode:mode = ModelPar
             else
             {
                 // It's a filter list. Parse it and get a model.
-                filters = ModelDB_ParseFilters(entries[entry]);
+                filters = ModelDB_ParseFilters(entries[entry], tempErrPos);
+                
+                // Check for parse errors.
+                if (filters < 0)
+                {
+                    // Calculate position.
+                    errPos += tempErrPos;
+                    errCode = MODEL_ERR_INVALID_MODEL;  // Invalid model or filter name.
+                    return asList ? 0 : -5;
+                }
+                
                 model = ModelDB_GetModel(client, filters, _, asList, list);
+                
+                // Note: No need to check for errors here. No model in return
+                //       is valid too.
                 
                 if (asList)
                 {
@@ -196,7 +265,7 @@ ModelDB_ParseQuery(client, const String:query[], ModelParserMode:mode = ModelPar
     // Check if no models found.
     if (listCount == 0)
     {
-        return -1;
+        return -6;
     }
     
     switch (mode)
@@ -215,7 +284,7 @@ ModelDB_ParseQuery(client, const String:query[], ModelParserMode:mode = ModelPar
     }
     
     // Invalid mode.
-    return -1;
+    return -7;
 }
 
 /**
@@ -223,22 +292,41 @@ ModelDB_ParseQuery(client, const String:query[], ModelParserMode:mode = ModelPar
  *
  * @param filterList    List of filter flags separated by
  *                      MODEL_FILTER_SEPARATOR.
+ * @param errPos        Output, optional. Position in filter list string that
+ *                      failed.
  *
- * @return              Filter flags in a bit field.
+ * @return              Filter flags in a bit field. -1 on error (with position
+ *                      in errPos.)
  */
-ModelDB_ParseFilters(const String:filterList[])
+ModelDB_ParseFilters(const String:filterList[], &errPos = 0)
 {
     new filters = 0;
+    errPos = 0;
     decl String:filterEntries[MODEL_MAX_ENTRIES][MODEL_FILTER_NAME_LEN];
     
     new count = ExplodeString(filterList, MODEL_FILTER_SEPARATOR, filterEntries, MODEL_MAX_ENTRIES, MODEL_FILTER_NAME_LEN);
     
     for (new entry = 0; entry < count; entry++)
     {
+        // Calculate entry position in query string.
+        if (entry > 0)
+        {
+            // Continue after last entry.
+            errPos += strlen(filterEntries[entry - 1]);
+            
+            // MODEL_FILTER_SEPARATOR, 1 character.
+            errPos++;
+        }
+        
         new filter = ModelDB_StringToFilter(filterEntries[entry]);
         if (filter > 0)
         {
             filters |= filter;
+        }
+        else
+        {
+            // Invalid filter name. Error position is already updated.
+            return -1;
         }
     }
     
@@ -254,15 +342,24 @@ ModelDB_ParseFilters(const String:filterList[])
  * @param asList    Optional. Return all accessible models in a list.
  *                  Defaults to false.
  * @param list      Optional. List to put models in.
+ * @param errCode   Output, optional. Error code.
+ * @param errPos    Output, optional. Position in entry string where it failed.
  *
- * @return          Model index if asList is false, or number of models added
- *                  to list if asList is true.
+ * @return          If asList is true; number of models added to list.
+ *                  Otherwise model index, or negative number on error:
+ *                  -1 if no models found,
+ *                  -2 if invalid filter name,
+ *                  -3 if invalid collection name.
  */
-ModelDB_ParseCollection(client, const String:entry[], bool:asList = false, Handle:list = INVALID_HANDLE)
+ModelDB_ParseCollection(client, const String:entry[], bool:asList = false, Handle:list = INVALID_HANDLE, &errCode = 0, &errPos = 0)
 {
     new model = -1;
     new filters;
     decl String:filterBuffer[MODEL_STRING_LEN];
+    
+    // Reset error variables.
+    errCode = 0;
+    errPos = 0;
     
     new pos = SplitString(entry, MODEL_COLLECTION_PREFIX, filterBuffer, sizeof(filterBuffer));
     
@@ -274,24 +371,77 @@ ModelDB_ParseCollection(client, const String:entry[], bool:asList = false, Handl
     }
     else
     {
-        filters = ModelDB_ParseFilters(filterBuffer);
+        // Get filter flags.
+        filters = ModelDB_ParseFilters(filterBuffer, errPos);
+        
+        // Check if failed.
+        if (filters < 0)
+        {
+            // Invalid filter name. Error position is already updated.
+            errCode = MODEL_ERR_INVALID_FILTER;
+            return asList ? 0 : -2;
+        }
     }
     
     // Get collection. The collection name is the other part of the entry.
     new collection = ModelMgr_GetCollectionIndex(entry[pos]);
     
-    if (collection >= 0)
+    // Check for errors.
+    if (collection < 0)
     {
-        // Get list.
-        new Handle:collectionList = ModelCollectionData[collection][ModelCollection_Array];
-        
-        // Get model(s) from list.
-        model = ModelDB_GetModel(client, filters, collectionList, asList, list);
-        return model;   // Returns list count if writing to list.
+        // Invalid collection name.
+        errPos = pos;
+        errCode = MODEL_ERR_INVALID_COLLECTION;
+        return asList ? 0 : -3;
     }
     
-    // No models found.
-    return asList ? 0 : -1;
+    // Get list.
+    new Handle:collectionList = ModelCollectionData[collection][ModelCollection_Array];
+    
+    // Get model(s) from list.
+    model = ModelDB_GetModel(client, filters, collectionList, asList, list);
+    
+    return model;   // Returns list count if writing to list, -1 if no models found.
+}
+
+/**
+ * Adds a marker (^) at the specified position on a new line below.
+ *
+ * Note: Does not work with multiline strings as source.
+ *
+ * @param pos       Position of marker (zero based).
+ * @param buffer    Destination string buffer.
+ * @param maxlen    Size of buffer.
+ * 
+ * @return          Number of cells written.
+ */
+ModelDB_GetStringMarker(pos, String:buffer[], maxlen)
+{
+    new count = 0;
+    
+    // Check if the marker is outside the buffer space.
+    if (pos > maxlen - 2)
+    {
+        // Outside buffer, stop here. The marker won't be visible anyways.
+        return 0;
+    }
+    
+    // Write spaces before marker.
+    for (new i = 0; i < pos; i++)
+    {
+        buffer[i] = ' ';
+    }
+    
+    // Write marker.
+    buffer[pos] = '^';
+    
+    // Terminate string.
+    buffer[pos + 1] = 0;
+    
+    // pos - 1 for the loop, and + 2 for marker and null terminator.
+    count = pos + 1;
+    
+    return count;
 }
 
 
@@ -306,7 +456,7 @@ ModelDB_ParseCollection(client, const String:entry[], bool:asList = false, Handl
  *
  * @return          Parser mode, or ModelParser_Invalid if failed.
  */
-ModelParserMode:ModelDB_StringToParserMode(const String:mode[])
+public ModelParserMode:ModelDB_StringToParserMode(const String:mode[])
 {
     if (strlen(mode) == 0)
     {
@@ -330,4 +480,44 @@ ModelParserMode:ModelDB_StringToParserMode(const String:mode[])
     }
     
     return ModelParser_Invalid;
+}
+
+/**
+ * Converts a error code to a user friendly message.
+ *
+ * @param errCode   Error code to convert
+ * @param buffer    Destination string buffer.
+ * @param maxlen    Size of buffer.
+ */
+public ModelDB_ErrCodeToString(errCode, String:buffer[], maxlen)
+{
+    switch (errCode)
+    {
+        case MODEL_ERR_EMPTY:
+        {
+            return strcopy(buffer, maxlen, "Query string is empty");
+        }
+        case MODEL_ERR_NOT_FOUND:
+        {
+            return strcopy(buffer, maxlen, "No model found");
+        }
+        case MODEL_ERR_INVALID_FILTER:
+        {
+            return strcopy(buffer, maxlen, "Invalid filter name");
+        }
+        case MODEL_ERR_INVALID_COLLECTION:
+        {
+            return strcopy(buffer, maxlen, "Invalid collection name");
+        }
+        case MODEL_ERR_INVALID_MODEL:
+        {
+            return strcopy(buffer, maxlen, "Invalid model or filter name");
+        }
+        case MODEL_ERR_EMPTY_ENTRY:
+        {
+            return strcopy(buffer, maxlen, "Empty entry (double spaces)");
+        }
+    }
+    
+    return 0;
 }

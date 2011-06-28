@@ -50,26 +50,25 @@ public Action:ModelCmd_List(client, argc)
     // Check if listing all models.
     if (argc == 0)
     {
-        // Print syntax.
+        // No parameters. Print syntax.
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ModelMgr list syntax", PROJECT_CMD_PREFIX);
         ReplyToCommand(client, "\n");
         
-        // Print the list.
+        // Print a list with all models.
         ModelCmd_PrintList(client);
-        
-        return Plugin_Handled;
     }
-    // Check if doing a query.
     else if (argc >= 2)
     {
+        // Parse query.
+        
         decl String:query[MODEL_MAX_QUERY_LEN];
-        decl String:argbuffer[MODEL_MAX_QUERY_LEN];
+        query[0] = 0;
+        decl String:argbuffer[64 + MODEL_MAX_QUERY_LEN];    // 64 makes space for command name and target parameter.
+        argbuffer[0] = 0;
         
         // Get the query.
-        GetCmdArgString(argbuffer, sizeof(argbuffer));      // Full command string.
-        new pos = FindCharInString(argbuffer, ' ') + 1;     // Command.
-        pos = FindCharInString(argbuffer[pos], ' ') + 1;    // First argument.
-        pos = FindCharInString(argbuffer[pos], ' ') + 1;    // Query position.
+        GetCmdArgString(argbuffer, sizeof(argbuffer));      // Full argument string (excluding command name).
+        new pos = FindCharInString(argbuffer, ' ') + 1;     // Jump after target parameter.
         strcopy(query, sizeof(query), argbuffer[pos]);
         
         GetCmdArg(1, argbuffer, sizeof(argbuffer));
@@ -93,30 +92,45 @@ public Action:ModelCmd_List(client, argc)
             return Plugin_Handled;
         }
         
-        // TODO: Validate query.
-        /*if (!...)
-        {
-            // TODO: Print position of invalid part in the query.
-            return Plugin_Handled;
-        }*/
-        
         // Prepare list.
         new Handle:list = CreateArray();
         
         // Run query.
-        ModelDB_ParseQuery(target, query, ModelParser_List, list);
+        new errPos = 0;
+        new errCode = 0;
+        ModelDB_ParseQuery(target, query, ModelParser_List, list, errCode, errPos);
+        
+        // Check for parse errors.
+        if (errCode > 0)
+        {
+            decl String:errMsg[MODEL_STRING_LEN];
+            errMsg[0] = 0;
+            decl String:errMarker[MODEL_MAX_QUERY_LEN];
+            errMarker[0] = 0;
+            
+            // Print error message.
+            ModelDB_ErrCodeToString(errCode, errMsg, sizeof(errMsg));
+            ReplyToCommand(client, "Parse error (error code = %d, position = %d): %s\n", errCode, errPos, errMsg);
+            
+            // Print query string with marker of error position.
+            ReplyToCommand(client, query);
+            ModelDB_GetStringMarker(errPos, errMarker, sizeof(errMarker));
+            ReplyToCommand(client, errMarker);
+            
+            return Plugin_Handled;
+        }
         
         // Print list.
         ModelCmd_PrintList(client, list);
-        
-        return Plugin_Handled;
     }
     else
     {
-        // Print syntax.
+        // Invalid command. Print syntax.
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ModelMgr list syntax", PROJECT_CMD_PREFIX);
-        return Plugin_Handled;
     }
+    
+    return Plugin_Handled;
+
 }
 
 public Action:ModelCmd_Dump(client, argc)

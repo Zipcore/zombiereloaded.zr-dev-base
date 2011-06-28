@@ -44,6 +44,7 @@
 
 /**
  * Separator for entries in lists (flags and groups).
+ * Note: MUST be just one character. Otherwise parser must be updated too.
  */
 #define MODEL_ENTRY_SEPARATOR " "
 

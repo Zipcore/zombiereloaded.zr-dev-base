@@ -75,6 +75,8 @@ ZR
 				..\src\zr\modules\zriot_core\teammanager.zriot.inc
 				..\src\zr\modules\zriot_core\weapons.zriot.inc
 			..\src\zr\modules\core.inc
+			..\src\zr\modules\downloader.inc
+			..\src\zr\modules\fog.inc
 			..\src\zr\modules\gamedata.inc
 			..\src\zr\modules\gamerules.inc
 			..\src\zr\modules\mapconfig.inc
@@ -229,7 +231,6 @@ ZR
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\zriot.phrases.txt
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\zspawn.phrases.txt
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\ztele.phrases.txt
-
 [Open project files]
 0=..\src\zombiereloaded.sp
 [Selected Project Files]

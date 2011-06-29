@@ -390,7 +390,7 @@ public ClassMgr_OnEventsRegister()
 public Action:ClassMgr_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
     // Don't let the module load unless the configs cached successfully.
-    if (!ClassMgr_LoadClasses())
+    if (!g_ClassLoaded && !ClassMgr_LoadClasses())
     {
         Format(refusalmsg, maxlen, "%T", "ClassMgr refuse enable", LANG_SERVER);
         return Plugin_Handled;
@@ -404,6 +404,8 @@ public Action:ClassMgr_OnMyModuleEnable(String:refusalmsg[], maxlen)
  */
 bool:ClassMgr_LoadClasses()
 {
+    // TODO: Reorganize so it will also do validation here.
+    
     // Get the config path from the gamerules module.
     decl String:configfile[PLATFORM_MAX_PATH];
     GameRules_GetConfigPath(CLASSES_CONFIG_FILE, configfile);
@@ -415,6 +417,9 @@ bool:ClassMgr_LoadClasses()
         LogMgr_Print(g_moduleClassMgr, LogType_Fatal_Module, "Config Validation", "Invalid config file path defined in gamerules: \"%s\".  Disabling module.", configfile);
         return false;
     }
+    
+    // Reset loaded-state.
+    g_ClassLoaded = false;
     
     // Prepare class name index. Create or clear.
     ClassMgr_PrepareNameIndex();
@@ -435,6 +440,7 @@ bool:ClassMgr_LoadClasses()
         return false;
     }
     
+    g_ClassLoaded = true;
     return true;
     
 }

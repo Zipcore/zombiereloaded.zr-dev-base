@@ -46,6 +46,11 @@ enum ModelCollectionAttributes
 new ModelCollectionData[MODEL_COLLECTIONS_MAX][ModelAttributes];
 
 /**
+ * Stores whether model collections are sucessfully loaded or not.
+ */
+new bool:ModelCollectionsLoaded;
+
+/**
  * Number of valid model collections.
  */
 new ModelCollectionCount;
@@ -91,15 +96,19 @@ bool:ModelDB_LoadCollections()
         ClearTrie(ModelCollectionNameIndex);
     }
     
+    // Reset loaded-state.
+    ModelCollectionsLoaded = false;
+    
     // Log loading-message.
     LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Loading model collections from file \"%s\".", configfile);
     
     // Parse model file.
-    ModelCollectionCount = ConfigMgr_CacheKv(g_moduleModelMgr, ModelCollectionCfgIndex, "ModelDB_LoadCollection");
+    ConfigMgr_CacheKv(g_moduleModelMgr, ModelCollectionCfgIndex, "ModelDB_LoadCollection");
     
     // Log loaded-message.
     LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Model collections loaded: %d", ModelCollectionCount);
     
+    ModelCollectionsLoaded = true;  // This can be true even if there are no collections (it's optional).
     return true;
 }
 
@@ -191,6 +200,17 @@ public KvCache:ModelDB_LoadCollection(Handle:kvCollections, sectionIndex, const 
         
         // Set array.
         ModelCollectionData[ModelCollectionCount][ModelCollection_Array] = models;
+        ModelCollectionCount++;
         return KvCache_Continue;
     }
+}
+
+/**
+ * Returns whether model collections are currently successfully loaded.
+ *
+ * @return      True if loaded, false otherwise.
+ */
+bool:ModelDB_AreCollectionsLoaded()
+{
+    return ModelCollectionsLoaded;
 }

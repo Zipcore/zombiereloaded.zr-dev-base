@@ -107,6 +107,11 @@ enum ModelAttributes
 new ModelData[MODELS_MAX][ModelAttributes];
 
 /**
+ * Stores whether models are sucessfully loaded or not.
+ */
+new bool:ModelsLoaded;
+
+/**
  * Number of valid models.
  */
 new ModelCount;
@@ -154,11 +159,14 @@ bool:ModelDB_LoadModels()
         ClearTrie(ModelNameIndex);
     }
     
+    // Reset loaded-state.
+    ModelsLoaded = false;
+    
     // Log loading-message.
     LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Loading models from file \"%s\".", configfile);
     
     // Parse model file.
-    ModelCount = ConfigMgr_CacheKv(g_moduleModelMgr, ModelCfgIndex, "ModelDB_LoadModel");
+    ConfigMgr_CacheKv(g_moduleModelMgr, ModelCfgIndex, "ModelDB_LoadModel");
     
     // Check if there are no models.
     if (ModelCount == 0)
@@ -173,6 +181,7 @@ bool:ModelDB_LoadModels()
     // Log loaded-message.
     LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Models loaded: %d", ModelCount);
     
+    ModelsLoaded = true;
     return true;
 }
 
@@ -364,6 +373,7 @@ public KvCache:ModelDB_LoadModel(Handle:kvModels, sectionIndex, const String:sec
     else
     {
         // Model is valid.
+        ModelCount++;
         return KvCache_Continue;
     }
 }
@@ -453,6 +463,16 @@ bool:ModelDB_IsPlayerAuthorized(client, model)
     
     // Invalid auth mode (should never happen because model is validated).
     return false;
+}
+
+/**
+ * Returns whether models are currently successfully loaded.
+ *
+ * @return      True if loaded, false otherwise.
+ */
+bool:ModelDB_AreModelsLoaded()
+{
+    return ModelsLoaded;
 }
 
 

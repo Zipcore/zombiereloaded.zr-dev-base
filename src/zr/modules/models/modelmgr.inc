@@ -155,13 +155,16 @@ public ModelMgr_OnEventsReady()
 public Action:ModelMgr_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
     // Don't let the module load unless the configs cached successfully.
-    if (!ModelDB_LoadModels())
+    
+    // Load models if not already loaded.
+    if (!ModelDB_AreModelsLoaded() && !ModelDB_LoadModels())
     {
         Format(refusalmsg, maxlen, "%T", "ModelMgr models refuse enable", LANG_SERVER);
         return Plugin_Handled;
     }
     
-    if (!ModelDB_LoadCollections())
+    // Load model collections if not already loaded.
+    if (!ModelDB_AreCollectionsLoaded() && !ModelDB_LoadCollections())
     {
         Format(refusalmsg, maxlen, "%T", "ModelMgr model collections refuse enable", LANG_SERVER);
         return Plugin_Handled;

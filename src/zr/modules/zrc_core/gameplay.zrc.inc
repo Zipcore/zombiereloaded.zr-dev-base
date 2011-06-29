@@ -193,8 +193,6 @@ public ZRCGPlay_OnClientDisconnect(client)
             #endif
         }
     }
-    
-    // TODO Pick new zombie.
 }
 
 /**

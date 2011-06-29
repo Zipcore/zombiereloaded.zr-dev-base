@@ -41,6 +41,11 @@
 #include "zr/libraries/weaponlib"
 
 /**
+ * The name of the weapons config file.
+ */
+#define WEAPONS_CONFIG_FILE "weapons.txt"
+
+/**
  * This module's identifier.
  */
 new Module:g_moduleWeapons;
@@ -329,7 +334,7 @@ bool:Weapons_CacheWeaponData()
 {
     // Get the config path from the gamerules module.
     decl String:configfile[PLATFORM_MAX_PATH];
-    GameRules_GetNamedConfig("weapons", configfile);
+    GameRules_GetConfigPath(WEAPONS_CONFIG_FILE, configfile);
     
     if (ConfigMgr_ValidateFile(configfile))
         ConfigMgr_WriteString(g_moduleWeapons, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);

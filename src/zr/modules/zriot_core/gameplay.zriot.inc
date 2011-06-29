@@ -199,10 +199,6 @@ public ZRiotGPlay_OnClientDisconnect(client)
             #endif
         }
     }
-    
-    /**
-     * TODO: what happens if all zombies disconnect ?
-     */
 }
 
 /**

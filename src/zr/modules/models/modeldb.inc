@@ -129,30 +129,19 @@ new bool:ModelHasAccess[MAXPLAYERS + 1][MODELS_MAX];
 
 /**
  * Loads models from file.
- *
- * Note: Models must NOT be loaded BEFORE OnConfigsExecuted event!
  */
-ModelDB_LoadModels()
+bool:ModelDB_LoadModels()
 {
-    // Do nothing if module is disabled.
-    if (ModuleMgr_IsDisabled(g_moduleModelMgr))
-    {
-        return;
-    }
-    
+    // Get the config path from the gamerules module.
     decl String:configfile[PLATFORM_MAX_PATH];
-    GetConVarString(g_hCvarModelsFile, configfile, sizeof(configfile));
-    ModelCount = 0;
+    GameRules_GetConfigPath(MODELMGR_MODELS_FILE, configfile);
     
-    // Validate path.
     if (ConfigMgr_ValidateFile(configfile))
-    {
-        ConfigMgr_WriteString(g_moduleModelMgr, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);
-    }
+        ConfigMgr_WriteString(g_moduleModelMgr, ModelCfgIndex, ConfigData_Path, CM_DATA_PATH, configfile);
     else
     {
-        LogMgr_Print(g_moduleModelMgr, LogType_Fatal_Module, "Config Validation", "Error: Invalid config file path in cvar zr_models_file: \"%s\"", configfile);
-        return;
+        LogMgr_Print(g_moduleModelMgr, LogType_Fatal_Module, "Config Validation", "Invalid config file path defined in gamerules: \"%s\".  Disabling module.", configfile);
+        return false;
     }
     
     // Prepare trie.
@@ -169,13 +158,13 @@ ModelDB_LoadModels()
     LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Loading models from file \"%s\".", configfile);
     
     // Parse model file.
-    ConfigMgr_CacheKv(g_moduleModelMgr, ModelCfgIndex, "ModelDB_LoadModel");
+    ModelCount = ConfigMgr_CacheKv(g_moduleModelMgr, ModelCfgIndex, "ModelDB_LoadModel");
     
     // Check if there are no models.
     if (ModelCount == 0)
     {
         LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Validation", "Error: No valid models found in model config file: %s", configfile);
-        return;
+        return false;
     }
     
     // Precache models.
@@ -183,6 +172,8 @@ ModelDB_LoadModels()
     
     // Log loaded-message.
     LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Models loaded: %d", ModelCount);
+    
+    return true;
 }
 
 /**
@@ -373,7 +364,6 @@ public KvCache:ModelDB_LoadModel(Handle:kvModels, sectionIndex, const String:sec
     else
     {
         // Model is valid.
-        ModelCount++;
         return KvCache_Continue;
     }
 }

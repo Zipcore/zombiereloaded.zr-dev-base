@@ -138,9 +138,13 @@ new ProjectEvent:g_EvOnClassPlayerHuman;
  */
 
 /**
+ * The path to this module's class config file, relative to the path defined in gamerules.txt.
+ */
+#define CLASSES_CONFIG_FILE "classes.txt"
+
+/**
  * Cvar handles.
  */
-new Handle:g_hCvarClassFile;
 new Handle:g_hCvarClassesMenuSpawn;
 new Handle:g_hCvarClassesMenuJoin;
 new Handle:g_hCvarClassesRandom;
@@ -354,13 +358,13 @@ public ClassMgr_OnEventsRegister()
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnPluginEnd",             "ClassMgr_OnPluginEnd");
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnAllModulesLoaded",      "ClassMgr_OnAllModulesLoaded");
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnModuleEnable",          "ClassMgr_OnModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnMyModuleEnable",        "ClassMgr_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnMyModuleEnable",        "ClassMgr_OnMyModuleEnable");
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnModuleDisable",         "ClassMgr_OnModuleDisable");
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnMyModuleDisable",       "ClassMgr_OnMyModuleDisable");
-    //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnMapStart",              "ClassMgr_OnMapStart");
+    EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnMapStart",                "ClassMgr_OnMapStart");
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnMapEnd",                "ClassMgr_OnMapEnd");
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnAutoConfigsBuffered",   "ClassMgr_OnAutoCfgBuffered");
-    EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnConfigsExecuted",         "ClassMgr_OnConfigsExecuted");
+    //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnConfigsExecuted",       "ClassMgr_OnConfigsExecuted");
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnClientPutInServer",     "ClassMgr_OnClientPutInServer");
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnClientDisconnect",      "ClassMgr_OnClientDisconnect");
     
@@ -376,26 +380,40 @@ public ClassMgr_OnEventsRegister()
 }
 
 /**
- * Loads classes from file.
- *
- * Note: Classes must NOT be loaded BEFORE OnConfigsExecuted event!
- * Note: Failing to load classes will stop the plugin.
+ * The module that hooked this event callback has been enabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
  */
-ClassMgr_LoadClasses()
+public Action:ClassMgr_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
-    decl String:configfile[PLATFORM_MAX_PATH];
-    GetConVarString(g_hCvarClassFile, configfile, sizeof(configfile));
-    g_ClassCount = 0;
-    
-    // Validate path.
-    if (ConfigMgr_ValidateFile(configfile))
+    // Don't let the module load unless the configs cached successfully.
+    if (!ClassMgr_LoadClasses())
     {
-        ConfigMgr_WriteString(g_moduleClassMgr, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);
+        Format(refusalmsg, maxlen, "%T", "ClassMgr refuse enable", LANG_SERVER);
+        return Plugin_Handled;
     }
+    
+    return Plugin_Continue;
+}
+
+/**
+ * Loads classes from file.
+ */
+bool:ClassMgr_LoadClasses()
+{
+    // Get the config path from the gamerules module.
+    decl String:configfile[PLATFORM_MAX_PATH];
+    GameRules_GetConfigPath(CLASSES_CONFIG_FILE, configfile);
+    
+    if (ConfigMgr_ValidateFile(configfile))
+        ConfigMgr_WriteString(g_moduleClassMgr, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);
     else
     {
-        LogMgr_Print(g_moduleClassMgr, LogType_Fatal_Module, "Config Validation", "Error: Invalid config file path in cvar zr_classes_file: \"%s\"", configfile);
-        return;
+        LogMgr_Print(g_moduleClassMgr, LogType_Fatal_Module, "Config Validation", "Invalid config file path defined in gamerules: \"%s\".  Disabling module.", configfile);
+        return false;
     }
     
     // Prepare class name index. Create or clear.
@@ -414,7 +432,11 @@ ClassMgr_LoadClasses()
     if (g_ClassCount == 0)
     {
         LogMgr_Print(g_moduleClassMgr, LogType_Fatal_Module, "Config Validation", "Error: No usable data found in class config file: %s", configfile);
+        return false;
     }
+    
+    return true;
+    
 }
 
 /**
@@ -492,7 +514,6 @@ ClassMgr_OnPluginStart()
     ClassMgr_Register();
     
     // Create cvars.
-    g_hCvarClassFile =              Project_CreateConVar("classes_file",                    "configs/zr/classes.txt",       "Path to class config file.  Path is relative to the SourceMod directory.");
     //g_hCvarClassesMenuSpawn =       Project_CreateConVar("classes_menu_spawn",              "0",                "Re-display class selection menu every spawn.");
     //g_hCvarClassesMenuJoin =        Project_CreateConVar("classes_menu_join",               "0",                "Display class selection menu when a player spawn for the first time.");
     //g_hCvarClassesRandom =          Project_CreateConVar("classes_random",                  "0",                "Player is assigned a random class every spawn. [Override: <prefix>_classes_default_*]");
@@ -524,9 +545,9 @@ ClassMgr_OnPluginStart()
  ****************/
 
 /**
- * All convars are set, cvar-dependent code should use this.
+ * The map has started.
  */
-public ClassMgr_OnConfigsExecuted()
+public ClassMgr_OnMapStart()
 {
     new eventdata[1][1];
     new Action:result;
@@ -603,15 +624,6 @@ public Action:ClassMgr_OnModuleEnable(Module:module)
 }
 
 /**
- * The module that hooked this event callback has been enabled.
- * 
- * @return      Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
- */
-public Action:ClassMgr_OnMyModuleEnable()
-{
-}
-
-/**
  * A module has been disabled.
  * 
  * @return      Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
@@ -629,6 +641,8 @@ public Action:ClassMgr_OnMyModuleDisable()
 {
     // TODO: Disable classes.
     //       Unhook console and chat commands.
+    //      Kill any adt arrays that you use.  I don't think you use any for storage though.
+    // Unhooking commands normally means adding a check if IsModuleEnabled in the callback and returning Plugin_Continue if it's not.  (See other modules)
 }
 
 /**
@@ -637,7 +651,7 @@ public Action:ClassMgr_OnMyModuleDisable()
 public ClassMgr_OnConfigReload(configindex)
 {
     // Forward event.
-    ClassMgr_OnConfigsExecuted();
+    ClassMgr_OnMapStart();
     
     // Re-validate class selection indexes. If team mismach, config default
     // will be used on next spawn.

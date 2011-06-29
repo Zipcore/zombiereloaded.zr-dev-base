@@ -36,22 +36,16 @@ new Module:g_moduleModelMgr;
 stock Module:ModelMgr_GetIdentifier() { return g_moduleModelMgr; }
 
 /**
- * Default file paths.
+ * The names of the models config files.
  */
-#define MODEL_FILE              "configs/zr/models.txt"
-#define MODEL_COLLECTION_FILE   "configs/zr/modelcollections.txt"
+#define MODELMGR_MODELS_FILE       "models.txt"
+#define MODELMGR_COLLECTION_FILE   "modelcollections.txt"
 
 /**
  * Default sizes.
  */
 #define MODEL_NAME_LEN     64
 #define MODEL_STRING_LEN   255
-
-/**
- * Cvar handles.
- */
-new Handle:g_hCvarModelsFile;
-new Handle:g_hCvarModelCollectionsFile;
 
 /**
  * Config indexes.
@@ -88,8 +82,8 @@ ModelMgr_Register()
     EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnEventsRegister",      "ModelMgr_OnEventsRegister");
     
     // Register config file that this module will use.
-    ConfigMgr_Register(g_moduleModelMgr, "ModelMgr_OnConfigReload", MODEL_FILE, ModelCfgIndex);
-    ConfigMgr_Register(g_moduleModelMgr, "ModelMgr_OnConfigReload", MODEL_COLLECTION_FILE, ModelCollectionCfgIndex);
+    ConfigMgr_Register(g_moduleModelMgr, "ModelMgr_OnConfigReload", "", ModelCfgIndex);
+    ConfigMgr_Register(g_moduleModelMgr, "ModelMgr_OnConfigReload", "", ModelCollectionCfgIndex);
     
     // Register commands.
     ModelCmd_RegCommands();
@@ -103,9 +97,9 @@ ModelMgr_OnPluginStart()
     // Register the module.
     ModelMgr_Register();
     
-    // Create cvars.
-    g_hCvarModelsFile = Project_CreateConVar("models_file", MODEL_FILE, "Path to model config file.  Path is relative to the SourceMod directory.");
-    g_hCvarModelCollectionsFile = Project_CreateConVar("model_collections_file", MODEL_COLLECTION_FILE, "Path to model collections config file.  Path is relative to the SourceMod directory.");
+    // Create tries.
+    ModelNameIndex = CreateTrie();
+    ModelCollectionNameIndex = CreateTrie();
 }
 
 /**
@@ -117,13 +111,13 @@ public ModelMgr_OnEventsRegister()
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnPluginEnd",             "ModelMgr_OnPluginEnd");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnAllModulesLoaded",      "ModelMgr_OnAllModulesLoaded");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnModuleEnable",          "ModelMgr_OnModuleEnable");
-    //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnMyModuleEnable",        "ModelMgr_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnMyModuleEnable",          "ModelMgr_OnMyModuleEnable");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnModuleDisable",         "ModelMgr_OnModuleDisable");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnMyModuleDisable",       "ModelMgr_OnMyModuleDisable");
-    //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnMapStart",              "ModelMgr_OnMapStart");
+    EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnMapStart",                "ModelMgr_OnMapStart");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnMapEnd",                "ModelMgr_OnMapEnd");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnAutoConfigsBuffered",   "ModelMgr_OnAutoConfigsBuffered");
-    EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnConfigsExecuted",         "ModelMgr_OnConfigsExecuted");
+    //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnConfigsExecuted",       "ModelMgr_OnConfigsExecuted");
     EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnClientPutInServer",       "ModelMgr_OnClientPutInServer");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnClientDisconnect",      "ModelMgr_OnClientDisconnect");
     EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnClientPostAdminCheck",    "ModelMgr_OnClientPostAdminCheck");
@@ -151,9 +145,35 @@ public ModelMgr_OnEventsReady()
 }
 
 /**
+ * The module that hooked this event callback has been enabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
+ */
+public Action:ModelMgr_OnMyModuleEnable(String:refusalmsg[], maxlen)
+{
+    // Don't let the module load unless the configs cached successfully.
+    if (!ModelDB_LoadModels())
+    {
+        Format(refusalmsg, maxlen, "%T", "ModelMgr models refuse enable", LANG_SERVER);
+        return Plugin_Handled;
+    }
+    
+    if (!ModelDB_LoadCollections())
+    {
+        Format(refusalmsg, maxlen, "%T", "ModelMgr model collections refuse enable", LANG_SERVER);
+        return Plugin_Handled;
+    }
+    
+    return Plugin_Continue;
+}
+
+/**
  * All convars are set, cvar-dependent code should use this.
  */
-public ModelMgr_OnConfigsExecuted()
+public ModelMgr_OnMapStart()
 {
     ModelDB_LoadModels();
     ModelDB_LoadCollections();

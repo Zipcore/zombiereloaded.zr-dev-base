@@ -62,36 +62,23 @@ new Handle:ModelCollectionNameIndex;
 
 /**
  * Loads model collections from file.
- *
- * Note: This must be called AFTER models are loaded.
  */
-ModelDB_LoadCollections()
+bool:ModelDB_LoadCollections()
 {
-    // Do nothing if module is disabled.
-    if (ModuleMgr_IsDisabled(g_moduleModelMgr))
-    {
-        return;
-    }
-    
     // Stop if there are no models loaded.
     if (ModelCount == 0)
-    {
-        return;
-    }
+        return false;
     
+    // Get the config path from the gamerules module.
     decl String:configfile[PLATFORM_MAX_PATH];
-    GetConVarString(g_hCvarModelCollectionsFile, configfile, sizeof(configfile));
-    ModelCollectionCount = 0;
+    GameRules_GetConfigPath(MODELMGR_COLLECTION_FILE, configfile);
     
-    // Validate path.
     if (ConfigMgr_ValidateFile(configfile))
-    {
-        ConfigMgr_WriteString(g_moduleModelMgr, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);
-    }
+        ConfigMgr_WriteString(g_moduleModelMgr, ModelCollectionCfgIndex, ConfigData_Path, CM_DATA_PATH, configfile);
     else
     {
-        LogMgr_Print(g_moduleModelMgr, LogType_Fatal_Module, "Config Validation", "Error: Invalid config file path in cvar zr_model_collections_file: \"%s\"", configfile);
-        return;
+        LogMgr_Print(g_moduleModelMgr, LogType_Fatal_Module, "Config Validation", "Invalid config file path defined in gamerules: \"%s\".  Disabling module.", configfile);
+        return false;
     }
     
     // Prepare trie.
@@ -108,10 +95,12 @@ ModelDB_LoadCollections()
     LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Loading model collections from file \"%s\".", configfile);
     
     // Parse model file.
-    ConfigMgr_CacheKv(g_moduleModelMgr, ModelCollectionCfgIndex, "ModelDB_LoadCollection");
+    ModelCollectionCount = ConfigMgr_CacheKv(g_moduleModelMgr, ModelCollectionCfgIndex, "ModelDB_LoadCollection");
     
     // Log loaded-message.
     LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Model collections loaded: %d", ModelCollectionCount);
+    
+    return true;
 }
 
 
@@ -166,7 +155,6 @@ public KvCache:ModelDB_LoadCollection(Handle:kvCollections, sectionIndex, const 
         new model = ModelMgr_GetModelIndex(buffer);
         if (model >= 0)
         {
-            // Add to array.
             PushArrayCell(models, model);
         }
         else
@@ -174,15 +162,6 @@ public KvCache:ModelDB_LoadCollection(Handle:kvCollections, sectionIndex, const 
             LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Validation", "Error: Invalid model name \"%s\" in model collection \"%s\" (%d).", buffer, sectionName, sectionIndex);
             hasErrors = true;
         }
-        
-        // Get attribute name.
-        //KvGetSectionName(kvCollections, attributeName, sizeof(attributeName));
-        
-        // Go back to the attribute again so it can read the value.
-        //KvGoBack(kvCollections);
-        
-        // Jump back to the attribute again so the parser will find the next attribute.
-        //KvJumpToKey(kvCollections, attributeName);
     } while (KvGotoNextKey(kvCollections, false));
     
     // Go one level up (to the collection section).
@@ -212,8 +191,6 @@ public KvCache:ModelDB_LoadCollection(Handle:kvCollections, sectionIndex, const 
         
         // Set array.
         ModelCollectionData[ModelCollectionCount][ModelCollection_Array] = models;
-        
-        ModelCollectionCount++;
         return KvCache_Continue;
     }
 }

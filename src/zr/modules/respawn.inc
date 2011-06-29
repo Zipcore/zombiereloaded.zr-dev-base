@@ -25,11 +25,6 @@
  * ============================================================================
  */
 
-/**
- * TODO:
- * Events
- */
-
 // Include libraries.
 #include "zr/libraries/teamlib"
 

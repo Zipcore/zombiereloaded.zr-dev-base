@@ -36,7 +36,7 @@
 /**
  * The path to this module's sound profiles config file, relative to the path defined in gamerules.txt.
  */
-#define SOUNDFX_CONFIG_FILE "soundprofiles.txt"
+#define SNDPROFS_CONFIG_FILE "soundprofiles.txt"
 
 /**
  * This module's identifier.
@@ -262,7 +262,7 @@ bool:SndProfs_CacheProfiles()
 {
     // Get the config path from the gamerules module.
     decl String:configfile[PLATFORM_MAX_PATH];
-    GameRules_GetNamedConfig("soundprofiles", configfile);
+    GameRules_GetConfigPath(SNDPROFS_CONFIG_FILE, configfile);
     
     if (ConfigMgr_ValidateFile(configfile))
         ConfigMgr_WriteString(g_moduleSndProfs, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);

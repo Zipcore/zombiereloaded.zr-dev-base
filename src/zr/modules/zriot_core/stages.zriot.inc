@@ -25,6 +25,11 @@
  * ============================================================================
  */
 
+/**
+ * The path to the stages config file, relative to the path defined in gamerules.txt.
+ */
+#define STAGES_CONFIG_FILE "stages.txt"
+
 // Include libraries.
 #include "zr/libraries/teamlib"
 
@@ -181,7 +186,7 @@ public Action:ZRiotStages_OnMyModuleEnable(String:refusalmsg[], maxlen)
     if (!ZRiotStages_CacheData())
     {
         decl String:configfile[PLATFORM_MAX_PATH];
-        GameRules_GetNamedConfig("stages", configfile);
+        GameRules_GetConfigPath(STAGES_CONFIG_FILE, configfile);
         Format(refusalmsg, maxlen, "%T", "ZRiot stages refuse enable", LANG_SERVER, configfile);
         return Plugin_Handled;
     }
@@ -353,7 +358,7 @@ bool:ZRiotStages_CacheData()
 {
     // Get the config path from the gamerules module.
     decl String:configfile[PLATFORM_MAX_PATH];
-    GameRules_GetNamedConfig("stages", configfile);
+    GameRules_GetConfigPath(STAGES_CONFIG_FILE, configfile);
     
     if (ConfigMgr_ValidateFile(configfile))
         ConfigMgr_WriteString(g_moduleZRiotStages, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);

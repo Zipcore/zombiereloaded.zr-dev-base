@@ -27,6 +27,11 @@
  */
 
 /**
+ * The path to this module's sound profiles config file, relative to the path defined in gamerules.txt.
+ */
+#define DLR_CONFIG_FILE "downloads.txt"
+
+/**
  * This module's identifier.
  */
 new Module:g_moduleDLR;
@@ -113,7 +118,7 @@ bool:DLR_Cache()
 {
     // Get the config path from the gamerules module.
     decl String:configfile[PLATFORM_MAX_PATH];
-    GameRules_GetNamedConfig("downloader", configfile);
+    GameRules_GetConfigPath(DLR_CONFIG_FILE, configfile);
     
     if (ConfigMgr_ValidateFile(configfile))
         ConfigMgr_WriteString(g_moduleDLR, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);
@@ -139,7 +144,7 @@ bool:DLR_Cache()
     decl String:dir[PLATFORM_MAX_PATH];
     decl String:filename[32];
     new bool:regex;
-    new Handle:downloaddir;
+    new Handle:hDir;
     decl String:iter_filename[32];
     new FileType:filetype;
     decl String:fullpath[PLATFORM_MAX_PATH];
@@ -160,15 +165,15 @@ bool:DLR_Cache()
         regex = DLR_HasWildcard(downloadpath);
         
         // Queue all files in the directory.
-        downloaddir = OpenDirectory(downloadpath);
-        if (downloaddir != INVALID_HANDLE)
+        hDir = OpenDirectory(downloadpath);
+        if (hDir != INVALID_HANDLE)
             strcopy(dir, sizeof(dir), downloadpath);
         else
         {
             // Break this dir up into a path and the file it refers to.
             DLR_GetFileFromPath(downloadpath, dir, sizeof(dir), filename, sizeof(filename));
-            downloaddir = OpenDirectory(dir);
-            if (downloaddir == INVALID_HANDLE || !regex)
+            hDir = OpenDirectory(dir);
+            if (hDir == INVALID_HANDLE || !regex)
             {
                 downloadinvalidcount++;
                 LogMgr_Print(g_moduleDLR, LogType_Error, "File Parsing", "Could not find file(s) for line: \"%s\"", downloadpath);
@@ -177,7 +182,7 @@ bool:DLR_Cache()
         }
         
         // Iterate through every file in the folder, ignoring folder names. (no recursive folder support)
-        while (ReadDirEntry(downloaddir, iter_filename, sizeof(iter_filename), filetype))
+        while (ReadDirEntry(hDir, iter_filename, sizeof(iter_filename), filetype))
         {
             if (filetype != FileType_File)
                 continue;

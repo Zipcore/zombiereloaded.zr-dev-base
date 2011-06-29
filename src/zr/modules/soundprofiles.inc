@@ -3,9 +3,9 @@
  *
  *  Zombie:Reloaded
  *
- *  File:          soundfx.inc
+ *  File:          soundprofiles.inc
  *  Type:          Module
- *  Description:   Sound effects!
+ *  Description:   Manages sound profiles.
  *
  *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
  *
@@ -30,6 +30,9 @@
  * this needs priority in OnMapStart over any module using it in their configs.
  */
 
+// Include interfaces.
+#include "zr/interfaces/soundprofiles.interface"
+
 /**
  * The path to this module's sound profiles config file, relative to the path defined in gamerules.txt.
  */
@@ -38,48 +41,48 @@
 /**
  * This module's identifier.
  */
-new Module:g_moduleSoundFX;
+new Module:g_moduleSndProfs;
 
 /**
  * Handle to sound profile cache.
  */
-new Handle:g_hSoundFXCache;
+new Handle:g_hSndProfsCache;
 
 /**
  * Register this module.
  */
-SoundFX_Register()
+SndProfs_Register()
 {
     // Define all the module's data as layed out by enum ModuleData in project.inc.
     new moduledata[ModuleData];
     
     moduledata[ModuleData_Disabled] = false;
     moduledata[ModuleData_Hidden] = false;
-    strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "Sound Effects");
-    strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "soundfx");
-    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Sound effects!");
+    strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "Sound Profiles");
+    strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "soundprofiles");
+    strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Manages sound profiles");
     moduledata[ModuleData_Dependencies][0] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
-    g_moduleSoundFX = ModuleMgr_Register(moduledata);
+    g_moduleSndProfs = ModuleMgr_Register(moduledata);
     
     // Register the OnEventsRegister event to register all events in it.
-    EventMgr_RegisterEvent(g_moduleSoundFX, "Event_OnEventsRegister",       "SoundFX_OnEventsRegister");
+    EventMgr_RegisterEvent(g_moduleSndProfs, "Event_OnEventsRegister",          "SndProfs_OnEventsRegister");
     
     // Register config file(s) that this module will use.
-    ConfigMgr_Register(g_moduleSoundFX, "SoundFX_OnConfigReload", "");
+    ConfigMgr_Register(g_moduleSndProfs, "SndProfs_OnConfigReload", "");
 }
 
 /**
  * Register all events here.
  */
-public SoundFX_OnEventsRegister()
+public SndProfs_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleSoundFX, "Event_OnPluginEnd",                "SoundFX_OnPluginEnd");
-    EventMgr_RegisterEvent(g_moduleSoundFX, "Event_OnMyModuleEnable",           "SoundFX_OnMyModuleEnable");
-    EventMgr_RegisterEvent(g_moduleSoundFX, "Event_OnMyModuleDisable",          "SoundFX_OnMyModuleDisable");
-    EventMgr_RegisterEvent(g_moduleSoundFX, "Event_OnMapStart",                 "SoundFX_OnMapStart");
+    EventMgr_RegisterEvent(g_moduleSndProfs, "Event_OnPluginEnd",               "SndProfs_OnPluginEnd");
+    EventMgr_RegisterEvent(g_moduleSndProfs, "Event_OnMyModuleEnable",          "SndProfs_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleSndProfs, "Event_OnMyModuleDisable",         "SndProfs_OnMyModuleDisable");
+    EventMgr_RegisterEvent(g_moduleSndProfs, "Event_OnMapStart",                "SndProfs_OnMapStart");
     
     #if defined PROJECT_GAME_CSS
     
@@ -87,25 +90,50 @@ public SoundFX_OnEventsRegister()
 }
 
 /**
+ * Set up support for functions from the sound profile interface.
+ */
+static stock SndProfs_ImplementFuncs()
+{
+    // Implement the infection interface.
+    Interface_Implement(g_ISndProfsGetNumProfiles, GetFunctionByName(GetMyHandle(), "SndProfs_GetNumProfiles"));
+    Interface_Implement(g_ISndProfsGetProfileSound, GetFunctionByName(GetMyHandle(), "SndProfs_GetProfileSound"));
+    Interface_Implement(g_ISndProfsGetRandProfileSound, GetFunctionByName(GetMyHandle(), "SndProfs_GetRandProfileSound"));
+}
+
+/**
+ * Set up support for functions from the sound profile interface.
+ */
+static stock SndProfs_ReleaseFuncs()
+{
+    // Implement the infection interface.
+    Interface_Release(g_ISndProfsGetNumProfiles);
+    Interface_Release(g_ISndProfsGetProfileSound);
+    Interface_Release(g_ISndProfsGetRandProfileSound);
+}
+
+/**
  * Plugin is loading.
  */
-SoundFX_OnPluginStart()
+SndProfs_OnPluginStart()
 {
     // Register the module.
-    SoundFX_Register();
+    SndProfs_Register();
+    
+    // Implement interface functions.
+    SndProfs_ImplementFuncs();
     
     // Create array.
-    g_hSoundFXCache = CreateArray();
+    g_hSndProfsCache = CreateArray();
 }
 
 /**
  * Plugin is ending.
  */
-public SoundFX_OnPluginEnd()
+public SndProfs_OnPluginEnd()
 {
     // Cleanup data stored by the sound effects module.
-    SoundFX_CleanCache();
-    CloseHandle(g_hSoundFXCache);
+    SndProfs_CleanCache();
+    CloseHandle(g_hSndProfsCache);
 }
 
 /**
@@ -116,15 +144,18 @@ public SoundFX_OnPluginEnd()
  * 
  * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
  */
-public Action:SoundFX_OnMyModuleEnable(String:refusalmsg[], maxlen)
+public Action:SndProfs_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
+    // Implement interface functions.
+    SndProfs_ImplementFuncs();
+    
     // Create array.
-    g_hSoundFXCache = CreateArray();
+    g_hSndProfsCache = CreateArray();
     
     // Don't let the module load unless the sound profiles are cached successfully.
-    if (!SoundFX_CacheProfiles())
+    if (!SndProfs_CacheProfiles())
     {
-        Format(refusalmsg, maxlen, "%T", "SoundFX refuse enable", LANG_SERVER);
+        Format(refusalmsg, maxlen, "%T", "Sound profiles refuse enable", LANG_SERVER);
         return Plugin_Handled;
     }
     
@@ -139,43 +170,46 @@ public Action:SoundFX_OnMyModuleEnable(String:refusalmsg[], maxlen)
  * 
  * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
  */
-public Action:SoundFX_OnMyModuleDisable(String:refusalmsg[], maxlen)
+public Action:SndProfs_OnMyModuleDisable(String:refusalmsg[], maxlen)
 {
+    // These functions are not longer supported by this module.
+    SndProfs_ReleaseFuncs();
+    
     // Cleanup data stored by the sound effects module.
-    SoundFX_CleanCache();
-    CloseHandle(g_hSoundFXCache);
+    SndProfs_CleanCache();
+    CloseHandle(g_hSndProfsCache);
 }
 
 /**
  * The map has started.
  */
-public SoundFX_OnMapStart()
+public SndProfs_OnMapStart()
 {
-    SoundFX_CacheProfiles();
+    SndProfs_CacheProfiles();
 }
 
 /**
  * Called when a registered config file (by this module) is manually reloaded.
  */
-public SoundFX_OnConfigReload(configindex)
+public SndProfs_OnConfigReload(configindex)
 {
-    SoundFX_CacheProfiles();
+    SndProfs_CacheProfiles();
 }
 
 /**
  * Destroys all profile data from the cache.
  */
-static stock SoundFX_CleanCache()
+static stock SndProfs_CleanCache()
 {
     // Cleanup data stored by the sound effects module.
-    new count = GetArraySize(g_hSoundFXCache);
+    new count = GetArraySize(g_hSndProfsCache);
     for (new i = 0; i < count; i++)
-        CloseHandle(GetArrayCell(g_hSoundFXCache, i));
+        CloseHandle(GetArrayCell(g_hSndProfsCache, i));
 }
 
 /**
  * Loops through each section of the keyvalues tree.
- * Note: ADT array in 'g_moduleSoundFX' should be cleared before using this.
+ * Note: ADT array in 'g_moduleSndProfs' should be cleared before using this.
  * 
  * @param kv            The keyvalues handle of the config file. (Don't close this)
  * @param sectionindex  The index of the current keyvalue section, starting from 0.
@@ -183,11 +217,11 @@ static stock SoundFX_CleanCache()
  * 
  * @return              See enum KvCache.
  */
-public KvCache:SoundFX_Cache(Handle:kv, sectionindex, const String:sectionname[])
+public KvCache:SndProfs_Cache(Handle:kv, sectionindex, const String:sectionname[])
 {
     if (!KvGotoFirstSubKey(kv, false))
     {
-        LogMgr_Print(g_moduleSoundFX, LogType_Error, "Config Validation", "Empty or invalid sound profile: \"%s\"", sectionname);
+        LogMgr_Print(g_moduleSndProfs, LogType_Error, "Config Validation", "Empty or invalid sound profile: \"%s\"", sectionname);
         return KvCache_Ignore;
     }
     
@@ -209,13 +243,13 @@ public KvCache:SoundFX_Cache(Handle:kv, sectionindex, const String:sectionname[]
         }
         else
         {
-            LogMgr_Print(g_moduleSoundFX, LogType_Error, "Config Validation", "Invalid sound file specified in sound profile \"%s\": \"%s\"", sectionname, path);
+            LogMgr_Print(g_moduleSndProfs, LogType_Error, "Config Validation", "Invalid sound file specified in sound profile \"%s\": \"%s\"", sectionname, path);
             continue;
         }
     } while (KvGotoNextKey(kv, false));
     KvGoBack(kv);
     
-    PushArrayCell(g_hSoundFXCache, hSoundProfile);
+    PushArrayCell(g_hSndProfsCache, hSoundProfile);
     return KvCache_Continue;
 }
 
@@ -224,25 +258,37 @@ public KvCache:SoundFX_Cache(Handle:kv, sectionindex, const String:sectionname[]
  * 
  * @return      True if cached successfully, false if the file couldn't be found or no usable data was inside.
  */
-bool:SoundFX_CacheProfiles()
+bool:SndProfs_CacheProfiles()
 {
     // Get the config path from the gamerules module.
     decl String:configfile[PLATFORM_MAX_PATH];
     GameRules_GetNamedConfig("soundprofiles", configfile);
     
     if (ConfigMgr_ValidateFile(configfile))
-        ConfigMgr_WriteString(g_moduleSoundFX, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);
+        ConfigMgr_WriteString(g_moduleSndProfs, CM_CONFIGINDEX_FIRST, ConfigData_Path, CM_DATA_PATH, configfile);
     else
     {
-        LogMgr_Print(g_moduleSoundFX, LogType_Fatal_Module, "Config Validation", "Invalid config file path defined in gamerules: \"%s\".  Disabling module.", configfile);
+        LogMgr_Print(g_moduleSndProfs, LogType_Fatal_Module, "Config Validation", "Invalid config file path defined in gamerules: \"%s\".  Disabling module.", configfile);
         return false;
     }
     
-    SoundFX_CleanCache();
-    ClearArray(g_hSoundFXCache);
-    ConfigMgr_CacheKv(g_moduleSoundFX, CM_CONFIGINDEX_FIRST, "SoundFX_Cache");
+    SndProfs_CleanCache();
+    ClearArray(g_hSndProfsCache);
+    ConfigMgr_CacheKv(g_moduleSndProfs, CM_CONFIGINDEX_FIRST, "SndProfs_Cache");
     
     return true;
+}
+
+/**
+ * Get how many sound profiles exist.
+ *
+ * @return  Number of sound profiles, 0 if they haven't been loaded yet.
+ */
+public SndProfs_GetNumProfiles()
+{
+    if (g_hSndProfsCache != INVALID_HANDLE)
+        return GetArraySize(g_hSndProfsCache);
+    return 0;
 }
 
 /**
@@ -252,13 +298,13 @@ bool:SoundFX_CacheProfiles()
  * 
  * @return          The index this profile is at in the array.  -1 if doesn't exist.
  */
-static stock SoundFX_GetProfileIndex(const String:profile[])
+static stock SndProfs_GetProfileIndex(const String:profile[])
 {
     decl String:profilename[64];
-    new count = GetArraySize(g_hSoundFXCache);
+    new count = GetArraySize(g_hSndProfsCache);
     for (new i = 0; i < count; i++)
     {
-        GetArrayString(GetArrayCell(g_hSoundFXCache, i), 0, profilename, sizeof(profilename)); // Get the name of this profile at index 0.
+        GetArrayString(GetArrayCell(g_hSndProfsCache, i), 0, profilename, sizeof(profilename)); // Get the name of this profile at index 0.
         if (StrEqual(profile, profilename, false))
             return i;
     }
@@ -275,13 +321,13 @@ static stock SoundFX_GetProfileIndex(const String:profile[])
  * 
  * @return          True if found, false otherwise.
  */
-static stock bool:SoundFX_GetProfileSound(const String:profile[], index, String:sound[], maxlen)
+public bool:SndProfs_GetProfileSound(const String:profile[], index, String:sound[], maxlen)
 {
-    new pindex = SoundFX_GetProfileIndex(profile);
+    new pindex = SndProfs_GetProfileIndex(profile);
     if (pindex == -1)
         return false;
     
-    new Handle:hSoundProfile = GetArrayCell(g_hSoundFXCache, pindex);
+    new Handle:hSoundProfile = GetArrayCell(g_hSndProfsCache, pindex);
     if (index < 0 || index >= GetArraySize(hSoundProfile)-1)
         return false;
     
@@ -298,13 +344,13 @@ static stock bool:SoundFX_GetProfileSound(const String:profile[], index, String:
  * 
  * @return          True if succeeded, false otherwrise.
  */
-stock bool:SoundFX_GetRandProfileSound(const String:profile[], String:sound[], maxlen)
+public bool:SndProfs_GetRandProfileSound(const String:profile[], String:sound[], maxlen)
 {
-    new pindex = SoundFX_GetProfileIndex(profile);
+    new pindex = SndProfs_GetProfileIndex(profile);
     if (pindex == -1)
         return false;
     
-    new Handle:hSoundProfile = GetArrayCell(g_hSoundFXCache, pindex);
+    new Handle:hSoundProfile = GetArrayCell(g_hSndProfsCache, pindex);
     new randsindex = Math_GetRandomInt(1, GetArraySize(hSoundProfile)-1);
     GetArrayString(hSoundProfile, randsindex, sound, maxlen);
     return true;

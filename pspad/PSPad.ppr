@@ -23,6 +23,7 @@ ZR
 			..\src\zr\base\wrappers.inc
 		-Interfaces
 			..\src\zr\interfaces\infection.interface.inc
+			..\src\zr\interfaces\soundprofiles.interface.inc
 		-Libraries
 			..\src\zr\libraries\authcachelib.inc
 			..\src\zr\libraries\conversionlib.inc
@@ -85,7 +86,7 @@ ZR
 			..\src\zr\modules\respawn.inc
 			..\src\zr\modules\sdkhooksadapter.inc
 			..\src\zr\modules\sfx.inc
-			..\src\zr\modules\soundfx.inc
+			..\src\zr\modules\soundprofiles.inc
 			..\src\zr\modules\speed.inc
 			..\src\zr\modules\stripobjectives.inc
 			..\src\zr\modules\suicideintercept.inc
@@ -226,7 +227,7 @@ ZR
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\modelmgr.phrases.txt
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\projectbase.phrases.txt
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\respawn.phrases.txt
-		..\cstrike\addons\sourcemod\translations\zombiereloaded\soundfx.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\soundprofiles.phrases.txt
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\suicideintercept.phrases.txt
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\weapons.phrases.txt
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\zr.common.phrases.txt
@@ -236,9 +237,13 @@ ZR
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\ztele.phrases.txt
 [Open project files]
 0=..\src\zombiereloaded.sp
+1=..\src\zr\project.inc
 [Selected Project Files]
 Main=
 Selected=..\src\zombiereloaded.sp
 [..\src\zombiereloaded.sp]
-TopLine=3
+TopLine=1
+Caret=1,1
+[..\src\zr\project.inc]
+TopLine=1
 Caret=1,1

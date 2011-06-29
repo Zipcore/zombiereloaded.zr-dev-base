@@ -394,7 +394,7 @@ ClassMgr_LoadClasses()
     }
     else
     {
-        LogMgr_Print(g_moduleClassMgr, LogType_Fatal_Plugin, "Config Validation", "Error: Invalid config file path in cvar zr_classes_file: \"%s\"", configfile);
+        LogMgr_Print(g_moduleClassMgr, LogType_Fatal_Module, "Config Validation", "Error: Invalid config file path in cvar zr_classes_file: \"%s\"", configfile);
         return;
     }
     
@@ -402,18 +402,18 @@ ClassMgr_LoadClasses()
     ClassMgr_PrepareNameIndex();
     
     // Log loading-message.
-    LogMgr_Print(g_moduleClassMgr, LogType_Normal, "Config Loading", "Loading classes from file \"%s\".", configfile);
+    LogMgr_Print(g_moduleClassMgr, LogType_Debug, "Config Loading", "Loading classes from file \"%s\".", configfile);
     
     // Parse class file.
     g_ClassCount = ConfigMgr_CacheKv(g_moduleClassMgr, CM_CONFIGINDEX_FIRST, "ClassMgr_LoadClass");
     
     // Log loaded-message.
-    LogMgr_Print(g_moduleClassMgr, LogType_Normal, "Config Loading", "%d class(es) loaded.", g_ClassCount);
+    LogMgr_Print(g_moduleClassMgr, LogType_Debug, "Config Loading", "%d class(es) loaded.", g_ClassCount);
     
     // Check if there are no classes.
     if (g_ClassCount == 0)
     {
-        LogMgr_Print(g_moduleClassMgr, LogType_Fatal_Plugin, "Config Validation", "Error: No usable data found in class config file: %s", configfile);
+        LogMgr_Print(g_moduleClassMgr, LogType_Fatal_Module, "Config Validation", "Error: No usable data found in class config file: %s", configfile);
     }
 }
 
@@ -538,7 +538,7 @@ public ClassMgr_OnConfigsExecuted()
     // Load classes from file.
     ClassMgr_LoadClasses();
     
-    LogMgr_Print(g_moduleClassMgr, LogType_Normal, "Config Validation", "Validating loaded classes.");
+    LogMgr_Print(g_moduleClassMgr, LogType_Debug, "Config Validation", "Validating loaded classes.");
     
     // Loop through all classes and send validation event. Read final result from event manager.
     for (new classIndex = 0; classIndex < g_ClassCount; classIndex++)
@@ -557,7 +557,7 @@ public ClassMgr_OnConfigsExecuted()
     // Validate class minimum reqirements.
     if (!ClsMgr_ValidateRequirements())
     {
-        LogMgr_Print(g_moduleClassMgr, LogType_Fatal_Plugin, "Config Validation", "Error: The class configuration doesn't match the minimum requirements.");
+        LogMgr_Print(g_moduleClassMgr, LogType_Fatal_Module, "Config Validation", "Error: The class configuration doesn't match the minimum requirements.");
     }
     
     // Send all classes loaded event (so modules can copy their cache).

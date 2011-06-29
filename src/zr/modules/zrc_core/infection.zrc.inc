@@ -25,7 +25,7 @@
  * ============================================================================
  */
 
-// Include interfaces
+// Include infection interface
 #include "zr/interfaces/infection.interface"
 
 /**
@@ -154,11 +154,11 @@ public ZRCInfect_OnMyCoreShutdown(Module:module)
 {
     if (module == g_moduleZRCRoot)
     {
-        // Reset infection interface for the next game mode to set up.
-        IInfection_SetAreZombiesPresent(INVALID_FUNCTION);
-        IInfection_SetIsClientMZombie(INVALID_FUNCTION);
-        IInfection_SetClientToZombie(INVALID_FUNCTION);
-        IInfection_SetClientToHuman(INVALID_FUNCTION);
+        // Release the infection interface.
+        Interface_Release(g_IInfectionAreZombiesPresent);
+        Interface_Release(g_IInfectionIsClientMZombie);
+        Interface_Release(g_IInfectionClientToZombie);
+        Interface_Release(g_IInfectionClientToHuman);
     }
 }
 
@@ -169,11 +169,11 @@ public ZRCInfect_OnMyCoreActivate(Module:module)
 {
     if (module == g_moduleZRCRoot)
     {
-        // Set up infection interface.
-        IInfection_SetAreZombiesPresent(GetFunctionByName(GetMyHandle(), "ZRCInfect_AreZombiesPresent"));
-        IInfection_SetIsClientMZombie(GetFunctionByName(GetMyHandle(), "ZRCInfect_IsClientMZombie"));
-        IInfection_SetClientToZombie(GetFunctionByName(GetMyHandle(), "ZRCInfect_ClientToZombie"));
-        IInfection_SetClientToHuman(GetFunctionByName(GetMyHandle(), "ZRCInfect_ClientToHuman"));
+        // Implement the infection interface.
+        Interface_Implement(g_IInfectionAreZombiesPresent, GetFunctionByName(GetMyHandle(), "ZRCInfect_AreZombiesPresent"));
+        Interface_Implement(g_IInfectionIsClientMZombie, GetFunctionByName(GetMyHandle(), "ZRCInfect_IsClientMZombie"));
+        Interface_Implement(g_IInfectionClientToZombie, GetFunctionByName(GetMyHandle(), "ZRCInfect_ClientToZombie"));
+        Interface_Implement(g_IInfectionClientToHuman, GetFunctionByName(GetMyHandle(), "ZRCInfect_ClientToHuman"));
     }
 }
 

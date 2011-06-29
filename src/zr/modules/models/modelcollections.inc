@@ -90,7 +90,7 @@ ModelDB_LoadCollections()
     }
     else
     {
-        LogMgr_Print(g_moduleModelMgr, LogType_Fatal_Plugin, "Config Validation", "Error: Invalid config file path in cvar zr_model_collections_file: \"%s\"", configfile);
+        LogMgr_Print(g_moduleModelMgr, LogType_Fatal_Module, "Config Validation", "Error: Invalid config file path in cvar zr_model_collections_file: \"%s\"", configfile);
         return;
     }
     
@@ -105,13 +105,13 @@ ModelDB_LoadCollections()
     }
     
     // Log loading-message.
-    LogMgr_Print(g_moduleModelMgr, LogType_Normal, "Config Loading", "Loading model collections from file \"%s\".", configfile);
+    LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Loading model collections from file \"%s\".", configfile);
     
     // Parse model file.
     ConfigMgr_CacheKv(g_moduleModelMgr, ModelCollectionCfgIndex, "ModelDB_LoadCollection");
     
     // Log loaded-message.
-    LogMgr_Print(g_moduleModelMgr, LogType_Normal, "Config Loading", "Model collections loaded: %d", ModelCollectionCount);
+    LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Model collections loaded: %d", ModelCollectionCount);
 }
 
 

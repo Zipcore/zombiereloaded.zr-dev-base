@@ -199,7 +199,6 @@ public Weapons_OnPluginEnd()
             CloseHandle(g_hWeapons[index]);
         g_hWeapons[index] = INVALID_HANDLE;
     }
-    
     CloseHandle(g_hWeaponTypes);
 }
 
@@ -216,9 +215,7 @@ public Action:Weapons_OnMyModuleEnable(String:refusalmsg[], maxlen)
     // Don't let the module load unless the weapon data is cached successfully.
     if (!Weapons_CacheWeaponData())
     {
-        decl String:configfile[PLATFORM_MAX_PATH];
-        GameRules_GetNamedConfig("weapons", configfile);
-        Format(refusalmsg, maxlen, "%T", "Weapons refuse enable", LANG_SERVER, configfile);
+        Format(refusalmsg, maxlen, "%T", "Weapons refuse enable", LANG_SERVER);
         return Plugin_Handled;
     }
     

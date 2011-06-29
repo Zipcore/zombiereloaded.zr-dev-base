@@ -41,6 +41,7 @@
 			"cfg"		"sourcemod/zombiereloaded/zrclassic.cfg"
 			"downloader"	"configs/zr/downloads.txt"
 			"weapons"	"configs/zr/weapons.txt"
+			"soundprofiles"	"configs/zr/soundprofiles.txt"
 		}
 
 		"modulecmds"
@@ -59,6 +60,7 @@
 			"stages"	"configs/zr/stages.txt"
 			"downloader"	"configs/zr/downloads.txt"
 			"weapons"	"configs/zr/weapons.txt"
+			"soundprofiles"	"configs/zr/soundprofiles.txt"
 		}
 
 		"modulecmds"

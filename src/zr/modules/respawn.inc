@@ -30,9 +30,6 @@
  * Events
  */
 
-// Include interfaces.
-#include "zr/interfaces/infection.interface"
-
 // Include libraries.
 #include "zr/libraries/teamlib"
 

@@ -28,9 +28,6 @@
 // Include libraries
 #include "zr/libraries/teamlib"
 
-// Include interfaces
-#include "zr/interfaces/infection.interface"
-
 /**
  * This module's identifier.
  */
@@ -208,10 +205,10 @@ public Action:SuiciIntcpt_Listener(client, const String:command[], argc)
     if (!GetConVarBool(g_hCvarSuicideBlockZombies) || !TLib_IsClientZombie(client))
     {
         // Allow mother zombie suicide OR client is not a mother zombie.
-        if (!GetConVarBool(g_hCvarSuicideBlockMZombies) || !IInfection_IsClientMZombie(g_moduleSuiciIntcpt, client))
+        if (!GetConVarBool(g_hCvarSuicideBlockMZombies) || !IInfection_IsClientMZombie(client))
         {
             // Allow pre-outbreak AND game is pre-outbreak OR Allow post-outbreak AND game is post-outbreak OR client is not a human.
-            new bool:zombiespresent = IInfection_AreZombiesPresent(g_moduleSuiciIntcpt);
+            new bool:zombiespresent = IInfection_AreZombiesPresent();
             if ((!GetConVarBool(g_hCvarSuicideBlockPreOutbreak) && !zombiespresent) || (!GetConVarBool(g_hCvarSuicideBlockPostOutbreak) && zombiespresent) || !TLib_IsClientHuman(client))
                 return Plugin_Continue;
         }

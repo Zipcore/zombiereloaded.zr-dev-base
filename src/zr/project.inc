@@ -64,6 +64,7 @@ stock ForwardOnPluginStart()
     ZRC_OnPluginStart();
     ZRiot_OnPluginStart();
     SDKHAdapt_OnPluginStart();
+    SndProfs_OnPluginStart();
     ClassMgr_OnPluginStart();
     DLR_OnPluginStart();
     AntiStick_OnPluginStart();
@@ -71,7 +72,6 @@ stock ForwardOnPluginStart()
     Speed_OnPluginStart();
     Respawn_OnPluginStart();
     SFX_OnPluginStart();
-    SoundFX_OnPluginStart();
     Fog_OnPluginStart();
     ZTele_OnPluginStart();
     ZSpawn_OnPluginStart();

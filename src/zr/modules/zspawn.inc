@@ -25,9 +25,6 @@
  * ============================================================================
  */
 
-// Include interfaces.
-#include "zr/interfaces/infection.interface"
-
 // Include libraries
 #include "zr/libraries/authcachelib"
 #include "zr/libraries/teamlib"
@@ -275,7 +272,7 @@ public Action:ZSpawn_SayCommand(client, argc)
         // Set the client's team and then spawn them.
         new spawnteam = GetConVarInt(g_hCvarZSpawnTeam);
         if (spawnteam == 0)
-            IInfection_ClientToZombie(g_moduleZSpawn, client, 0, false);
+            IInfection_ClientToZombie(client, 0, false);
     }
     else
     {
@@ -292,7 +289,7 @@ public Action:ZSpawn_SayCommand(client, argc)
             {
                 TLib_SetClientTeam(client, VTeam_Human);
                 CS_RespawnPlayer(client);
-                IInfection_ClientToZombie(g_moduleZSpawn, client, 0, false);
+                IInfection_ClientToZombie(client, 0, false);
             }
             case 1:
             {

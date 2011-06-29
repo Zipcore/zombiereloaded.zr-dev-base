@@ -47,6 +47,9 @@
 
 // Non-module includes.
 
+// Include all interfaces.
+#include "zr/interfaces/interfaces"
+
 // Module includes.
 #include "zr/modules/gamerules"
 #include "zr/modules/gamedata"
@@ -55,6 +58,7 @@
 #include "zr/modules/zrc_core/root.zrc"
 #include "zr/modules/zriot_core/root.zriot"
 #include "zr/modules/sdkhooksadapter"
+#include "zr/modules/soundprofiles"
 #include "zr/modules/classes/classmanager"
 #include "zr/modules/downloader"
 #include "zr/modules/antistick"
@@ -62,7 +66,6 @@
 #include "zr/modules/speed"
 #include "zr/modules/respawn"
 #include "zr/modules/sfx"
-#include "zr/modules/soundfx"
 #include "zr/modules/fog"
 #include "zr/modules/ztele"
 #include "zr/modules/zspawn"

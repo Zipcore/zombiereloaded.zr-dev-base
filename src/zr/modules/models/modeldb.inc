@@ -151,7 +151,7 @@ ModelDB_LoadModels()
     }
     else
     {
-        LogMgr_Print(g_moduleModelMgr, LogType_Fatal_Plugin, "Config Validation", "Error: Invalid config file path in cvar zr_models_file: \"%s\"", configfile);
+        LogMgr_Print(g_moduleModelMgr, LogType_Fatal_Module, "Config Validation", "Error: Invalid config file path in cvar zr_models_file: \"%s\"", configfile);
         return;
     }
     
@@ -166,7 +166,7 @@ ModelDB_LoadModels()
     }
     
     // Log loading-message.
-    LogMgr_Print(g_moduleModelMgr, LogType_Normal, "Config Loading", "Loading models from file \"%s\".", configfile);
+    LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Loading models from file \"%s\".", configfile);
     
     // Parse model file.
     ConfigMgr_CacheKv(g_moduleModelMgr, ModelCfgIndex, "ModelDB_LoadModel");
@@ -182,7 +182,7 @@ ModelDB_LoadModels()
     ModelDB_PrecacheModels();
     
     // Log loaded-message.
-    LogMgr_Print(g_moduleModelMgr, LogType_Normal, "Config Loading", "Models loaded: %d", ModelCount);
+    LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Models loaded: %d", ModelCount);
 }
 
 /**
@@ -390,7 +390,7 @@ ModelDB_PrecacheModel(model)
     decl String:file[PLATFORM_MAX_PATH];
     ModelMgr_GetModelFile(model, file, sizeof(file));
     
-    LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Loading", "Precaching model: %s", file);
+    LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Precaching model: %s", file);
     
     if (PrecacheModel(file) == 0)
     {

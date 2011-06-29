@@ -4,7 +4,7 @@
  *  Zombie:Reloaded
  *
  *  File:          infection.interface.inc
- *  Type:          Module
+ *  Type:          Interface
  *  Description:   An interface for common infection-type functions for modules to use.
  *
  *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
@@ -30,9 +30,19 @@
 #endif
 #define _iinfection_included
 
+/**
+ * Interface function ID cache.
+ */
 new Function:g_IInfectionAreZombiesPresent = INVALID_FUNCTION;
-stock IInfection_SetAreZombiesPresent(Function:func) { g_IInfectionAreZombiesPresent = func; }
-stock bool:IInfection_AreZombiesPresent(Module:module)
+new Function:g_IInfectionIsClientMZombie = INVALID_FUNCTION;
+new Function:g_IInfectionClientToZombie = INVALID_FUNCTION;
+new Function:g_IInfectionClientToHuman = INVALID_FUNCTION;
+
+/**
+ * Interface functions.
+ */
+
+stock bool:IInfection_AreZombiesPresent()
 {
     if (g_IInfectionAreZombiesPresent != INVALID_FUNCTION)
     {
@@ -42,17 +52,12 @@ stock bool:IInfection_AreZombiesPresent(Module:module)
         return value;
     }
     else
-    {
-        decl String:modulefullname[MM_DATA_FULLNAME];
-        ModuleMgr_ReadString(module, ModuleData_FullName, modulefullname, sizeof(modulefullname));
-        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_AreZombiesPresent which is not supported by current core, disabling.", modulefullname);
-    }
-    return false;
+        ThrowError("This function isn't implemented!");
+    
+    return false; // Never makes it here anyway.
 }
 
-new Function:g_IInfectionIsClientMZombie = INVALID_FUNCTION;
-stock IInfection_SetIsClientMZombie(Function:func) { g_IInfectionIsClientMZombie = func; }
-stock bool:IInfection_IsClientMZombie(Module:module, client)
+stock bool:IInfection_IsClientMZombie(client)
 {
     if (g_IInfectionIsClientMZombie != INVALID_FUNCTION)
     {
@@ -63,17 +68,12 @@ stock bool:IInfection_IsClientMZombie(Module:module, client)
         return value;
     }
     else
-    {
-        decl String:modulefullname[MM_DATA_FULLNAME];
-        ModuleMgr_ReadString(module, ModuleData_FullName, modulefullname, sizeof(modulefullname));
-        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_IsClientMZombie which is not supported by current core, disabling.", modulefullname);
-    }
+        ThrowError("This function isn't implemented!");
+    
     return false;
 }
 
-new Function:g_IInfectionClientToZombie = INVALID_FUNCTION;
-stock IInfection_SetClientToZombie(Function:func) { g_IInfectionClientToZombie = func; }
-stock IInfection_ClientToZombie(Module:module, client, attacker = 0, bool:mzombie)
+stock IInfection_ClientToZombie(client, attacker = 0, bool:mzombie)
 {
     if (g_IInfectionClientToZombie != INVALID_FUNCTION)
     {
@@ -84,16 +84,11 @@ stock IInfection_ClientToZombie(Module:module, client, attacker = 0, bool:mzombi
         Call_Finish();
     }
     else
-    {
-        decl String:modulefullname[MM_DATA_FULLNAME];
-        ModuleMgr_ReadString(module, ModuleData_FullName, modulefullname, sizeof(modulefullname));
-        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_ClientToZombie which is not supported by current core, disabling.", modulefullname);
-    }
+        ThrowError("This function isn't implemented!");
+    
 }
 
-new Function:g_IInfectionClientToHuman = INVALID_FUNCTION;
-stock IInfection_SetClientToHuman(Function:func) { g_IInfectionClientToHuman = func; }
-stock IInfection_ClientToHuman(Module:module, client)
+stock IInfection_ClientToHuman(client)
 {
     if (g_IInfectionClientToHuman != INVALID_FUNCTION)
     {
@@ -102,9 +97,6 @@ stock IInfection_ClientToHuman(Module:module, client)
         Call_Finish();
     }
     else
-    {
-        decl String:modulefullname[MM_DATA_FULLNAME];
-        ModuleMgr_ReadString(module, ModuleData_FullName, modulefullname, sizeof(modulefullname));
-        LogMgr_Print(module, LogType_Fatal_Module, "Infection Interface", "Module %s trying to use interface function IInfection_ClientToHuman which is not supported by current core, disabling.", modulefullname);
-    }
+        ThrowError("This function isn't implemented!");
+    
 }

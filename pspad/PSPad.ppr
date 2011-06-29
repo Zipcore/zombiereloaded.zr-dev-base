@@ -85,6 +85,7 @@ ZR
 			..\src\zr\modules\respawn.inc
 			..\src\zr\modules\sdkhooksadapter.inc
 			..\src\zr\modules\sfx.inc
+			..\src\zr\modules\soundfx.inc
 			..\src\zr\modules\speed.inc
 			..\src\zr\modules\stripobjectives.inc
 			..\src\zr\modules\suicideintercept.inc
@@ -225,6 +226,7 @@ ZR
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\modelmgr.phrases.txt
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\projectbase.phrases.txt
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\respawn.phrases.txt
+		..\cstrike\addons\sourcemod\translations\zombiereloaded\soundfx.phrases.txt
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\suicideintercept.phrases.txt
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\weapons.phrases.txt
 		..\cstrike\addons\sourcemod\translations\zombiereloaded\zr.common.phrases.txt

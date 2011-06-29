@@ -4,11 +4,9 @@
 	//              Weapons Module
 	// **********************************************
 
-	// {1}: Config file path.
 	"Weapons refuse enable"
 	{
-		"#format"	"{1:s}"
-		"en"		"Weapons module failed to enable because it can't load any data from its defined config file: \"{1}\""
+		"en"		"Weapons refused to load because it couldn't retrieve any usable data from file."
 	}
 
 	//                  Restrict		       //

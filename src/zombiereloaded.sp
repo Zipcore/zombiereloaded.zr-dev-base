@@ -62,6 +62,7 @@
 #include "zr/modules/speed"
 #include "zr/modules/respawn"
 #include "zr/modules/sfx"
+#include "zr/modules/soundfx"
 #include "zr/modules/fog"
 #include "zr/modules/ztele"
 #include "zr/modules/zspawn"

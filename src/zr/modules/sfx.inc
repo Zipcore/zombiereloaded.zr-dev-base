@@ -107,14 +107,14 @@ SFX_OnPluginStart()
     SFX_Register();
     
     // Create cvars.
-    g_hCvarSFXInfectExplosion = Project_CreateConVar("infect_explosion", "1", "Create a harmless explosion on infection.");
-    g_hCvarSFXInfectFireball = Project_CreateConVar("infect_fireball", "1", "Create fireball in the explosion. [Dependency: <prefix>_infect_explosion]");
-    g_hCvarSFXInfectSmoke = Project_CreateConVar("infect_smoke", "1", "Create smoke in the explosion. [Dependency: <prefix>_infect_explosion]");
-    g_hCvarSFXInfectSparks = Project_CreateConVar("infect_sparks", "1", "Emit sparks from the explosion. [Dependency: <prefix>_infect_explosion]");
-    g_hCvarSFXInfectShake = Project_CreateConVar("infect_shake", "1", "Shake the infected player's screen.");
-    g_hCvarSFXInfectShakeAmp = Project_CreateConVar("infect_shake_amp", "15.0", "The amplitude, or intensity, of the shake.");
-    g_hCvarSFXInfectShakeFreq = Project_CreateConVar("infect_shake_frequency", "1.0", "The frequency, or speed, of the shake.");
-    g_hCvarSFXInfectShakeDur = Project_CreateConVar("infect_shake_duration", "5.0", "The duration, or timespan, of the shake.");
+    g_hCvarSFXInfectExplosion = Project_CreateConVar("sfx_infect_explosion", "1", "Create a harmless explosion on infection.");
+    g_hCvarSFXInfectFireball = Project_CreateConVar("sfx_infect_fireball", "1", "Create fireball in the explosion. [Dependency: <prefix>_infect_explosion]");
+    g_hCvarSFXInfectSmoke = Project_CreateConVar("sfx_infect_smoke", "1", "Create smoke in the explosion. [Dependency: <prefix>_infect_explosion]");
+    g_hCvarSFXInfectSparks = Project_CreateConVar("sfx_infect_sparks", "1", "Emit sparks from the explosion. [Dependency: <prefix>_infect_explosion]");
+    g_hCvarSFXInfectShake = Project_CreateConVar("sfx_infect_shake", "1", "Shake the infected player's screen.");
+    g_hCvarSFXInfectShakeAmp = Project_CreateConVar("sfx_infect_shake_amp", "15.0", "The amplitude, or intensity, of the shake.");
+    g_hCvarSFXInfectShakeFreq = Project_CreateConVar("sfx_infect_shake_frequency", "1.0", "The frequency, or speed, of the shake.");
+    g_hCvarSFXInfectShakeDur = Project_CreateConVar("sfx_infect_shake_duration", "5.0", "The duration, or timespan, of the shake.");
 }
 
 /**

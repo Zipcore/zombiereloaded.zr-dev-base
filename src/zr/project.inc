@@ -71,6 +71,7 @@ stock ForwardOnPluginStart()
     Speed_OnPluginStart();
     Respawn_OnPluginStart();
     SFX_OnPluginStart();
+    SoundFX_OnPluginStart();
     Fog_OnPluginStart();
     ZTele_OnPluginStart();
     ZSpawn_OnPluginStart();

@@ -17,9 +17,9 @@
 // "core"		- The root module that should be enabled.  Each GRS can only have 1 core enabled, all others will be forced off.
 //			Don't touch this if you don't know what you are doing.
 // "configs"		- The config files to load for this ruleset.  Options:
-//	"cfg"		- The executable .cfg file relative to cfg/ to execute when this game ruleset is applied.
-//	"weapons"	- The weapons module will load the file this points to.
-//	TODO: Add the other module configs files.
+//	"cvars"		- The executable .cfg file relative to cfg/ to execute when this game ruleset is applied.
+//	"cfgfolder"	- The folder that the config folder exist under.  Must end with "/".  Note: gamerules will look for config files
+//			in directories either with the same name as the current map, or partial match.
 //
 // "modulecmds"	 	- Specific module commands.  Options:
 //	"<modulename>"	- Valid commands:
@@ -34,38 +34,31 @@
 {
 	"zrclassic"
 	{
-		"core"		"zrc_root"
+		"core"			"zrc_root"
 
 		"configs"
 		{
-			"cfg"		"sourcemod/zombiereloaded/zrclassic.cfg"
-			"downloader"	"configs/zr/downloads.txt"
-			"weapons"	"configs/zr/weapons.txt"
-			"soundprofiles"	"configs/zr/soundprofiles.txt"
+			"cvars"		"sourcemod/zombiereloaded/zrclassic.cfg"
+			"cfgfolder"	"configs/zr/zrclassic/"
 		}
 
 		"modulecmds"
 		{
-			"objstripper"	"on"
 		}
 	}
 
 	"zriot"
 	{
-		"core"		"zriot_root"
+		"core"			"zriot_root"
 
 		"configs"
 		{
-			"cfg"		"sourcemod/zombiereloaded/zriot.cfg"
-			"stages"	"configs/zr/stages.txt"
-			"downloader"	"configs/zr/downloads.txt"
-			"weapons"	"configs/zr/weapons.txt"
-			"soundprofiles"	"configs/zr/soundprofiles.txt"
+			"cvars"		"sourcemod/zombiereloaded/zriot.cfg"
+			"cfgfolder"	"configs/zr/zriot/"
 		}
 
 		"modulecmds"
 		{
-			"objstripper"	"on"
 		}
 	}
 }

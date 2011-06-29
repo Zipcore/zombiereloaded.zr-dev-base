@@ -330,7 +330,7 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
     }
     else
     {
-        LogMgr_Print(g_moduleGameRules, LogType_Normal, "Config Validation", "Warning: Game ruleset \"%s\" is missing the \"config\" section.  See gamerules config file.", sectionname);
+        LogMgr_Print(g_moduleGameRules, LogType_Normal, "Config Validation", "Warning: Ruleset \"%s\" is missing the \"config\" section.  See gamerules config file.", sectionname);
     }
     
     // Go down a level and store module command data.
@@ -341,42 +341,42 @@ public KvCache:GameRules_Cache(Handle:kv, sectionindex, const String:sectionname
         decl String:strModuleCmd[64];
         new Module:module;
         new GRuleModuleCmds:modulecmd;
-        KvGotoFirstSubKey(kv, false);
-        do
+        if (KvGotoFirstSubKey(kv, false))
         {
-            KvGetSectionName(kv, moduleshortname, sizeof(moduleshortname));
-            KvGoBack(kv);
-            KvGetString(kv, moduleshortname, strModuleCmd, sizeof(strModuleCmd));
-            KvJumpToKey(kv, moduleshortname);
-            
-            // Get the module identifier.
-            module =  ModuleMgr_FindByString(ModuleData_ShortName, moduleshortname);
-            
-            // Check if module is valid.
-            if (module != INVALID_MODULE)
+            do
             {
-                // Validate and set rule action.
-                modulecmd = GameRules_ModuleCmdToSymbol(strModuleCmd);
-                if (modulecmd != GRuleModuleCmd_Invalid)
+                KvGetSectionName(kv, moduleshortname, sizeof(moduleshortname));
+                KvGoBack(kv);
+                KvGetString(kv, moduleshortname, strModuleCmd, sizeof(strModuleCmd));
+                KvJumpToKey(kv, moduleshortname);
+                
+                // Get the module identifier.
+                module =  ModuleMgr_FindByString(ModuleData_ShortName, moduleshortname);
+                
+                // Check if module is valid.
+                if (module != INVALID_MODULE)
                 {
-                    if (!SetTrieValue(gameRuleSet[GameRuleSet_ModuleCmds], moduleshortname, modulecmd, false))
-                        LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Duplicate entry in ruleset \"%s\" section \"modulecmds\": \"%s\"", sectionname, moduleshortname);
+                    // Validate and set rule action.
+                    modulecmd = GameRules_ModuleCmdToSymbol(strModuleCmd);
+                    if (modulecmd != GRuleModuleCmd_Invalid)
+                    {
+                        if (!SetTrieValue(gameRuleSet[GameRuleSet_ModuleCmds], moduleshortname, modulecmd, false))
+                            LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Duplicate entry in ruleset \"%s\" section \"modulecmds\": \"%s\"", sectionname, moduleshortname);
+                    }
+                    else
+                    {
+                        LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Invalid module command in ruleset \"%s\": \"%s\".", sectionname, strModuleCmd);
+                    }
                 }
                 else
                 {
-                    LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Invalid module command in ruleset \"%s\": \"%s\".", sectionname, strModuleCmd);
+                    LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Invalid module in rule \"%s\": \"%s\".", sectionname, moduleshortname);
                 }
-            }
-            else
-            {
-                LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Invalid module in rule \"%s\": \"%s\".", sectionname, moduleshortname);
-            }
-            
-        } while (KvGotoNextKey(kv, false));
-        KvGoBack(kv);   // Go back to 2nd level.
-        
-        // Go back to 1st level.
-        KvGoBack(kv);
+                
+            } while (KvGotoNextKey(kv, false));
+            KvGoBack(kv);   // Go back to 2nd level.
+        }
+        KvGoBack(kv); // Go back to 1st level.
     }
     
     // Push all this collected data to an array.
@@ -450,16 +450,69 @@ public GameRules_OnConfigReload(configindex)
 }
 
 /**
- * Returns the path associated with the given name in the game ruleset under the "configs" section.
+ * Returns the cfg file path from gamerules cache.
  * 
- * @param name  The name of the config.
  * @param path  The output buffer.
  * 
  * @return      True if got successfully, false if it doesn't exist.
  */
-public bool:GameRules_GetNamedConfig(const String:name[], String:path[PLATFORM_MAX_PATH])
+public bool:GameRules_GetCvarConfigPath(String:path[PLATFORM_MAX_PATH])
 {
-    return GetTrieString(GRULESET_CONFIGTRIE, name, path, sizeof(path));
+    return GetTrieString(GRULESET_CONFIGTRIE, "cvars", path, sizeof(path));
+}
+
+/**
+ * Reads the cfg folder path from gamerules cache and appends the filename given.
+ * 
+ * @param file  The name of the file in ZR config folder.
+ * @param path  The output buffer.
+ * 
+ * @return      True if got successfully, false if it doesn't exist.
+ */
+public bool:GameRules_GetConfigPath(const String:file[], String:path[PLATFORM_MAX_PATH])
+{
+    if (!GetTrieString(GRULESET_CONFIGTRIE, "cfgfolder", path, sizeof(path)))
+        return false;
+    
+    decl String:fullpath[PLATFORM_MAX_PATH];
+    BuildPath(Path_SM, fullpath, sizeof(fullpath), path);
+    
+    decl String:mapname[256];
+    decl String:mapcfgpath[PLATFORM_MAX_PATH];
+    GetCurrentMap(mapname, sizeof(mapname));
+    
+    // First priority: check if a folder with the same name as the map exists with this config file in it.
+    Format(mapcfgpath, sizeof(mapcfgpath), "%s%s/%s", fullpath, mapname, file);
+    if (FileExists(mapcfgpath))
+    {
+        Format(path, sizeof(path), "%s%s/%s", path, mapname, file);
+        return true;
+    }
+    
+    // Second priority: check partial map name matches.
+    new Handle:hDir = OpenDirectory(fullpath);
+    decl String:foldername[256];
+    new FileType:filetype;
+    while (ReadDirEntry(hDir, foldername, sizeof(foldername), filetype))
+    {
+        if (filetype != FileType_Directory)
+            continue;
+        
+        // Check if a folder partially matches the current map.
+        if (StrContains(mapname, foldername, false) > -1)
+        {
+            Format(mapcfgpath, sizeof(mapcfgpath), "%s%s/%s", fullpath, foldername, file);
+            if (FileExists(mapcfgpath))
+            {
+                Format(path, sizeof(path), "%s%s/%s", path, foldername, file);
+                return true;
+            }
+        }
+    }
+    
+    // Third priority: return where default config should be.  If it's not there the caller should handle it.
+    Format(path, sizeof(path), "%s%s", path, file);
+    return true;
 }
 
 /**
@@ -616,11 +669,11 @@ stock GameRules_ApplyRuleSet(ruleSet)
     
     // Execute this ruleset's cfg file.
     decl String:cfgfile[PLATFORM_MAX_PATH];
-    GameRules_GetNamedConfig("cfg", cfgfile);
+    GameRules_GetCvarConfigPath(cfgfile);
     if (cfgfile[0])
     {
         ServerCommand("exec %s", cfgfile);
-        LogMgr_Print(g_moduleGameRules, LogType_Debug, "Game Rule Configs", "Executed game ruleset file: %s", cfgfile);
+        LogMgr_Print(g_moduleGameRules, LogType_Debug, "Game Rule Configs", "Executed ruleset cfg file: %s", cfgfile);
     }
     
     // Loop through each module and apply its action.

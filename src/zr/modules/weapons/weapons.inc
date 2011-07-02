@@ -168,6 +168,9 @@ public Weapons_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnPluginEnd",            "Weapons_OnPluginEnd");
     EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnMapStart",             "Weapons_OnMapStart");
     EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnMyModuleEnable",       "Weapons_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnMyModuleDisable",      "Weapons_OnMyModuleDisable");
+    EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnClientPutInServer",    "Weapons_OnClientPutInServer");
+    EventMgr_RegisterEvent(g_moduleWeapons, "Event_OnClientDisconnect",     "Weapons_OnClientDisconnect");
 }
 
 /**
@@ -179,7 +182,6 @@ Weapons_OnPluginStart()
     Weapons_Register();
     
     // Create cvars.
-    
     
     // Create dynamic arrays to store weapon data.
     g_hWeapons[WEAPONS_GLOBAL] = CreateArray(sizeof(g_WeaponsDummyArray));
@@ -197,14 +199,7 @@ Weapons_OnPluginStart()
  */
 public Weapons_OnPluginEnd()
 {
-    // Cleanup data stored by the weapons module.
-    for (new index = 0; index < MAXPLAYERS + 1; index++)
-    {
-        if (g_hWeapons[index] != INVALID_HANDLE)
-            CloseHandle(g_hWeapons[index]);
-        g_hWeapons[index] = INVALID_HANDLE;
-    }
-    CloseHandle(g_hWeaponTypes);
+    Weapons_CleanupData();
 }
 
 /**
@@ -217,6 +212,10 @@ public Weapons_OnPluginEnd()
  */
 public Action:Weapons_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
+    // Create dynamic arrays to store weapon data.
+    g_hWeapons[WEAPONS_GLOBAL] = CreateArray(sizeof(g_WeaponsDummyArray));
+    g_hWeaponTypes = CreateArray(32);
+    
     // Don't let the module load unless the weapon data is cached successfully.
     if (!Weapons_CacheWeaponData())
     {
@@ -225,6 +224,19 @@ public Action:Weapons_OnMyModuleEnable(String:refusalmsg[], maxlen)
     }
     
     return Plugin_Continue;
+}
+
+/**
+ * The module that hooked this event callback has been disabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
+ */
+public Action:Weapons_OnMyModuleDisable(String:refusalmsg[], maxlen)
+{
+    Weapons_CleanupData();
 }
 
 /**
@@ -243,6 +255,21 @@ public Weapons_OnConfigReload(configindex)
     Weapons_CacheWeaponData();
 }
 
+/**
+ * Destroy all data stored by weapons module.
+ */
+Weapons_CleanupData()
+{
+    // Cleanup data stored by the weapons module.
+    for (new index = 0; index < MAXPLAYERS + 1; index++)
+    {
+        if (g_hWeapons[index] != INVALID_HANDLE)
+            Util_CloseHandle(g_hWeapons[index]);
+        g_hWeapons[index] = INVALID_HANDLE;
+    }
+    Util_CloseHandle(g_hWeaponTypes);
+}
+    
 /**
  * Loops through each section of the keyvalues tree.
  * Note: ADT array in 'g_hWeapons[WEAPONS_GLOBAL]' should be cleared before using this.
@@ -354,6 +381,9 @@ bool:Weapons_CacheWeaponData()
         return false;
     }
     
+    // Copy all weapon data to each client.
+    Weapons_CopyGlobalToClients();
+    
     // Build a list of used weapon types.
     Weapons_BuildWTList();
     
@@ -399,60 +429,49 @@ Weapons_BuildWTList()
 }
 
 /**
- * Copies the weapon data straight from the global cache to the specified client.
- * This must be done on any clients that will have differing weapon data from the global cache.
+ * Client has joined the server.
  * 
  * @param client    The client index.
- * @param overwrite True to overwrite existing per-client data if it exists.
- * 
- * @return          True if there were no problems, false if the data hasn't been cached yet.
  */
-stock bool:Weapons_PerClientInit(client, bool:overwrite = false)
+public Weapons_OnClientPutInServer(client)
 {
-    if (!Weapons_AreConfigsCached())
-        return false;
-    
+    Weapons_CopyGlobalToClient(client);
+}
+
+/**
+ * Client is disconnecting from the server.
+ * 
+ * @param client    The client index.
+ */
+public Weapons_OnClientDisconnect(client)
+{
+    Util_CloseHandle(g_hWeapons[client]);
+}
+
+/**
+ * Copy global weapon cache to a client.
+ * 
+ * @param client    The client index.
+ */
+stock Weapons_CopyGlobalToClient(client)
+{
     if (g_hWeapons[client] != INVALID_HANDLE)
-    {
-        // If we're going to overwrite the data, destroy it first.
-        if (overwrite)
-            CloseHandle(g_hWeapons[client]);
-        else
-            return true;
-    }
-    
+        CloseHandle(g_hWeapons[client]);
     g_hWeapons[client] = CloneArray(g_hWeapons[WEAPONS_GLOBAL]);
-    return true;
 }
 
 /**
- * Destroys the per-client weapon data on a client.
- * Be careful with this, other modules might depend on this data! 
- * 
- * @param client    The client index.
- * 
- * @return          True if the data was destroyed, false if there is no data.
+ * Copy global weapon cache to all clients.
  */
-stock Weapons_PerClientDestroy(client)
+stock Weapons_CopyGlobalToClients()
 {
-    if (g_hWeapons[client] == INVALID_HANDLE)
-        return false;
-    
-    CloseHandle(g_hWeapons[client]);
-    g_hWeapons[client] = INVALID_HANDLE;
-    return true;
-}
-
-/**
- * Checks if per-client weapon data exists for a client.
- * 
- * @param client    The client index.
- * 
- * @return          True if it exists, false if not.
- */
-stock bool:Weapons_PerClientExists(client)
-{
-    return (g_hWeapons[client] != INVALID_HANDLE);
+    for (new client = 1; client <= MaxClients; client++)
+    {
+        if (IsClientInGame(client))
+            Weapons_CopyGlobalToClient(client);
+        else
+            Util_CloseHandle(g_hWeapons[client]);
+    }
 }
 
 /**

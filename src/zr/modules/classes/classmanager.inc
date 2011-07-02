@@ -520,17 +520,17 @@ ClassMgr_OnPluginStart()
     ClassMgr_Register();
     
     // Create cvars.
-    //g_hCvarClassesMenuSpawn =       Project_CreateConVar("classes_menu_spawn",              "0",                "Re-display class selection menu every spawn.");
-    //g_hCvarClassesMenuJoin =        Project_CreateConVar("classes_menu_join",               "0",                "Display class selection menu when a player spawn for the first time.");
-    //g_hCvarClassesRandom =          Project_CreateConVar("classes_random",                  "0",                "Player is assigned a random class every spawn. [Override: <prefix>_classes_default_*]");
-    //g_hCvarClassesChangeTimelimit = Project_CreateConVar("classes_change_timelimit",        "20",               "Time limit to change human class with instant change after spawning. Time is in seconds. Use 0 or negative to disable.");
+    g_hCvarClassesMenuSpawn =       Project_CreateConVar("classes_menu_spawn",              "0",                "Re-display class selection menu every spawn.");
+    g_hCvarClassesMenuJoin =        Project_CreateConVar("classes_menu_join",               "0",                "Display class selection menu when a player spawn for the first time.");
+    g_hCvarClassesRandom =          Project_CreateConVar("classes_random",                  "0",                "Player is assigned a random class every spawn. [Override: <prefix>_classes_default_*]");
+    g_hCvarClassesChangeTimelimit = Project_CreateConVar("classes_change_timelimit",        "20",               "Time limit to change human class with instant change after spawning. Time is in seconds. Use 0 or negative to disable.");
     g_hCvarClassesSave =            Project_CreateConVar("classes_save",                    "1",                "Save players' class selections in server cookies and restore when connecting. [Overrides: <prefix>_classes_default_*]");
     g_hCvarClassesDefaultZombie =   Project_CreateConVar("classes_default_zombie",          "random",           "Name of zombie class that should be assigned to players on connect. [\"random\" = Random zombie class | \"\" = Class config default]");
     //g_hCvarClassesDefaultMZombie =  Project_CreateConVar("classes_default_mother_zombie",   "motherzombies",    "Zombie class assigned to mother zombies. [\"motherzombies\" = Random mother zombie class | \"random\" = Random regular zombie class | \"disabled\" = Don't change class on mother zombies]");
     g_hCvarClassesDefaultHuman =    Project_CreateConVar("classes_default_human",           "random",           "Name of human class that should be assigned to players on connect. [\"random\" = Random human class | \"\" = Class config default]");
     //g_hCvarClassesDefaultAdmin =    Project_CreateConVar("classes_default_admin",           "default",          "(Not implemented!) Admin-only class assigned to admins on connect, if any. [\"default\" = Default human class | \"random\" = Random admin-only class]");
-    //g_hCvarClassesZombieSelect =    Project_CreateConVar("classes_zombie_select",           "1",                "Allow players to select zombie classes.");
-    //g_hCvarClassesHumanSelect =     Project_CreateConVar("classes_human_select",            "1",                "Allow players to select human classes.");
+    g_hCvarClassesZombieSelect =    Project_CreateConVar("classes_zombie_select",           "1",                "Allow players to select zombie classes.");
+    g_hCvarClassesHumanSelect =     Project_CreateConVar("classes_human_select",            "1",                "Allow players to select human classes.");
     
     // Setup cookies.
     ClassMgr_PrepareCookies();

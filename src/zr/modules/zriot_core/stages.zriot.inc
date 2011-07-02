@@ -136,6 +136,7 @@ public ZRiotStages_OnEventsRegister()
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_OnPluginEnd",            "ZRiotStages_OnPluginEnd");
     EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_OnMyModuleEnable",       "ZRiotStages_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_OnMyModuleDisable",      "ZRiotStages_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_OnMapStart",             "ZRiotStages_OnMapStart");
     
     #if defined PROJECT_GAME_CSS
@@ -182,6 +183,9 @@ public ZRiotStages_OnPluginEnd()
  */
 public Action:ZRiotStages_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
+    // Create array.
+    g_hZRiotStageData = CreateArray(sizeof(g_RuleSetCache));
+    
     // Don't let the module load unless the stages data is cached successfully.
     if (!ZRiotStages_CacheData())
     {
@@ -192,6 +196,20 @@ public Action:ZRiotStages_OnMyModuleEnable(String:refusalmsg[], maxlen)
     }
     
     return Plugin_Continue;
+}
+
+/**
+ * The module that hooked this event callback has been disabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
+ */
+public Action:ZRiotStages_OnMyModuleDisable(String:refusalmsg[], maxlen)
+{
+    ZRiotStages_CleanCache();
+    CloseHandle(g_hZRiotStageData);
 }
 
 /**

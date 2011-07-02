@@ -25,7 +25,7 @@
  * ============================================================================
  */
 
-// Include infection interface
+// Include infection interface.
 #include "zr/interfaces/infection.interface"
 
 /**

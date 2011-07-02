@@ -3,9 +3,9 @@
  *
  *  Zombie:Reloaded
  *
- *  File:          infection.interface.inc
+ *  File:          soundprofiles.interface.inc
  *  Type:          Interface
- *  Description:   An interface for common infection-type functions for modules to use.
+ *  Description:   An interface for modules to get data from the sound profiles module.
  *
  *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
  *
@@ -36,30 +36,6 @@
 new Function:g_ISndProfsGetNumProfiles = INVALID_FUNCTION;
 new Function:g_ISndProfsGetProfileSound = INVALID_FUNCTION;
 new Function:g_ISndProfsGetRandProfileSound = INVALID_FUNCTION;
-
-/**
- * Check if an interface function is available.
- */
-stock ISndProfs_Available(Function:func)
-{
-    return (func != INVALID_FUNCTION);
-}
-
-/**
- * Components that are implementing these interface functions use this.
- */
-stock ISndProfs_Implement(&Function:funccache, Function:func)
-{
-    funccache = func;
-}
-
-/**
- * Components that are implementing these interface functions use this to release a function.
- */
-stock ISndProfs_Release(&Function:funccache)
-{
-    funccache = INVALID_FUNCTION;
-}
 
 /**
  * Interface functions.

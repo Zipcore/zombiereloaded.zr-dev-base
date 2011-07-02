@@ -3,9 +3,9 @@
  *
  *  Zombie:Reloaded
  *
- *  File:          interfaces.inc
+ *  File:          zmenu.interface.inc
  *  Type:          Interface
- *  Description:   Interfacing functions.
+ *  Description:   An interface for modules to link menus to zmenu.
  *
  *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
  *
@@ -25,41 +25,31 @@
  * ============================================================================
  */
 
-#if defined _interfaces_included
+#if defined _izmenu_included
  #endinput
 #endif
-#define _interfaces_included
-
-// Include all interfaces.
-#include "zr/interfaces/infection.interface"
-#include "zr/interfaces/soundprofiles.interface"
-#include "zr/interfaces/zmenu.interface"
+#define _izmenu_included
 
 /**
- * Check if an interface function is available.
+ * Interface function ID cache.
  */
-stock bool:Interface_IsImplemented(Function:func)
-{
-    return (func != INVALID_FUNCTION);
-}
+new Function:g_IZMenuGetMenu = INVALID_FUNCTION;
 
 /**
- * Wrapper for implementing a function.
- * 
- * @param funcvar   Variable storing the implementing function.
- * @param func      The function ID that will implement the function. 
+ * Interface functions.
  */
-stock Interface_Implement(&Function:funcvar, Function:func)
-{
-    funcvar = func;
-}
 
-/**
- * Wrapper for releasing a function.
- * 
- * @param funcvar   Variable storing the implementing function.
- */
-stock Interface_Release(&Function:funcvar)
+stock Handle:IZMenu_GetMenu()
 {
-    funcvar = INVALID_FUNCTION;
+    if (g_IZMenuGetMenu != INVALID_FUNCTION)
+    {
+        Call_StartFunction(GetMyHandle(), g_IZMenuGetMenu);
+        new Handle:result;
+        Call_Finish(result);
+        return result;
+    }
+    else
+        ThrowError("This function isn't implemented!");
+    
+    return INVALID_HANDLE;
 }

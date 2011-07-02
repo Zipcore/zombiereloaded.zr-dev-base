@@ -4,56 +4,6 @@
 	//                   Generic
 	// **********************************************
 
-	"Feature is disabled"
-	{
-		"en"		"This feature is currently disabled by the server host."
-	}
-
-	"Not enough money"
-	{
-		"en"		"You do not have enough money to buy this item."
-	}
-
-	"Must be player"
-	{
-		"en"		"This feature is reserved for players only."
-	}
-
-	"Must be admin"
-	{
-		"en"		"This feature is reserved for admins only."
-	}
-
-	"No access to command"
-	{
-		"en"		"You do not have access to this command."
-	}
-
-	"Must be alive"
-	{
-		"en"		"This feature requires that you are alive."
-	}
-
-	"Must be dead"
-	{
-		"en"		"This feature requires that you are dead."
-	}
-
-	"Must be on team"
-	{
-		"en"		"This feature requires that you are on a team."
-	}
-
-	"Must be zombie"
-	{
-		"en"		"This feature requires that you are a zombie."
-	}
-
-	"Must be human"
-	{
-		"en"		"This feature requires that you are a human."
-	}
-
 	// {1}: Number to increase by.
 	"Increase by"
 	{

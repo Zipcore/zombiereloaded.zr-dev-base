@@ -61,6 +61,7 @@
 #include "zr/modules/soundprofiles"
 #include "zr/modules/classes/classmanager"
 #include "zr/modules/downloader"
+#include "zr/modules/zmenu"
 #include "zr/modules/antistick"
 #include "zr/modules/suicideintercept"
 #include "zr/modules/speed"

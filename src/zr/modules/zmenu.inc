@@ -33,7 +33,7 @@
 /**
  * This module's identifier.
  */
-new Module:g_moduleZMenu;
+//new Module:g_moduleZMenu;
 
 /**
  * Handle to ZMenu.
@@ -56,7 +56,8 @@ ZMenu_Register()
     moduledata[ModuleData_Dependencies][0] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
-    g_moduleZMenu = ModuleMgr_Register(moduledata);
+    /*g_moduleZMenu = */
+    ModuleMgr_Register(moduledata);
 }
 
 /**
@@ -71,7 +72,7 @@ ZMenu_OnPluginStart()
     RegConsoleCmd("zmenu", Command_ZMenu);
     
     // Register menu with menulib.
-    //MenuLib_CreateMenu();
+    g_hZMenu = MenuLib_CreateMenu("ZMenu title", true);
 }
 
 /**
@@ -83,5 +84,11 @@ ZMenu_OnPluginStart()
  */
 public Action:Command_ZMenu(client, argc)
 {
+    if (client == SERVER_INDEX)
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Must be player");
+        return;
+    }
     
+    MenuLib_DisplayMenu(g_hZMenu, client);
 }

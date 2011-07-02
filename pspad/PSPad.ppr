@@ -90,6 +90,7 @@ ZR
 			..\src\zr\modules\speed.inc
 			..\src\zr\modules\stripobjectives.inc
 			..\src\zr\modules\suicideintercept.inc
+			..\src\zr\modules\zmenu.inc
 			..\src\zr\modules\zspawn.inc
 			..\src\zr\modules\ztele.inc
 	..\src\zr\project.inc

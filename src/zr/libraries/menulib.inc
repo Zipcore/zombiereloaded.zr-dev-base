@@ -57,6 +57,7 @@ enum MenuLib_Button
 {
     String:MenuBtn_Label[ML_DATA_LABEL],    // What to display for this menu button.
     String:MenuBtn_Info[ML_DATA_INFO],      // Identical to the "info" parameter in AddMenuItem, see that.
+    bool:MenuBtn_Translate,                 // Instead of printing MenuBtn_Label, it will print the translation phrase it points to.
     MenuBtn_Style,                          // See SM include menus.inc ITEMDRAW_* defines.
     Function:MenuBtn_Function,              // Function to call when this button is selected.  INVALID_FUNCTION to call no function.
     MenuLib_BtnNextMenu:MenuBtn_NextMenu,   // See enum MenuLib_BtnNextMenu.
@@ -90,30 +91,35 @@ stock Handle:MenuLib_CreateMenu(const String:title[])
 /**
  * Deletes a menu page and all menu pages it links to, recursively.
  * 
- * @param   hMenu The handle to the menu page to delete.
+ * @param hMenu         The handle to the menu page to delete.
+ * @param recursive     True to delete all menus this links to, false to just delete this menu.
  * 
  * @error   Invalid menu handle.
  */
 stock MenuLib_DeleteMenu(Handle:hMenu, bool:recursive = false)
 {
     if (hMenu == INVALID_HANDLE)
-        return;
+        ThrowError("Invalid menu handle: %x", hMenu);
     
     if (recursive)
+        MenuLib_RecursiveDelete(hMenu);
+    else
+        CloseHandle(hMenu);
+}
+
+static stock MenuLib_RecursiveDelete(Handle:hMenu)
+{
+    new buttoninfo[MenuLib_Button];
+    new count = GetArraySize(hMenu);
+    for (new bindex = 1; bindex < count; bindex++)
     {
-        new buttoninfo[MenuLib_Button];
-        new count = GetArraySize(hMenu);
-        for (new bindex = 1; bindex < count; bindex++)
-        {
-            // Get all info about this menu button.
-            MenuLib_GetMenuBtn(hMenu, bindex, buttoninfo);
-            
-            // If it links to another menu, recurse into it.
-            if (buttoninfo[MenuBtn_LinkedMenu] != INVALID_HANDLE)
-                MenuLib_DeleteMenu(buttoninfo[MenuBtn_LinkedMenu], true);
-        }
+        // Get all info about this menu button.
+        MenuLib_GetMenuBtn(hMenu, bindex, buttoninfo);
+        
+        // If it links to another menu, recurse into it.
+        if (buttoninfo[MenuBtn_LinkedMenu] != INVALID_HANDLE)
+            MenuLib_RecursiveDelete(buttoninfo[MenuBtn_LinkedMenu]);
     }
-    
     CloseHandle(hMenu);
 }
 
@@ -134,17 +140,19 @@ stock MenuLib_AddMenuBtn(Handle:hMenu, buttoninfo[MenuLib_Button])
  * @param hMenu         Menu to add button to.
  * @param label         What to display for this menu button.
  * @param info          Identical to the "info" parameter in AddMenuItem, see that.
+ * @param translate     Instead of printing MenuBtn_Label, it will print the translation phrase it points to.
  * @param style         See SM include menus.inc ITEMDRAW_* defines.
  * @param funcCallback  The function to call when this button is selected.  INVALID_FUNCTION to call no function.
  * @param NextMenu      Where this menu button wants to link to.
  * @param hLinkedMenu   The handle of the menu to link this button to if NextMenu = BtnNextMenu_LinkMenu, otherwise INVALID_HANDLE.
  */
-stock MenuLib_AddMenuBtnEx(Handle:hMenu, String:label[], const String:info[], style, Function:funcCallback, MenuLib_BtnNextMenu:NextMenu, Handle:hLinkedMenu)
+stock MenuLib_AddMenuBtnEx(Handle:hMenu, String:label[], const String:info[], bool:translate, style, Function:funcCallback, MenuLib_BtnNextMenu:NextMenu, Handle:hLinkedMenu)
 {
     // Create array.
     new buttoninfo[MenuLib_Button];
     strcopy(buttoninfo[MenuBtn_Label], sizeof(buttoninfo[MenuBtn_Label]), label);
     strcopy(buttoninfo[MenuBtn_Info], sizeof(buttoninfo[MenuBtn_Info]), info);
+    buttoninfo[MenuBtn_Translate] = translate;
     buttoninfo[MenuBtn_Style] = style;
     buttoninfo[MenuBtn_Function] = funcCallback;
     buttoninfo[MenuBtn_NextMenu] = NextMenu;
@@ -247,6 +255,26 @@ stock MenuLib_GetMenuBtnInfo(Handle:hMenu, buttonindex, String:info[], maxlen)
     GetArrayArray(hMenu, buttonindex, buttoninfo[0], sizeof(buttoninfo));
     
     strcopy(info, maxlen, buttoninfo[MenuBtn_Info]);
+}
+
+/**
+ * Get if a menu button is translated or not.
+ * 
+ * @param hMenu         Menu to get button from.
+ * @param buttonindex   The index of the button to get data for. (Button 1 = 1, Button 2 = 2, etc)
+ * 
+ * @error               Invalid button.
+ * @return              True if translated, false if not.
+ */
+stock MenuLib_GetMenuBtnTranslate(Handle:hMenu, buttonindex)
+{
+    if (buttonindex <= 0 || buttonindex >= GetArraySize(hMenu))
+        ThrowError("Invalid button index.");
+    
+    new buttoninfo[MenuLib_Button];
+    GetArrayArray(hMenu, buttonindex, buttoninfo[0], sizeof(buttoninfo));
+    
+    return buttoninfo[MenuBtn_Translate];
 }
 
 /**
@@ -392,6 +420,24 @@ stock MenuLib_EditMenuBtnInfo(Handle:hMenu, buttonindex, String:info[])
 }
 
 /**
+ * Edits if a button is a translated.
+ * 
+ * @param hMenu         Menu containing the button we want to edit.
+ * @param buttonindex   The index of the button to modify in the menu. (Button 1 = 1, Button 2 = 2, etc)
+ * @param style         True to translate, false to not.
+ */
+stock MenuLib_EditMenuBtnTranslate(Handle:hMenu, buttonindex, bool:translate)
+{
+    if (buttonindex <= 0 || buttonindex >= GetArraySize(hMenu))
+        ThrowError("Invalid button index.");
+    
+    new buttoninfo[MenuLib_Button];
+    GetArrayArray(hMenu, buttonindex, buttoninfo[0], sizeof(buttoninfo));
+    buttoninfo[MenuBtn_Translate] = translate;
+    SetArrayArray(hMenu, buttonindex, buttoninfo[0], sizeof(buttoninfo));
+}
+
+/**
  * Edits the style of the button.
  * 
  * @param hMenu         Menu containing the button we want to edit.
@@ -503,19 +549,23 @@ stock MenuLib_SendMenu(Handle:hMenu, client)
     
     // Add menu items.
     decl String:strHandle[16];
-    decl String:blabel[ML_DATA_LABEL];
-    new style;
+    decl String:buttontext[ML_DATA_LABEL];
     new count = GetArraySize(hMenu);
     if (count <= 1)
         AddMenuItem(hSMMenu, "", " ", ITEMDRAW_DISABLED);
     else
     {
+        new buttoninfo[MenuLib_Button];
         for (new bindex = 1; bindex < count; bindex++)
         {
-            MenuLib_GetMenuBtnLabel(hMenu, bindex, blabel, sizeof(blabel));
-            style = MenuLib_GetMenuBtnStyle(hMenu, bindex);
+            GetArrayArray(hMenu, bindex, buttoninfo[0], sizeof(buttoninfo));
             IntToString(_:hMenu, strHandle, sizeof(strHandle));
-            AddMenuItem(hSMMenu, strHandle, blabel, style);
+            
+            if (buttoninfo[MenuBtn_Translate])
+                Format(buttontext, sizeof(buttontext), "%T", buttoninfo[MenuBtn_Label], client);
+            else
+                strcopy(buttontext, sizeof(buttontext), buttoninfo[MenuBtn_Label]);
+            AddMenuItem(hSMMenu, strHandle, buttontext, buttoninfo[MenuBtn_Style]);
         }
     }
     

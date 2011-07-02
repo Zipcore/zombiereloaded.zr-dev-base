@@ -91,7 +91,6 @@ public ZMarket_OnEventsRegister()
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnPluginEnd",            "ZMarket_OnPluginEnd");
     EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnClientPutInServer",    "ZMarket_OnClientPutInServer");
-    EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnClientDisconnect",     "ZMarket_OnClientDisconnect");
     EventMgr_RegisterEvent(g_moduleZMarket, "Event_OnClientCookiesCached",  "ZMarket_OnClientCookiesCached");
     EventMgr_RegisterEvent(g_moduleZMarket, "Event_PlayerSpawn",            "ZMarket_PlayerSpawn");
 }
@@ -143,19 +142,7 @@ public ZMarket_OnPluginEnd()
  */
 public ZMarket_OnClientPutInServer(client)
 {
-    // Initialize the per-client weapon data for the client for storing buy count.
-    Weapons_PerClientInit(client);
     ZMarket_ResetBuyCount(client);
-}
-
-/**
- * Client is disconnecting from the server.
- * 
- * @param client    The client index.
- */
-public ZMarket_OnClientDisconnect(client)
-{
-    Weapons_PerClientDestroy(client);
 }
 
 /**

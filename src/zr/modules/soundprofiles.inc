@@ -30,7 +30,7 @@
  * this needs priority in OnMapStart over any module using it in their configs.
  */
 
-// Include interfaces.
+// Include sound profile interface.
 #include "zr/interfaces/soundprofiles.interface"
 
 /**

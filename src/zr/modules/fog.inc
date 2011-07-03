@@ -87,6 +87,8 @@ Fog_Register()
 public Fog_OnEventsRegister()
 {
     // Register all the events needed for this module.
+    EventMgr_RegisterEvent(g_moduleFog, "Event_OnMyModuleEnable",               "Fog_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleFog, "Event_OnMyModuleDisable",              "Fog_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleFog, "Event_OnConfigsExecuted",              "Fog_OnConfigsExecuted");
     
     #if defined PROJECT_GAME_CSS
@@ -141,15 +143,15 @@ static stock Fog_HookCvars()
 static stock Fog_UnhookCvars()
 {
     // Unhook cvar changes to track when to update the fog.
-    UnhookConVarChange(g_hCvarFog, Fog_CvarUnhook);
-    UnhookConVarChange(g_hCvarFogOverride, Fog_CvarUnhook);
-    UnhookConVarChange(g_hCvarFogColor1, Fog_CvarUnhook);
-    UnhookConVarChange(g_hCvarFogColor2, Fog_CvarUnhook);
-    UnhookConVarChange(g_hCvarFogBlend, Fog_CvarUnhook);
-    UnhookConVarChange(g_hCvarFogDir, Fog_CvarUnhook);
-    UnhookConVarChange(g_hCvarFogStartDist, Fog_CvarUnhook);
-    UnhookConVarChange(g_hCvarFogEndDist, Fog_CvarUnhook);
-    UnhookConVarChange(g_hCvarFogDensity, Fog_CvarUnhook);
+    UnhookConVarChange(g_hCvarFog, Fog_CvarHook);
+    UnhookConVarChange(g_hCvarFogOverride, Fog_CvarHook);
+    UnhookConVarChange(g_hCvarFogColor1, Fog_CvarHook);
+    UnhookConVarChange(g_hCvarFogColor2, Fog_CvarHook);
+    UnhookConVarChange(g_hCvarFogBlend, Fog_CvarHook);
+    UnhookConVarChange(g_hCvarFogDir, Fog_CvarHook);
+    UnhookConVarChange(g_hCvarFogStartDist, Fog_CvarHook);
+    UnhookConVarChange(g_hCvarFogEndDist, Fog_CvarHook);
+    UnhookConVarChange(g_hCvarFogDensity, Fog_CvarHook);
 }
 
 /**
@@ -158,6 +160,51 @@ static stock Fog_UnhookCvars()
 public Fog_CvarHook(Handle:convar, String:oldValue[], String:newValue[])
 {
     g_bFogSettingsChanged = true;
+}
+
+/**
+ * The module that hooked this event callback has been enabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
+ */
+public Action:Fog_OnMyModuleEnable(String:refusalmsg[], maxlen)
+{
+    // Initialize fog by forwarding this to OnConfigsExecuted.
+    Fog_OnConfigsExecuted();
+    
+    // Hook cvar changes to track when to update the fog.
+    Fog_HookCvars();
+    
+    g_bFogSettingsChanged = true;
+}
+
+/**
+ * The module that hooked this event callback has been disabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
+ */
+public Action:Fog_OnMyModuleDisable(String:refusalmsg[], maxlen)
+{
+    // No longer need these hooks.
+    Fog_UnhookCvars();
+    
+    // Remove fog if created by this.
+    if (GetConVarBool(g_hCvarFogOverride) && g_iFogControllerIndex != -1)
+    {
+        // Return to its state of existence before this module did anything.
+        if (g_bFogOnMap)
+            Fog_Enable1(g_iFogControllerIndex, false);
+        else
+            AcceptEntityInput(g_iFogControllerIndex, "Kill");
+        
+        Fog_Enable2(g_iFogSkyCamera, false);
+    }
 }
 
 /**
@@ -220,8 +267,9 @@ static stock Fog_Update()
         Fog_UpdateSettings();
         
         // Enable/disable it.
-        Fog_Enable(g_iFogControllerIndex, GetConVarBool(g_hCvarFog));
-        Fog_Enable(g_iFogSkyCamera, GetConVarBool(g_hCvarFog));
+        Fog_Enable1(g_iFogControllerIndex, false); // Fog must be turned off then on to show property changes.
+        Fog_Enable1(g_iFogControllerIndex, GetConVarBool(g_hCvarFog));
+        Fog_Enable2(g_iFogSkyCamera, GetConVarBool(g_hCvarFog));
     }
 }
 
@@ -258,12 +306,26 @@ static stock Fog_UpdateSettings()
  */
 
 /**
- * Enable/disable fog entity.
+ * Enable/disable env_fog_controller entity.
  * 
  * @param fog       env_fog_controller entity index.
  * @param enable    True/false.
  */
-static stock Fog_Enable(fog, bool:enable)
+static stock Fog_Enable1(fog, bool:enable)
+{
+    if (enable)
+        AcceptEntityInput(fog, "TurnOn");
+    else
+        AcceptEntityInput(fog, "TurnOff");
+}
+
+/**
+ * Enable/disable sky_camera entity.
+ * 
+ * @param fog       env_fog_controller entity index.
+ * @param enable    True/false.
+ */
+static stock Fog_Enable2(fog, bool:enable)
 {
     decl String:strEnable[2];
     IntToString(enable, strEnable, sizeof(strEnable));

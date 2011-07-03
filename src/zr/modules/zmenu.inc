@@ -65,11 +65,11 @@ ZMenu_Register()
     strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "A list of functions for clients.");
     moduledata[ModuleData_Dependencies][0] = INVALID_MODULE;
     
-    // Register the OnEventsRegister event to register all events in it.
-    EventMgr_RegisterEvent(g_moduleZMenu, "Event_OnEventsRegister",             "ZMenu_OnEventsRegister");
-    
     // Send this array of data to the module manager.
     g_moduleZMenu = ModuleMgr_Register(moduledata);
+    
+    // Register the OnEventsRegister event to register all events in it.
+    EventMgr_RegisterEvent(g_moduleZMenu, "Event_OnEventsRegister",             "ZMenu_OnEventsRegister");
 }
 
 /**

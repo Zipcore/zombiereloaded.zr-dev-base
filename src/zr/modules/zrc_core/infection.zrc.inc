@@ -35,6 +35,11 @@
 #define ZOMBIE_WEAPON_CLASSNAME "zombie_claws_of_death"
 
 /**
+ * Implementation for IInfection_GetInfectWeapon
+ */
+public ZRCInfect_GetInfectWeapon(String:weapon[], maxlen) { strcopy(weapon, maxlen, ZOMBIE_WEAPON_CLASSNAME); }
+
+/**
  * This module's identifier.
  */
 new Module:g_moduleZRCInfect;
@@ -155,6 +160,7 @@ public ZRCInfect_OnMyCoreShutdown(Module:module)
     if (module == g_moduleZRCRoot)
     {
         // Release the infection interface.
+        Interface_Release(g_IInfectionGetInfectWeapon);
         Interface_Release(g_IInfectionAreZombiesPresent);
         Interface_Release(g_IInfectionIsClientMZombie);
         Interface_Release(g_IInfectionClientToZombie);
@@ -170,6 +176,7 @@ public ZRCInfect_OnMyCoreActivate(Module:module)
     if (module == g_moduleZRCRoot)
     {
         // Implement the infection interface.
+        Interface_Implement(g_IInfectionGetInfectWeapon, GetFunctionByName(GetMyHandle(), "ZRCInfect_GetInfectWeapon"));
         Interface_Implement(g_IInfectionAreZombiesPresent, GetFunctionByName(GetMyHandle(), "ZRCInfect_AreZombiesPresent"));
         Interface_Implement(g_IInfectionIsClientMZombie, GetFunctionByName(GetMyHandle(), "ZRCInfect_IsClientMZombie"));
         Interface_Implement(g_IInfectionClientToZombie, GetFunctionByName(GetMyHandle(), "ZRCInfect_ClientToZombie"));

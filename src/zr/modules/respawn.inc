@@ -204,6 +204,15 @@ public Respawn_PlayerSpawn(client)
  */
 public Respawn_PlayerDeath(victim, attacker, const String:weapon[], bool:headshot)
 {
+    // Don't do anything if it's just a client being infected.
+    if (Interface_IsImplemented(g_IInfectionGetInfectWeapon))
+    {
+        decl String:infectweapon[64];
+        IInfection_GetInfectWeapon(infectweapon, sizeof(infectweapon));
+        if (StrEqual(infectweapon, weapon, false))
+            return;
+    }
+    
     if (TLib_IsClientZombie(victim))
         g_bDeathBySuicide[victim] = (attacker < 0 || attacker > MaxClients);
     
@@ -293,7 +302,22 @@ public Action:Respawn_Countdown(Handle:timer, Handle:hCountdownData)
     ResetPack(hCountdownData);
     new client = ReadPackCell(hCountdownData);
     if (!IsClientInGame(client))
+    {
+        g_hRespawnCountdownTimer[client] = INVALID_HANDLE;
         return Plugin_Stop;
+    }
+    
+    if (IsPlayerAlive(client))
+    {
+        g_hRespawnCountdownTimer[client] = INVALID_HANDLE;
+        return Plugin_Stop;
+    }
+    
+    if (!TLib_IsClientPlaying(client))
+    {
+        g_hRespawnCountdownTimer[client] = INVALID_HANDLE;
+        return Plugin_Stop;
+    }
     
     new counter = ReadPackCell(hCountdownData);
     new total = ReadPackCell(hCountdownData);

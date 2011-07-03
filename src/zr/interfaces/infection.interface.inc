@@ -33,6 +33,7 @@
 /**
  * Interface function ID cache.
  */
+new Function:g_IInfectionGetInfectWeapon = INVALID_FUNCTION;
 new Function:g_IInfectionAreZombiesPresent = INVALID_FUNCTION;
 new Function:g_IInfectionIsClientMZombie = INVALID_FUNCTION;
 new Function:g_IInfectionClientToZombie = INVALID_FUNCTION;
@@ -41,6 +42,19 @@ new Function:g_IInfectionClientToHuman = INVALID_FUNCTION;
 /**
  * Interface functions.
  */
+
+stock IInfection_GetInfectWeapon(String:weapon[], maxlen)
+{
+    if (g_IInfectionGetInfectWeapon != INVALID_FUNCTION)
+    {
+        Call_StartFunction(GetMyHandle(), g_IInfectionGetInfectWeapon);
+        Call_PushStringEx(weapon, maxlen, SM_PARAM_STRING_UTF8, SM_PARAM_COPYBACK);
+        Call_PushCell(maxlen);
+        Call_Finish();
+    }
+    else
+        ThrowError("This function isn't implemented!");
+}
 
 stock bool:IInfection_AreZombiesPresent()
 {

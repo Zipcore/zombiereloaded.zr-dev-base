@@ -62,14 +62,14 @@ enum ClassAlphaModes
  */
 enum ClassModelAttributes
 {
-    String:ClassAttrib_Model[CLASS_NAME_LEN],   /** Name of the model or a predefined model option. */
-    ClassAlphaModes:ClassAttrib_AlphaFadeMode,  /** Alpha blending mode. */
-    bool:ClassAttrib_AlphaInvert,               /** Invert alpha blending (transparent when close, and opaque on distance). */
-    ClassAttrib_AlphaHealth,                    /** Health level (switch mode) or minimum health level (fading modes). */
-    ClassAttrib_AlphaMin,                       /** Minimum alpha value. */
-    ClassAttrib_AlphaMax,                       /** Maximum alpha value. */
-    ClassAttrib_AlphaMinDist,                   /** Minimum fade distance. */
-    ClassAttrib_AlphaMaxDist,                   /** Maximum fade distance. */   
+    String:ClassAttrib_Model[MODEL_MAX_QUERY_LEN],  /** Model query string. */
+    ClassAlphaModes:ClassAttrib_AlphaFadeMode,      /** Alpha blending mode. */
+    bool:ClassAttrib_AlphaInvert,                   /** Invert alpha blending (transparent when close, and opaque on distance). */
+    ClassAttrib_AlphaHealth,                        /** Health level (switch mode) or minimum health level (fading modes). */
+    ClassAttrib_AlphaMin,                           /** Minimum alpha value. */
+    ClassAttrib_AlphaMax,                           /** Maximum alpha value. */
+    ClassAttrib_AlphaMinDist,                       /** Minimum fade distance. */
+    ClassAttrib_AlphaMaxDist,                       /** Maximum fade distance. */   
 }
 
 /**
@@ -113,7 +113,6 @@ new bool:ClassModelAlphaSwitched[MAXPLAYERS + 1];
 /**
  * Function cache for API functions that this module use.
  */
-new Function:ClsModel_GetNameFunc;
 new Function:ClsModel_GetHealthFunc;
 
 /**
@@ -130,8 +129,9 @@ ClsModel_Register()
     strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "model");
     strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Stores model attributes.");
     moduledata[ModuleData_Dependencies][0] = ClassMgr_GetIdentifier();
-    //moduledata[ModuleData_Dependencies][1] = ClsHealth_GetIdentifier();   // Depends on health module because of alpha.
-    moduledata[ModuleData_Dependencies][1] = INVALID_MODULE;
+    moduledata[ModuleData_Dependencies][1] = ModelMgr_GetIdentifier();
+    //moduledata[ModuleData_Dependencies][2] = ClsHealth_GetIdentifier();   // Depends on health module because of alpha.
+    moduledata[ModuleData_Dependencies][2] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
     g_moduleClsModel = ModuleMgr_Register(moduledata);
@@ -151,7 +151,6 @@ ClsModel_Register()
     ClassAttribReg_AddAttrib(g_moduleClsModel, "alpha_max_dist");
     
     // Chache api function IDs that this module use.
-    ClsModel_GetNameFunc = FuncLib_IsFunctionAvailable("ClsGeneric_GetName");
     ClsModel_GetHealthFunc = FuncLib_IsFunctionAvailable("ClsHealth_GetHealth");
 }
 
@@ -173,6 +172,7 @@ public ClsModel_OnEventsRegister()
     //EventMgr_RegisterEvent(g_moduleClsModel, "Event_OnAllPluginsLoaded",      "ClsModel_OnAllPluginsLoaded");
     //EventMgr_RegisterEvent(g_moduleClsModel, "Event_OnPluginEnd",             "ClsModel_OnPluginEnd");
     EventMgr_RegisterEvent(g_moduleClsModel, "Event_OnAllModulesLoaded",        "ClsModel_OnAllModulesLoaded");
+    EventMgr_RegisterEvent(g_moduleClsModel, "Event_OnEventsReady",             "ClsModel_OnEventsReady");
     //EventMgr_RegisterEvent(g_moduleClsModel, "Event_OnModuleEnable",          "ClsModel_OnModuleEnable");
     //EventMgr_RegisterEvent(g_moduleClsModel, "Event_OnMyModuleEnable",        "ClsModel_OnMyModuleEnable");
     //EventMgr_RegisterEvent(g_moduleClsModel, "Event_OnModuleDisable",         "ClsModel_OnModuleDisable");
@@ -304,20 +304,28 @@ public Action:ClsModel_OnClassValidate(classIndex)
     // Get class name.
     decl String:className[CLASS_NAME_LEN];
     className[0] = 0;
-    Call_StartFunction(INVALID_HANDLE, ClsModel_GetNameFunc);
-    Call_PushCell(classIndex);
-    Call_PushStringEx(className, sizeof(className), 0, SM_PARAM_COPYBACK);
-    Call_PushCell(sizeof(className));
-    Call_PushCell(_:ClassCache_Original);
-    if (Call_Finish() != SP_ERROR_NONE)
-    {
-        PrintToServer("Error getting class name for class %d.", classIndex);
-    }
+    ClsGeneric_GetName(classIndex, className, sizeof(className), ClassCache_Original);
     
     strcopy(buffer, sizeof(buffer), classCache[ClassAttrib_Model]);
-    if (!ClsModel_IsValidModel(buffer))
+    new errCode;
+    new errPos;
+    if (!ClsModel_IsValidModel(buffer, errCode, errPos))
     {
         ClassMgr_LogAttribErrString(g_moduleClsModel, "model", className, classIndex, buffer);
+        
+        // Get parse error message.
+        decl String:errMsg[64];
+        errMsg[0] = 0;
+        ModelDB_ErrCodeToString(errCode, errMsg, sizeof(errMsg));
+        LogMgr_Print(g_moduleClsModel, LogType_Error, "Config Validation", "Model parse error (%d) at column %d: %s", errCode, errPos, errMsg);
+        
+        // Print marker.
+        decl String:errMarker[MODEL_MAX_QUERY_LEN];
+        errMarker[0] = 0;
+        ModelDB_GetStringMarker(errPos, errMarker, sizeof(errMarker));
+        LogMgr_Print(g_moduleClsModel, LogType_Error, "Config Validation", "%s", buffer);
+        LogMgr_Print(g_moduleClsModel, LogType_Error, "Config Validation", "%s", errMarker);
+        
         hasErrors = true;
     }
     if (!ClsModel_IsValidAlphaMode(classCache[ClassAttrib_AlphaFadeMode]))
@@ -448,6 +456,8 @@ public ClsModel_OnClassApply(client)
  */
 public ClsModel_OnEventsReady()
 {
+    // Models must be loaded before classes.
+    EventMgr_GivePriority("Event_OnMapStart", ModelMgr_GetIdentifier(), ClassMgr_GetIdentifier());
 }
 
 /**
@@ -670,6 +680,7 @@ ClsModel_UpdateAlpha(client)
     // Validate dependencies.
     if (ClsModel_GetHealthFunc == INVALID_FUNCTION)
     {
+        // Health data not available. Do nothing.
         return;
     }
     
@@ -864,36 +875,31 @@ ClassAlphaModes:ClsModel_StringToMode(const String:mode[])
 /**
  * Validates model.
  *
+ * Note: Consider this a little expensive for long queries.
+ *
  * @param model         Model to validate.
+ * @param errCode       Output. Model query parser error code.
+ *                      (See MODEL_ERR_* defines in models/modelparser.inc.)
+ * @param errPos        Output. Position in query string where it
+ *                      failed.
  *
  * @return              True if valid, false otherwise.
  */
-public bool:ClsModel_IsValidModel(const String:model[])
+public bool:ClsModel_IsValidModel(const String:model[], &errCode, &errPos)
 {
-    if (strlen(model) > 0)
+    errCode = 0;
+    errPos = 0;
+    
+    // Parse model query.
+    ModelDB_ParseQuery(0, model, ModelParser_First, INVALID_HANDLE, errCode, errPos);
+    
+    // Check if valid.
+    if (errCode == 0)
     {
-        // Check for predefined options.
-        if (StrEqual(model, "random", false) ||
-            StrEqual(model, "random_public", false) ||
-            StrEqual(model, "random_hidden", false) ||
-            StrEqual(model, "random_admin", false) ||
-            StrEqual(model, "random_mother_zombie", false) ||
-            StrEqual(model, "default", false) ||
-            StrEqual(model, "no_change", false))
-        {
-            return true;
-        }
-        
-        // Look up the name in the model list.
-        // Disabled until model module is converted.
-        /*if (ModelsIsValidName(model))
-        {
-            return true;
-        }*/
+        return true;
     }
     
-    //return false;     Always valid until model module is converted.
-    return true;
+    return false;
 }
 
 /**
@@ -969,7 +975,7 @@ public bool:ClsModel_IsValidAlphaDist(dist)
  ***************************/
 
 /**
- * Gets the model name from the specified class.
+ * Gets the model query string from the specified class.
  *
  * @param index         Class index or client index.
  * @param buffer        Destination string buffer.
@@ -979,7 +985,7 @@ public bool:ClsModel_IsValidAlphaDist(dist)
  *
  * @return              Number of cells written.
  */
-public ClsModel_GetModel(classIndex, String:buffer[], maxlen, ClassCacheType:cache)
+public ClsModel_GetModelQuery(classIndex, String:buffer[], maxlen, ClassCacheType:cache)
 {
     switch (cache)
     {

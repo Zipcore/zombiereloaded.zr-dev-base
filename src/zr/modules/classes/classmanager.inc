@@ -308,7 +308,11 @@ stock g_ClassNoSpecialClasses[ClassFilter] = {false, 0, CLASS_SPECIALFLAGS, -1};
 
 // Attribute module includes
 #include "zr/modules/classes/genericattributes"
-#include "zr/modules/classes/model"
+
+// Game-specific attribute modules.
+#if defined PROJECT_GAME_CSS
+    #include "zr/modules/classes/model"
+#endif
 
 
 /**
@@ -357,8 +361,9 @@ public ClassMgr_OnEventsRegister()
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnAllPluginsLoaded",      "ClassMgr_OnAllPluginsLoaded");
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnPluginEnd",             "ClassMgr_OnPluginEnd");
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnAllModulesLoaded",      "ClassMgr_OnAllModulesLoaded");
+    //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnEventsReady",           "ClassMgr_OnEventsReady");
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnModuleEnable",          "ClassMgr_OnModuleEnable");
-    EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnMyModuleEnable",        "ClassMgr_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnMyModuleEnable",          "ClassMgr_OnMyModuleEnable");
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnModuleDisable",         "ClassMgr_OnModuleDisable");
     //EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnMyModuleDisable",       "ClassMgr_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnMapStart",                "ClassMgr_OnMapStart");

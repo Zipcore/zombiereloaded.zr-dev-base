@@ -36,7 +36,10 @@
 #include "zr/project"
 #include "zr/base/wrappers"
 
-// Base project includes.
+
+/*****************************
+ *   Base project includes   *
+ *****************************/
 #include "zr/base/versioninfo"
 #include "zr/base/accessmanager"
 #include "zr/base/translationsmanager"
@@ -45,12 +48,16 @@
 #include "zr/base/eventmanager"
 #include "zr/base/modulemanager"
 
-// Non-module includes.
 
-// Include all interfaces.
+/******************
+ *   Interfaces   *
+ ******************/
 #include "zr/interfaces/interfaces"
 
-// Module includes.
+
+/***********************
+ *   Module includes   *
+ ***********************/
 #include "zr/modules/gamerules"
 #include "zr/modules/gamedata"
 #include "zr/modules/zr_core"
@@ -59,7 +66,12 @@
 #include "zr/modules/zriot_core/root.zriot"
 #include "zr/modules/sdkhooksadapter"
 #include "zr/modules/soundprofiles"
-#include "zr/modules/classes/classmanager"
+
+#if defined PROJECT_GAME_CSS
+    #include "zr/modules/models/modelmgr"   // Must be included before class manager.
+#endif
+
+#include "zr/modules/classes/classmanager"  // Model attribute module depends on model manager.
 #include "zr/modules/downloader"
 #include "zr/modules/zmenu"
 #include "zr/modules/antistick"
@@ -74,7 +86,6 @@
 
 // Game-specific modules
 #if defined PROJECT_GAME_CSS
-    #include "zr/modules/models/modelmgr"
     #include "zr/modules/weapons/weapons"
     #include "zr/modules/napalm"
 #endif

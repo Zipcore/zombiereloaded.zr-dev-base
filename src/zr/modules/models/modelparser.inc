@@ -55,6 +55,7 @@ enum ModelParserMode
 /**
  * @section Model parse error codes.
  */
+#define MODEL_ERR_SUCCESS               0   /** No errors. */
 #define MODEL_ERR_EMPTY                 1   /** Query string was empty. */
 #define MODEL_ERR_NOT_FOUND             2   /** No model found. */
 #define MODEL_ERR_INVALID_FILTER        3   /** Invalid filter name. */
@@ -101,9 +102,9 @@ enum ModelParserMode
  *
  * @return          -1 if it's a predefined option (mode).
  *
- *                  If in list mode: Number of models added to the list.
+ *                  List mode: Number of models added to the list.
  *
- *                  Default mode: Model index if found, or a negative number:
+ *                  Other modes: Model index if found, or a negative number:
  *                  -2 if empty query string,
  *                  -3 if empty entry,
  *                  -4 if invalid collection entry,
@@ -157,7 +158,7 @@ ModelDB_ParseQuery(client, const String:query[], ModelParserMode:mode = ModelPar
     new Handle:filtered = asList ? list : CreateArray();
     
     // Separate entries.
-    entryCount = ExplodeString(query, MODEL_ENTRY_SEPARATOR, entries, MODEL_MAX_ENTRIES, MODEL_STRING_LEN);
+    entryCount = ZR_ExplodeStringEx(query, MODEL_ENTRY_SEPARATOR, entries, MODEL_MAX_ENTRIES, MODEL_STRING_LEN);
     
     // Check if failed.
     if (entryCount == 0)
@@ -304,7 +305,7 @@ ModelDB_ParseFilters(const String:filterList[], &errPos = 0)
     errPos = 0;
     decl String:filterEntries[MODEL_MAX_ENTRIES][MODEL_FILTER_NAME_LEN];
     
-    new count = ExplodeString(filterList, MODEL_FILTER_SEPARATOR, filterEntries, MODEL_MAX_ENTRIES, MODEL_FILTER_NAME_LEN);
+    new count = ZR_ExplodeStringEx(filterList, MODEL_FILTER_SEPARATOR, filterEntries, MODEL_MAX_ENTRIES, MODEL_FILTER_NAME_LEN);
     
     for (new entry = 0; entry < count; entry++)
     {
@@ -442,6 +443,51 @@ ModelDB_GetStringMarker(pos, String:buffer[], maxlen)
     count = pos + 1;
     
     return count;
+}
+
+/**
+ * Breaks a string into pieces and stores each piece into an array of buffers.
+ *
+ * Note: This is a fixed version so it returns correct number of strings
+ *       retreived (it doesn't fix all cases, but good enough for us). The SM
+ *       developers doesn't have a official fix yet - so we fork it.
+ *
+ * @param text				The string to split.
+ * @param split				The string to use as a split delimiter.
+ * @param buffers			An array of string buffers (2D array).
+ * @param maxStrings		Number of string buffers (first dimension size).
+ * @param maxStringLength	Maximum length of each string buffer.
+ * @return					Number of strings retrieved.
+ */
+stock ZR_ExplodeStringEx(const String:text[], const String:split[], String:buffers[][], maxStrings, maxStringLength)
+{
+	new reloc_idx, idx, total;
+	
+	if (maxStrings < 1 || split[0] == '\0')
+	{
+		return 0;
+	}
+	
+	while ((idx = SplitString(text[reloc_idx], split, buffers[total], maxStringLength)) != -1)
+	{
+		reloc_idx += idx;
+		if (text[reloc_idx] == '\0')
+		{
+			total++;        // Bug fix by Richard.
+			break;
+		}
+		if (++total >= maxStrings)
+		{
+			return total;
+		}
+	}
+	
+	if (text[reloc_idx] != '\0' && total <= maxStrings - 1)
+	{
+		strcopy(buffers[total++], maxStringLength, text[reloc_idx]);
+	}
+	
+	return total;
 }
 
 

@@ -174,7 +174,7 @@ public Action:ModelMgr_OnMyModuleEnable(String:refusalmsg[], maxlen)
 }
 
 /**
- * All convars are set, cvar-dependent code should use this.
+ * The map has started.
  */
 public ModelMgr_OnMapStart()
 {

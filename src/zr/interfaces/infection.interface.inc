@@ -48,7 +48,7 @@ stock IInfection_GetInfectWeapon(String:weapon[], maxlen)
     if (g_IInfectionGetInfectWeapon != INVALID_FUNCTION)
     {
         Call_StartFunction(GetMyHandle(), g_IInfectionGetInfectWeapon);
-        Call_PushStringEx(weapon, maxlen, SM_PARAM_STRING_UTF8, SM_PARAM_COPYBACK);
+        Call_PushStringEx(weapon, maxlen, 0, SM_PARAM_COPYBACK);
         Call_PushCell(maxlen);
         Call_Finish();
     }

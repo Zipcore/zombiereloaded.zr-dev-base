@@ -123,6 +123,7 @@ ZTele_Register()
  */
 public ZTele_OnEventsRegister()
 {
+    EventMgr_RegisterEvent(g_moduleZTele, "Event_OnAllModulesLoaded",           "ZTele_OnAllModulesLoaded");
     EventMgr_RegisterEvent(g_moduleZTele, "Event_OnMapStart",                   "ZTele_OnMapStart");
     EventMgr_RegisterEvent(g_moduleZTele, "Event_OnClientPutInServer",          "ZTele_OnClientPutInServer");
     EventMgr_RegisterEvent(g_moduleZTele, "Event_OnClientDisconnect",           "ZTele_OnClientDisconnect");
@@ -164,6 +165,20 @@ ZTele_OnPluginStart()
     // Create commands
     RegConsoleCmd("ztele", ZTele_SayCommand, "Teleport to a known location by command.");
     Project_RegConsoleCmd("ztele_force", ZTele_ForceCommand, "ZTele a client. Usage: <prefix>_ztele_force <client>");
+}
+
+/**
+ * All modules have been registered at this point.
+ */
+public ZTele_OnAllModulesLoaded()
+{
+    // Get ZMenu's handle.
+    new Handle:hZMenu = MenuLib_FindMenuById("zmenu");
+    if (hZMenu == INVALID_HANDLE)
+        LogMgr_Print(g_moduleZTele, LogType_Fatal_Plugin, "ZMenu", "Couldn't find ZMenu even though the event saying it's ready was fired!");
+    
+    // Add ZTele's button to the menu.
+    MenuLib_AddMenuBtnEx(hZMenu, "ZTele zmenu button", "0", true, ITEMDRAW_DEFAULT, GetFunctionByName(GetMyHandle(), "ZTele_ZMenuButton"), BtnNextMenu_None, INVALID_HANDLE);
 }
 
 /**
@@ -569,6 +584,26 @@ ZTele_TeleportClient(client)
     eventdata[0][0] = client;
     
     EventMgr_Forward(g_EvOnClientZTele, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType1);
+}
+
+// **********************************************
+//          ZMenu ZTele button callback
+// **********************************************
+
+/**
+ * ZMenu callback (ztele)
+ * Teleports client following rules of ZTele.
+ * 
+ * @param menu      The menulib menu handle.
+ * @param action    Action client is doing in menu.
+ * @param client    The client index.
+ * @param slot      The menu slot selected. (starting from 1)
+ */
+public ZTele_ZMenuButton(Handle:hMenu, MenuAction:action, client, slot)
+{
+    // Teleport the client, but if it fails then re-resend the menu.
+    if (!ZTele_Client(client))
+        MenuLib_SendMenu(hMenu, client);
 }
 
 // **********************************************

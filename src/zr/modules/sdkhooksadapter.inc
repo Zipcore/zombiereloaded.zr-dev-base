@@ -7,7 +7,7 @@
  *  Type:          Module
  *  Description:   Establishes hooks via sdkhooks extension and forwards them as project events.
  *
- *  Copyright (C) 2009-2010  Greyscale, Richard Helgeby
+ *  Copyright (C) 2009-2011  Greyscale, Richard Helgeby
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

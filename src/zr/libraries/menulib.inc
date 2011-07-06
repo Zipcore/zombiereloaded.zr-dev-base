@@ -1,7 +1,7 @@
 /*
  * ============================================================================
  *
- *  Zombie:Reloaded
+ *  SourceMod Project Base
  *
  *  File:          menulib.inc
  *  Type:          Library
@@ -31,11 +31,12 @@
 #define _menulib_included
 
 // Include libraries.
-#include "zr/libraries/utilities"
+#include "<project>/libraries/utilities"
 
 /**
  * The max string/array lengths of module data variables.
  */
+#define ML_DATA_ID          128
 #define ML_DATA_TITLE       128
 #define ML_DATA_LABEL       64
 #define ML_DATA_INFO        128
@@ -45,6 +46,7 @@
  */
 enum MenuLib_Menu
 {
+    String:MenuData_Id[ML_DATA_ID],
     String:MenuData_Title[ML_DATA_TITLE],
     bool:MenuData_Translate
 }
@@ -80,6 +82,11 @@ enum MenuLib_Button
 new Handle:g_hPrevMenus[MAXPLAYERS + 1];
 
 /**
+ * Keeps a cache of all current menus that are looked up by their id.
+ */
+new Handle:g_hMenuLibCache;
+
+/**
  * Dummy array used as a way to count the cells required to store menu data.
  */
 static stock g_DummyMenuData[MenuLib_Menu];
@@ -88,13 +95,24 @@ static stock g_DummyMenuBtnData[MenuLib_Button];
 /**
  * Creates a menu ready to be filled with menu buttons.
  * 
+ * @param id        The a unique string identifier for the menu. (can only be set on creation)
  * @param title     The menu title.
  * @param translate True if the title text is a translations phrase, false if just text.
  * 
- * @return      Handle to menu.
+ * @return          Handle to menu.  INVALID_HANDLE if the given id is already taken.
  */
-stock Handle:MenuLib_CreateMenu(const String:title[], bool:translate)
+stock Handle:MenuLib_CreateMenu(const String:id[], const String:title[], bool:translate)
 {
+    // Initialize if not already.
+    if (g_hMenuLibCache == INVALID_HANDLE)
+        g_hMenuLibCache = CreateTrie();
+    else
+    {
+        // Check if this unique id is available.
+        if (MenuLib_FindMenuById(id) != INVALID_HANDLE)
+            return INVALID_HANDLE;
+    }
+    
     // Use the max value of both data structures.
     new high = sizeof(g_DummyMenuData);
     if (sizeof(g_DummyMenuBtnData) > high) high = sizeof(g_DummyMenuBtnData);
@@ -102,15 +120,36 @@ stock Handle:MenuLib_CreateMenu(const String:title[], bool:translate)
     
     // Create menu data object.
     new menudata[MenuLib_Menu];
+    strcopy(menudata[MenuData_Id], sizeof(menudata[MenuData_Id]), id);
     strcopy(menudata[MenuData_Title], sizeof(menudata[MenuData_Title]), title);
     menudata[MenuData_Translate] = translate;
     
     PushArrayArray(hMenu, menudata[0]);
+    SetTrieValue(g_hMenuLibCache, id, hMenu);
     return hMenu;
 }
 
 /**
- * Deletes a menu page and all menu pages it links to, recursively.
+ * Returns a MenuLib menu handle given it's unique id.
+ * 
+ * @param id    The unique id of the sought menu.
+ * 
+ * @return      Handle belonging to the given unique id.  INVALID_HANDLE if not found.
+ */
+stock Handle:MenuLib_FindMenuById(const String:id[])
+{
+    new Handle:hMenu;
+    if (!GetTrieValue(g_hMenuLibCache, id, hMenu))
+        return INVALID_HANDLE;
+    return hMenu;
+}
+
+/**
+ * Deletes a menu page and/or all menu pages it links to.
+ * This will set each page's LinkedMenu value to INVALID_HANDLE as it kills them.
+ * Warning: The root menu along with menus not in this chain may still be linked to menus that were deleted
+ * in which case you will most likely get an error on the 2nd line of MenuLib_GetMenuTitle!
+ * Always use this to delete these menus, don't just close the handle!
  * 
  * @param hMenu         The handle to the menu page to delete.
  * @param recursive     True to delete all menus this links to, false to just delete this menu.
@@ -123,13 +162,22 @@ stock MenuLib_DeleteMenu(Handle:hMenu, bool:recursive = false)
         ThrowError("Invalid menu handle: %x", hMenu);
     
     if (recursive)
-        MenuLib_RecursiveDelete(hMenu);
+    {
+        // Have to keep track of killed handles because I can't know if it's valid..
+        new Handle:hKilledHandles = CreateArray();
+        MenuLib_RecursiveDelete(hMenu, hKilledHandles);
+        CloseHandle(hKilledHandles);
+    }
     else
-        CloseHandle(hMenu);
+        MenuLib_EradicateMenu(hMenu);
 }
 
-static stock MenuLib_RecursiveDelete(Handle:hMenu)
+static stock MenuLib_RecursiveDelete(Handle:hMenu, Handle:hKilledHandles)
 {
+    // We killed this one already.
+    if (FindValueInArray(hKilledHandles, hMenu) > -1)
+        return;
+    
     new buttoninfo[MenuLib_Button];
     new count = GetArraySize(hMenu);
     for (new bindex = 1; bindex < count; bindex++)
@@ -139,8 +187,27 @@ static stock MenuLib_RecursiveDelete(Handle:hMenu)
         
         // If it links to another menu, recurse into it.
         if (buttoninfo[MenuBtn_LinkedMenu] != INVALID_HANDLE)
-            MenuLib_RecursiveDelete(buttoninfo[MenuBtn_LinkedMenu]);
+        {
+            MenuLib_RecursiveDelete(buttoninfo[MenuBtn_LinkedMenu], hKilledHandles);
+            buttoninfo[MenuBtn_LinkedMenu] = INVALID_HANDLE;
+            MenuLib_EditMenuBtn(hMenu, bindex, buttoninfo);
+        }
     }
+    MenuLib_EradicateMenu(hMenu);
+    PushArrayCell(hKilledHandles, hMenu);
+}
+
+static stock MenuLib_EradicateMenu(Handle:hMenu)
+{
+    // Look through all menus and unlink this menu from all to tie up loose ends.
+    // ..Can't iterate tries >:|
+    
+    // Remove from cache/lookup table.
+    decl String:id[ML_DATA_ID];
+    MenuLib_GetMenuId(hMenu, id, sizeof(id));
+    RemoveFromTrie(g_hMenuLibCache, id);
+    
+    // Destroy menu data.
     CloseHandle(hMenu);
 }
 
@@ -205,6 +272,20 @@ stock MenuLib_RemoveAllButtons(Handle:hMenu)
 {
     while(GetArraySize(hMenu) > 1)
         RemoveFromArray(hMenu, 1);
+}
+
+/**
+ * Get id of a menu.
+ * 
+ * @param hMenu     The handle of menu whose id to get.
+ * @param title     The returned menu id.
+ * @param maxlen    The max length of the return string.
+ */
+stock MenuLib_GetMenuId(Handle:hMenu, String:id[], maxlen)
+{
+    new menudata[MenuLib_Menu];
+    GetArrayArray(hMenu, 0, menudata[0], sizeof(menudata));
+    strcopy(id, maxlen, menudata[MenuData_Id]);
 }
 
 /**
@@ -696,24 +777,50 @@ public MenuLib_Handler(Handle:menu, MenuAction:action, client, slot)
 }
 
 /**
+ * Called for each client added to the menu being generated by MenuLib_GenerateClientMenu. 
+ *
+ * @param client        Index of client that is about to be added to the menu.
+ * @param buttontxt     The text that will be shown for this client's button.
+ *                      Default is just the client's in-game name.
+ * @param info          The button's information string.  Be careful modifying this, it will break MenuLib_GetClientIndex so you will have to interpret this data yourself.
+ *
+ * @return              Follows rules of a normal hook.  (Plugin_Stop will behave the same as Plugin_Handled)
+ * 
+ * Action:FuncName(client, String:buttontxt[], String:info[])
+ */
+
+/**
  * Shows a list of all clients to a client, different handlers can be used for this, as well as title.
  * 
  * @param client        Who is this being generated for?
  * @param hClientMenu   A menu handle created by MenuLib_CreateMenu to populate with list of clients currently in the server.
- * @param funcCallback  Function to call when a client is selected.
+ * @param strCallback   Name of the function to call when a client is selected.
  * @param NextMenu      Where all buttons in this menu will link to.
  * @param hLinkedMenu   The handle of the menu to link this button to if NextMenu = BtnNextMenu_LinkMenu, otherwise INVALID_HANDLE.
  * @param filters       A bit field made up of UTILS_FILTER_* defines.  See utilities.inc.
  *                      Note: This is only checked at time of menu creation.  It is
  *                      recommended to re-check these filters in the callback.
+ * @param filterFunc    Name of a function with the structure shown in the above comments.  Leave blank for no filter.
+ * 
+ * @error               Invalid function given for either the callback or filter function.
  */
-stock Handle:MenuLib_GenerateClientMenu(client, Handle:hClientMenu, Function:funcCallback, MenuLib_BtnNextMenu:NextMenu, Handle:hLinkedMenu, filters)
+stock Handle:MenuLib_GenerateClientMenu(client, Handle:hClientMenu, const String:strCallback[], MenuLib_BtnNextMenu:NextMenu, Handle:hLinkedMenu, filters, const String:filterFunc[] = "")
 {
+    // Verify callback function exists.
+    new Function:funcCallback = GetFunctionByName(GetMyHandle(), strCallback);
+    if (funcCallback == INVALID_FUNCTION)
+        ThrowError("Invalid callback function specified: \"%s\"", strCallback);
+        
+    // Verify filter function exists.
+    new Function:funcFilter = GetFunctionByName(GetMyHandle(), filterFunc);
+    if (filterFunc[0] && funcFilter == INVALID_FUNCTION)
+        ThrowError("Invalid filter function specified: \"%s\"", filterFunc);
+    
     // Clear menu.
     MenuLib_RemoveAllButtons(hClientMenu);
     
-    decl String:clientoption[64];
-    decl String:clientuserid[8];
+    decl String:clientoption[256];
+    decl String:clientuserid[256];
     new menuclient;
     
     new Handle:adtClients;
@@ -727,8 +834,15 @@ stock Handle:MenuLib_GenerateClientMenu(client, Handle:hClientMenu, Function:fun
         GetClientName(menuclient, clientoption, sizeof(clientoption));
         IntToString(GetClientUserId(menuclient), clientuserid, sizeof(clientuserid));
         
+        // Call the filter function and return proper values.
+        if (funcFilter != INVALID_FUNCTION)
+        {
+            if (!MenuLib_ClientMenuCallFilter(funcFilter, menuclient, clientoption, sizeof(clientoption), clientuserid, sizeof(clientuserid)))
+                continue;
+        }
+        
         // Add option to menu.
-        MenuLib_AddMenuBtnEx(hClientMenu, clientoption, clientuserid, ITEMDRAW_DEFAULT, funcCallback, NextMenu, hLinkedMenu);
+        MenuLib_AddMenuBtnEx(hClientMenu, clientoption, clientuserid, false, ITEMDRAW_DEFAULT, funcCallback, NextMenu, hLinkedMenu);
     }
     CloseHandle(adtClients);
 }
@@ -750,6 +864,41 @@ stock MenuLib_GetClientIndex(Handle:hMenu, buttonindex)
     
     // Return the targeted client through their userid stored as a string in the menu slot.
     return GetClientOfUserId(StringToInt(clientuserid));
+}
+
+/**
+ * Calls a filter function and determines appropriate values to return based on returned hook action.
+ * 
+ * @param funcFilter    A VALID function ID to the filter func.
+ * @param client        Any cell value to pass to the filter function.
+ * @param buttontxt     The filter function will possibly change this value but will only be passed back if Plugin_Changed is returned.
+ * @param buttoninfo    The filter function will possibly change this value but will only be passed back if Plugin_Changed is returned.
+ * 
+ * @return              True if the action should be completed, false if the filter asked to block action.
+ */
+stock bool:MenuLib_ClientMenuCallFilter(Function:funcFilter, client, String:buttontxt[], maxlen, String:buttoninfo[], maxlen2)
+{
+    decl String:newbuttontxt[256];
+    decl String:newbuttoninfo[256];
+    strcopy(newbuttontxt, sizeof(newbuttontxt), buttontxt);
+    strcopy(newbuttoninfo, sizeof(newbuttoninfo), buttoninfo);
+    
+    Call_StartFunction(GetMyHandle(), funcFilter);
+    Call_PushCell(client);
+    Call_PushString(newbuttontxt);
+    Call_PushStringEx(newbuttoninfo, sizeof(newbuttoninfo), 0, SM_PARAM_COPYBACK);
+    new Action:result;
+    Call_Finish(result);
+    
+    // Interpret hook return.
+    if (result == Plugin_Continue) return true;
+    else if (result == Plugin_Changed)
+    {
+        strcopy(buttontxt, maxlen, newbuttontxt);
+        strcopy(buttoninfo, maxlen2, newbuttoninfo);
+        return true;
+    }
+    return true;
 }
 
 // ***********************************

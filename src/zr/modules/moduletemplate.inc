@@ -138,6 +138,13 @@ public <FuncPrefix>_OnPluginEnd()
 }
 
 /**
+ * All modules have been registered at this point.
+ */
+public <FuncPrefix>_OnAllModulesLoaded()
+{
+}
+
+/**
  * A module has been enabled.
  */
 public <FuncPrefix>_OnModuleEnable(Module:module)

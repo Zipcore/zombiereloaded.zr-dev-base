@@ -58,6 +58,11 @@
 		"en"		"Teleportation successful (Count: {1}/{2})"
 	}
 
+	"ZTele zmenu button"
+	{
+		"en"		"ZTele - Stuck?  Teleport back to spawn"
+	}
+
 	"ZTele menu clients title"
 	{
 		"en"		"Force ZTele (zr_ztele_force)\nSelect a Player:"

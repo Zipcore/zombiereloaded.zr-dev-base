@@ -33,7 +33,6 @@
 // Include all interfaces.
 #include "zr/interfaces/infection.interface"
 #include "zr/interfaces/soundprofiles.interface"
-#include "zr/interfaces/zmenu.interface"
 
 /**
  * Check if an interface function is available.

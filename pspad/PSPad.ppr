@@ -25,7 +25,6 @@ ZR
 			..\src\zr\interfaces\infection.interface.inc
 			..\src\zr\interfaces\interfaces.inc
 			..\src\zr\interfaces\soundprofiles.interface.inc
-			..\src\zr\interfaces\zmenu.interface.inc
 		-Libraries
 			..\src\zr\libraries\authcachelib.inc
 			..\src\zr\libraries\conversionlib.inc

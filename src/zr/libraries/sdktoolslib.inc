@@ -1,7 +1,7 @@
 /*
  * ============================================================================
  *
- *  Zombie:Reloaded
+ *  SourceMod Project Base
  *
  *  File:          sdktoolslib.inc
  *  Type:          Library

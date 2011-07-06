@@ -1,7 +1,7 @@
 /*
  * ============================================================================
  *
- *  Zombie:Reloaded
+ *  SourceMod Project Base
  *
  *  File:          utilities.inc
  *  Type:          Utilities

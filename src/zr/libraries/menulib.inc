@@ -1,7 +1,7 @@
 /*
  * ============================================================================
  *
- *  SourceMod Project Base
+ * SourceMod Project Base
  *
  *  File:          menulib.inc
  *  Type:          Library
@@ -31,7 +31,7 @@
 #define _menulib_included
 
 // Include libraries.
-#include "<project>/libraries/utilities"
+#include "zr/libraries/utilities"
 
 /**
  * The max string/array lengths of module data variables.

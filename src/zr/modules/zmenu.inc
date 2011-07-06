@@ -26,11 +26,6 @@
  */
 
 /**
- * Include zmenu interface.
- */
-#include "zr/interfaces/zmenu.interface"
-
-/**
  * Include libraries.
  */
 #include "zr/libraries/menulib"
@@ -44,11 +39,6 @@ new Module:g_moduleZMenu;
  * Handle to ZMenu.
  */
 new Handle:g_hZMenu;
-
-/**
- * Implementation of interface function ZMenu
- */
-public Handle:ZMenu_GetMenu() { return g_hZMenu; }
 
 /**
  * Register this module.
@@ -78,8 +68,6 @@ ZMenu_Register()
 public ZMenu_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleZMenu, "Event_OnMyModuleEnable",             "ZMenu_OnMyModuleEnable");
-    EventMgr_RegisterEvent(g_moduleZMenu, "Event_OnMyModuleDisable",            "ZMenu_OnMyModuleDisable");
 }
 
 /**
@@ -90,42 +78,11 @@ ZMenu_OnPluginStart()
     // Register the module.
     ZMenu_Register();
     
-    // Implement interface function.
-    Interface_Implement(g_IZMenuGetMenu, GetFunctionByName(GetMyHandle(), "ZMenu_GetMenu"));
-    
     // Register the zmenu command.
     RegConsoleCmd("zmenu", Command_ZMenu);
     
     // Register menu with menulib.
-    g_hZMenu = MenuLib_CreateMenu("ZMenu title", true);
-}
-
-/**
- * The module that hooked this event callback has been enabled.
- * 
- * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
- * @param maxlen        The max length of the string.
- * 
- * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
- */
-public Action:ZMenu_OnMyModuleEnable(String:refusalmsg[], maxlen)
-{
-    // Implement interface function.
-    Interface_Implement(g_IZMenuGetMenu, GetFunctionByName(GetMyHandle(), "ZMenu_GetMenu"));
-}
-
-/**
- * The module that hooked this event callback has been disabled.
- * 
- * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
- * @param maxlen        The max length of the string.
- * 
- * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
- */
-public Action:ZMenu_OnMyModuleDisable(String:refusalmsg[], maxlen)
-{
-    // Release interface function.
-    Interface_Release(g_IZMenuGetMenu);
+    g_hZMenu = MenuLib_CreateMenu("zmenu", "ZMenu title", true);
 }
 
 /**

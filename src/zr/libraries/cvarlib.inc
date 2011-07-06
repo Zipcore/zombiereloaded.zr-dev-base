@@ -1,7 +1,7 @@
 /*
  * ============================================================================
  *
- *  SourceMod Project Base
+ * SourceMod Project Base
  *
  *  File:          cvarlib.inc
  *  Type:          Library

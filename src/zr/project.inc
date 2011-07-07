@@ -68,6 +68,7 @@ stock ForwardOnPluginStart()
     ClassMgr_OnPluginStart();
     DLR_OnPluginStart();
     ZMenu_OnPluginStart();
+    ZAdmin_OnPluginStart();
     AntiStick_OnPluginStart();
     SuiciIntcpt_OnPluginStart();
     Speed_OnPluginStart();

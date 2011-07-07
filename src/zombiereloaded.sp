@@ -74,6 +74,7 @@
 #include "zr/modules/classes/classmanager"  // Model attribute module depends on model manager.
 #include "zr/modules/downloader"
 #include "zr/modules/zmenu"
+#include "zr/modules/zadmin"
 #include "zr/modules/antistick"
 #include "zr/modules/suicideintercept"
 #include "zr/modules/speed"

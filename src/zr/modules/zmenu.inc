@@ -36,6 +36,11 @@
 new Module:g_moduleZMenu;
 
 /**
+ * Called when ZMenu is created.
+ */
+new ProjectEvent:g_evOnZMenuCreated;
+
+/**
  * Handle to ZMenu.
  */
 new Handle:g_hZMenu;
@@ -58,6 +63,9 @@ ZMenu_Register()
     // Send this array of data to the module manager.
     g_moduleZMenu = ModuleMgr_Register(moduledata);
     
+    // Create custom events.
+    g_evOnZMenuCreated = EventMgr_CreateEvent("Event_OnZMenuCreated");
+    
     // Register the OnEventsRegister event to register all events in it.
     EventMgr_RegisterEvent(g_moduleZMenu, "Event_OnEventsRegister",             "ZMenu_OnEventsRegister");
 }
@@ -68,6 +76,7 @@ ZMenu_Register()
 public ZMenu_OnEventsRegister()
 {
     // Register all the events needed for this module.
+    EventMgr_RegisterEvent(g_moduleZMenu, "Event_OnAllModulesLoaded",           "ZMenu_OnAllModulesLoaded");
 }
 
 /**
@@ -80,9 +89,18 @@ ZMenu_OnPluginStart()
     
     // Register the zmenu command.
     RegConsoleCmd("zmenu", Command_ZMenu);
-    
+}
+
+/**
+ * All modules have been registered at this point.
+ */
+public ZMenu_OnAllModulesLoaded()
+{
     // Register menu with menulib.
     g_hZMenu = MenuLib_CreateMenu("zmenu", "ZMenu title", true);
+    
+    // Forward event.
+    EventMgr_Forward(g_evOnZMenuCreated, g_CommonEventData1, 0, 0, g_CommonDataType1);
 }
 
 /**
@@ -94,11 +112,16 @@ ZMenu_OnPluginStart()
  */
 public Action:Command_ZMenu(client, argc)
 {
+    // Check if the module is disabled.
+    if (ModuleMgr_IsDisabled(g_moduleZMenu))
+        return Plugin_Continue;
+    
     if (client == SERVER_INDEX)
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Must be player");
-        return;
+        return Plugin_Handled;
     }
     
     MenuLib_DisplayMenu(g_hZMenu, client);
+    return Plugin_Handled;
 }

@@ -1,7 +1,7 @@
 /*
  * ============================================================================
  *
- * SourceMod Project Base
+ *  SourceMod Project Base
  *
  *  File:          menulib.inc
  *  Type:          Library
@@ -73,7 +73,7 @@ enum MenuLib_Button
     MenuBtn_Style,                          // See SM include menus.inc ITEMDRAW_* defines.
     Function:MenuBtn_Function,              // Function to call when this button is selected.  INVALID_FUNCTION to call no function.
     MenuLib_BtnNextMenu:MenuBtn_NextMenu,   // See enum MenuLib_BtnNextMenu.
-    Handle:MenuBtn_LinkedMenu               // If MenuBtn_NextMenu = BtnNextMenu_LinkMenu, this is the menu that is linked.
+    String:MenuBtn_LinkedMenu[ML_DATA_ID]   // If MenuBtn_NextMenu = BtnNextMenu_LinkMenu, this is the menu that is linked.
 }
 
 /**
@@ -179,6 +179,7 @@ static stock MenuLib_RecursiveDelete(Handle:hMenu, Handle:hKilledHandles)
         return;
     
     new buttoninfo[MenuLib_Button];
+    new Handle:linkedmenu;
     new count = GetArraySize(hMenu);
     for (new bindex = 1; bindex < count; bindex++)
     {
@@ -186,10 +187,11 @@ static stock MenuLib_RecursiveDelete(Handle:hMenu, Handle:hKilledHandles)
         MenuLib_GetMenuBtn(hMenu, bindex, buttoninfo);
         
         // If it links to another menu, recurse into it.
-        if (buttoninfo[MenuBtn_LinkedMenu] != INVALID_HANDLE)
+        linkedmenu = MenuLib_FindMenuById(buttoninfo[MenuBtn_LinkedMenu]);
+        if (linkedmenu != INVALID_HANDLE)
         {
-            MenuLib_RecursiveDelete(buttoninfo[MenuBtn_LinkedMenu], hKilledHandles);
-            buttoninfo[MenuBtn_LinkedMenu] = INVALID_HANDLE;
+            MenuLib_RecursiveDelete(linkedmenu, hKilledHandles);
+            buttoninfo[MenuBtn_LinkedMenu][0] = '\0';
             MenuLib_EditMenuBtn(hMenu, bindex, buttoninfo);
         }
     }
@@ -216,10 +218,13 @@ static stock MenuLib_EradicateMenu(Handle:hMenu)
  * 
  * @param hMenu         Menu to add button to.
  * @param buttoninfo    Array containing button data.  See enum MenuLib_Button.
+ * 
+ * @return              Index of new button.
  */
 stock MenuLib_AddMenuBtn(Handle:hMenu, buttoninfo[MenuLib_Button])
 {
     PushArrayArray(hMenu, buttoninfo[0]);
+    return GetArraySize(hMenu) - 1;
 }
 
 /**
@@ -233,8 +238,10 @@ stock MenuLib_AddMenuBtn(Handle:hMenu, buttoninfo[MenuLib_Button])
  * @param funcCallback  The function to call when this button is selected.  INVALID_FUNCTION to call no function.
  * @param NextMenu      Where this menu button wants to link to.
  * @param hLinkedMenu   The handle of the menu to link this button to if NextMenu = BtnNextMenu_LinkMenu, otherwise INVALID_HANDLE.
+ * 
+ * @return              Index of new button.
  */
-stock MenuLib_AddMenuBtnEx(Handle:hMenu, String:label[], const String:info[], bool:translate, style, Function:funcCallback, MenuLib_BtnNextMenu:NextMenu, Handle:hLinkedMenu)
+stock MenuLib_AddMenuBtnEx(Handle:hMenu, String:label[], const String:info[], bool:translate, style, Function:funcCallback, MenuLib_BtnNextMenu:NextMenu, String:strLinkedMenu[])
 {
     // Create array.
     new buttoninfo[MenuLib_Button];
@@ -244,9 +251,10 @@ stock MenuLib_AddMenuBtnEx(Handle:hMenu, String:label[], const String:info[], bo
     buttoninfo[MenuBtn_Style] = style;
     buttoninfo[MenuBtn_Function] = funcCallback;
     buttoninfo[MenuBtn_NextMenu] = NextMenu;
-    buttoninfo[MenuBtn_LinkedMenu] = hLinkedMenu;
+    strcopy(buttoninfo[MenuBtn_LinkedMenu], sizeof(buttoninfo[MenuBtn_LinkedMenu]), strLinkedMenu);
     
     PushArrayArray(hMenu, buttoninfo[0]);
+    return GetArraySize(hMenu) - 1;
 }
 
 /**
@@ -448,11 +456,12 @@ stock MenuLib_BtnNextMenu:MenuLib_GetMenuBtnNextMenu(Handle:hMenu, buttonindex)
  * 
  * @param hMenu         Menu to get button from.
  * @param buttonindex   The index of the button to get data for. (Button 1 = 1, Button 2 = 2, etc)
+ * @param linkedmenu    The linked menu is returned in this variable.
+ * @param maxlen        The max length of the return string.
  * 
  * @error               Invalid button.
- * @return              Handle of the menu linked to this button, INVALID_HANDLE if no menu is linked.
  */
-stock Handle:MenuLib_GetMenuBtnLinkedMenu(Handle:hMenu, buttonindex)
+stock MenuLib_GetMenuBtnLinkedMenu(Handle:hMenu, buttonindex, String:linkedmenu[], maxlen)
 {
     if (buttonindex <= 0 || buttonindex >= GetArraySize(hMenu))
         ThrowError("Invalid button index.");
@@ -460,7 +469,7 @@ stock Handle:MenuLib_GetMenuBtnLinkedMenu(Handle:hMenu, buttonindex)
     new buttoninfo[MenuLib_Button];
     GetArrayArray(hMenu, buttonindex, buttoninfo[0], sizeof(buttoninfo));
     
-    return buttoninfo[MenuBtn_LinkedMenu];
+    strcopy(linkedmenu, maxlen, buttoninfo[MenuBtn_LinkedMenu]);
 }
 
 /**
@@ -619,16 +628,16 @@ stock MenuLib_EditMenuBtnNextMenu(Handle:hMenu, buttonindex, MenuLib_BtnNextMenu
  * 
  * @param hMenu         Menu containing the button we want to edit.
  * @param buttonindex   The index of the button to modify in the menu. (Button 1 = 1, Button 2 = 2, etc)
- * @param hLinkedMenu   New menu that this button is linked to.
+ * @param strLinkedMenu New menu that this button is linked to.
  */
-stock MenuLib_EditMenuBtnLinkedMenu(Handle:hMenu, buttonindex, Handle:hLinkedMenu)
+stock MenuLib_EditMenuBtnLinkedMenu(Handle:hMenu, buttonindex, String:strLinkedMenu[])
 {
     if (buttonindex <= 0 || buttonindex >= GetArraySize(hMenu))
         ThrowError("Invalid button index.");
     
     new buttoninfo[MenuLib_Button];
     GetArrayArray(hMenu, buttonindex, buttoninfo[0], sizeof(buttoninfo));
-    buttoninfo[MenuBtn_LinkedMenu] = hLinkedMenu;
+    strcopy(buttoninfo[MenuBtn_LinkedMenu], sizeof(buttoninfo[MenuBtn_LinkedMenu]), strLinkedMenu);
     SetArrayArray(hMenu, buttonindex, buttoninfo[0], sizeof(buttoninfo));
 }
 
@@ -741,7 +750,9 @@ public MenuLib_Handler(Handle:menu, MenuAction:action, client, slot)
             case BtnNextMenu_LinkMenu:
             {
                 // If the next menu is defined, send it.
-                new Handle:hLinkedMenu = MenuLib_GetMenuBtnLinkedMenu(hMenu, slot+1);
+                decl String:strLinkedMenu[ML_DATA_ID];
+                MenuLib_GetMenuBtnLinkedMenu(hMenu, slot+1, strLinkedMenu, sizeof(strLinkedMenu));
+                new Handle:hLinkedMenu = MenuLib_FindMenuById(strLinkedMenu);
                 if (hLinkedMenu != INVALID_HANDLE)
                 {
                     PushStackCell(g_hPrevMenus[client], hMenu);
@@ -796,7 +807,7 @@ public MenuLib_Handler(Handle:menu, MenuAction:action, client, slot)
  * @param hClientMenu   A menu handle created by MenuLib_CreateMenu to populate with list of clients currently in the server.
  * @param strCallback   Name of the function to call when a client is selected.
  * @param NextMenu      Where all buttons in this menu will link to.
- * @param hLinkedMenu   The handle of the menu to link this button to if NextMenu = BtnNextMenu_LinkMenu, otherwise INVALID_HANDLE.
+ * @param strLinkedMenu The handle of the menu to link this button to if NextMenu = BtnNextMenu_LinkMenu, otherwise INVALID_HANDLE.
  * @param filters       A bit field made up of UTILS_FILTER_* defines.  See utilities.inc.
  *                      Note: This is only checked at time of menu creation.  It is
  *                      recommended to re-check these filters in the callback.
@@ -804,7 +815,7 @@ public MenuLib_Handler(Handle:menu, MenuAction:action, client, slot)
  * 
  * @error               Invalid function given for either the callback or filter function.
  */
-stock Handle:MenuLib_GenerateClientMenu(client, Handle:hClientMenu, const String:strCallback[], MenuLib_BtnNextMenu:NextMenu, Handle:hLinkedMenu, filters, const String:filterFunc[] = "")
+stock Handle:MenuLib_GenerateClientMenu(client, Handle:hClientMenu, const String:strCallback[], MenuLib_BtnNextMenu:NextMenu, String:strLinkedMenu[], filters, const String:filterFunc[] = "")
 {
     // Verify callback function exists.
     new Function:funcCallback = GetFunctionByName(GetMyHandle(), strCallback);
@@ -842,7 +853,7 @@ stock Handle:MenuLib_GenerateClientMenu(client, Handle:hClientMenu, const String
         }
         
         // Add option to menu.
-        MenuLib_AddMenuBtnEx(hClientMenu, clientoption, clientuserid, false, ITEMDRAW_DEFAULT, funcCallback, NextMenu, hLinkedMenu);
+        MenuLib_AddMenuBtnEx(hClientMenu, clientoption, clientuserid, false, ITEMDRAW_DEFAULT, funcCallback, NextMenu, strLinkedMenu);
     }
     CloseHandle(adtClients);
 }
@@ -885,8 +896,8 @@ stock bool:MenuLib_ClientMenuCallFilter(Function:funcFilter, client, String:butt
     
     Call_StartFunction(GetMyHandle(), funcFilter);
     Call_PushCell(client);
-    Call_PushString(newbuttontxt);
-    Call_PushStringEx(newbuttoninfo, sizeof(newbuttoninfo), 0, SM_PARAM_COPYBACK);
+    Call_PushStringEx(newbuttontxt, sizeof(newbuttontxt), SM_PARAM_STRING_UTF8|SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+    Call_PushStringEx(newbuttoninfo, sizeof(newbuttoninfo), SM_PARAM_STRING_UTF8|SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
     new Action:result;
     Call_Finish(result);
     

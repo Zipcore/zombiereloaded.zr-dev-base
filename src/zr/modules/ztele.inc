@@ -57,6 +57,11 @@ new Handle:g_hCvarZTeleAutoCancel;
 new Handle:g_hCvarZTeleAutoCancelDistance;
 
 /**
+ * ZTele's button index in ZMenu.
+ */
+new g_iZTeleZMenuButton;
+
+/**
  * A list of all used spawnpoints on the current map.
  */
 new Float:g_vecZTeleSpawnPoints[MAXPLAYERS + 1][3];
@@ -123,7 +128,9 @@ ZTele_Register()
  */
 public ZTele_OnEventsRegister()
 {
-    EventMgr_RegisterEvent(g_moduleZTele, "Event_OnAllModulesLoaded",           "ZTele_OnAllModulesLoaded");
+    EventMgr_RegisterEvent(g_moduleZTele, "Event_OnZMenuCreated",               "ZTele_OnZMenuCreated");
+    EventMgr_RegisterEvent(g_moduleZTele, "Event_OnMyModuleEnable",             "ZTele_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleZTele, "Event_OnMyModuleDisable",            "ZTele_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleZTele, "Event_OnMapStart",                   "ZTele_OnMapStart");
     EventMgr_RegisterEvent(g_moduleZTele, "Event_OnClientPutInServer",          "ZTele_OnClientPutInServer");
     EventMgr_RegisterEvent(g_moduleZTele, "Event_OnClientDisconnect",           "ZTele_OnClientDisconnect");
@@ -168,17 +175,45 @@ ZTele_OnPluginStart()
 }
 
 /**
- * All modules have been registered at this point.
+ * Called when ZMenu is created.
  */
-public ZTele_OnAllModulesLoaded()
+public ZTele_OnZMenuCreated()
 {
-    // Get ZMenu's handle.
-    new Handle:hZMenu = MenuLib_FindMenuById("zmenu");
-    if (hZMenu == INVALID_HANDLE)
-        LogMgr_Print(g_moduleZTele, LogType_Fatal_Plugin, "ZMenu", "Couldn't find ZMenu even though the event saying it's ready was fired!");
-    
     // Add ZTele's button to the menu.
-    MenuLib_AddMenuBtnEx(hZMenu, "ZTele zmenu button", "0", true, ITEMDRAW_DEFAULT, GetFunctionByName(GetMyHandle(), "ZTele_ZMenuButton"), BtnNextMenu_None, INVALID_HANDLE);
+    new Handle:hZMenu = MenuLib_FindMenuById("zmenu");
+    g_iZTeleZMenuButton = MenuLib_AddMenuBtnEx(hZMenu, "ZTele zmenu button", "0", true, ITEMDRAW_DEFAULT, GetFunctionByName(GetMyHandle(), "ZTele_ZMenuButton"), BtnNextMenu_None, "");
+}
+
+/**
+ * The module that hooked this event callback has been enabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
+ */
+public Action:ZTele_OnMyModuleEnable(String:refusalmsg[], maxlen)
+{
+    // Enable ZTele's button to the menu.
+    new Handle:hZMenu = MenuLib_FindMenuById("zmenu");
+    if (hZMenu != INVALID_HANDLE)
+        MenuLib_EditMenuBtnStyle(hZMenu, g_iZTeleZMenuButton, ITEMDRAW_DEFAULT);
+}
+
+/**
+ * The module that hooked this event callback has been disabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
+ */
+public Action:ZTele_OnMyModuleDisable(String:refusalmsg[], maxlen)
+{
+    // Disable ZTele's button to the menu.
+    new Handle:hZMenu = MenuLib_FindMenuById("zmenu");
+    if (hZMenu != INVALID_HANDLE)
+        MenuLib_EditMenuBtnStyle(hZMenu, g_iZTeleZMenuButton, ITEMDRAW_DISABLED);
 }
 
 /**

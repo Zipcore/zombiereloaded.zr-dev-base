@@ -68,7 +68,9 @@
 #include "zr/modules/soundprofiles"
 
 #if defined PROJECT_GAME_CSS
-    #include "zr/modules/models/modelmgr"   // Must be included before class manager.
+    #include "zr/modules/models/modelmgr"   // Must be included before class manager.  
+    // This isn't good.  Why isn't the model attribute its own module?  To avoid dependency on include order just wrap everything in functions and use an interface.
+    // This is definitely something we want to avoid at all costs, it goes against the philosophy of ZR's structure.
 #endif
 
 #include "zr/modules/classes/classmanager"  // Model attribute module depends on model manager.
@@ -82,12 +84,12 @@
 #include "zr/modules/sfx"
 #include "zr/modules/fog"
 #include "zr/modules/ztele"
-#include "zr/modules/zspawn"
 #include "zr/modules/stripobjectives"
 
 // Game-specific modules
 #if defined PROJECT_GAME_CSS
     #include "zr/modules/weapons/weapons"
+    #include "zr/modules/zspawn"
     #include "zr/modules/napalm"
 #endif
 

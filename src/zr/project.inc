@@ -76,13 +76,14 @@ stock ForwardOnPluginStart()
     SFX_OnPluginStart();
     Fog_OnPluginStart();
     ZTele_OnPluginStart();
-    ZSpawn_OnPluginStart();
+    
     StripObj_OnPluginStart();
     
     
     #if defined PROJECT_GAME_CSS
         ModelMgr_OnPluginStart();
         Weapons_OnPluginStart();
+        ZSpawn_OnPluginStart();
         Napalm_OnPluginStart();
     #endif
     

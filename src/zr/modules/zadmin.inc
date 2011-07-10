@@ -80,12 +80,6 @@ public ZAdmin_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZAdmin, "Event_OnZMenuCreated",              "ZAdmin_OnZMenuCreated");
     EventMgr_RegisterEvent(g_moduleZAdmin, "Event_OnMyModuleEnable",            "ZAdmin_OnMyModuleEnable");
     EventMgr_RegisterEvent(g_moduleZAdmin, "Event_OnMyModuleDisable",           "ZAdmin_OnMyModuleDisable");
-    //EventMgr_RegisterEvent(g_moduleZAdmin, "Event_OnMapStart",              "ZAdmin_OnMapStart");
-    //EventMgr_RegisterEvent(g_moduleZAdmin, "Event_OnMapEnd",                "ZAdmin_OnMapEnd");
-    //EventMgr_RegisterEvent(g_moduleZAdmin, "Event_OnAutoConfigsBuffered",   "ZAdmin_OnAutoConfigsBuffered");
-    //EventMgr_RegisterEvent(g_moduleZAdmin, "Event_OnConfigsExecuted",       "ZAdmin_OnConfigsExecuted");
-    //EventMgr_RegisterEvent(g_moduleZAdmin, "Event_OnClientPutInServer",     "ZAdmin_OnClientPutInServer");
-    //EventMgr_RegisterEvent(g_moduleZAdmin, "Event_OnClientDisconnect",      "ZAdmin_OnClientDisconnect");
     
     #if defined PROJECT_GAME_CSS
     
@@ -110,7 +104,7 @@ ZAdmin_OnPluginStart()
 public ZAdmin_OnAllModulesLoaded()
 {
     // Register menu with menulib.
-    g_hZAdminMenu = MenuLib_CreateMenu("zadmin", "ZAdmin title", true);
+    g_hZAdminMenu = MenuLib_CreateMenu("zadmin", "ZAdmin title", true, false);
     
     // Forward event.
     EventMgr_Forward(g_evOnZAdminCreated, g_CommonEventData1, 0, 0, g_CommonDataType1);
@@ -139,7 +133,7 @@ public Action:ZAdmin_OnMyModuleEnable(String:refusalmsg[], maxlen)
     // Enable ZAdmin's button to the menu.
     new Handle:hZMenu = MenuLib_FindMenuById("zmenu");
     if (hZMenu != INVALID_HANDLE)
-        MenuLib_EditMenuBtnStyle(hZMenu, g_iZAdminZMenuButton, ITEMDRAW_DEFAULT);
+        MenuLib_BtnWriteCell(hZMenu, g_iZAdminZMenuButton, MenuBtn_Style, ITEMDRAW_DEFAULT);
 }
 
 /**
@@ -155,7 +149,7 @@ public Action:ZAdmin_OnMyModuleDisable(String:refusalmsg[], maxlen)
     // Disable ZAdmin's button to the menu.
     new Handle:hZMenu = MenuLib_FindMenuById("zmenu");
     if (hZMenu != INVALID_HANDLE)
-        MenuLib_EditMenuBtnStyle(hZMenu, g_iZAdminZMenuButton, ITEMDRAW_DISABLED);
+        MenuLib_BtnWriteCell(hZMenu, g_iZAdminZMenuButton, MenuBtn_Style, ITEMDRAW_DISABLED);
 }
 
 /**

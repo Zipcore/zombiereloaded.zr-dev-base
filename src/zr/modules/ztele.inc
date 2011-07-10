@@ -57,9 +57,10 @@ new Handle:g_hCvarZTeleAutoCancel;
 new Handle:g_hCvarZTeleAutoCancelDistance;
 
 /**
- * ZTele's button index in ZMenu.
+ * ZTele's button indexes in menus.
  */
 new g_iZTeleZMenuButton;
+//new g_iZTeleZAdminButton;
 
 /**
  * A list of all used spawnpoints on the current map.
@@ -129,6 +130,7 @@ ZTele_Register()
 public ZTele_OnEventsRegister()
 {
     EventMgr_RegisterEvent(g_moduleZTele, "Event_OnZMenuCreated",               "ZTele_OnZMenuCreated");
+    EventMgr_RegisterEvent(g_moduleZTele, "Event_OnZAdminCreated",              "ZTele_OnZAdminCreated");
     EventMgr_RegisterEvent(g_moduleZTele, "Event_OnMyModuleEnable",             "ZTele_OnMyModuleEnable");
     EventMgr_RegisterEvent(g_moduleZTele, "Event_OnMyModuleDisable",            "ZTele_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleZTele, "Event_OnMapStart",                   "ZTele_OnMapStart");
@@ -185,6 +187,16 @@ public ZTele_OnZMenuCreated()
 }
 
 /**
+ * Called when ZAdmin is created.
+ */
+public ZTele_OnZAdminCreated()
+{
+    // Add ZTele's button to the menu.
+    //new Handle:hZAdmin = MenuLib_FindMenuById("zadmin");
+    //g_iZTeleZAdminButton = MenuLib_AddMenuBtnEx(hZAdmin, "ZTele zadmin button", "0", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "ztele_clients");
+}
+
+/**
  * The module that hooked this event callback has been enabled.
  * 
  * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
@@ -197,7 +209,7 @@ public Action:ZTele_OnMyModuleEnable(String:refusalmsg[], maxlen)
     // Enable ZTele's button to the menu.
     new Handle:hZMenu = MenuLib_FindMenuById("zmenu");
     if (hZMenu != INVALID_HANDLE)
-        MenuLib_EditMenuBtnStyle(hZMenu, g_iZTeleZMenuButton, ITEMDRAW_DEFAULT);
+        MenuLib_BtnWriteCell(hZMenu, g_iZTeleZMenuButton, MenuBtn_Style, ITEMDRAW_DEFAULT);
 }
 
 /**
@@ -213,7 +225,7 @@ public Action:ZTele_OnMyModuleDisable(String:refusalmsg[], maxlen)
     // Disable ZTele's button to the menu.
     new Handle:hZMenu = MenuLib_FindMenuById("zmenu");
     if (hZMenu != INVALID_HANDLE)
-        MenuLib_EditMenuBtnStyle(hZMenu, g_iZTeleZMenuButton, ITEMDRAW_DISABLED);
+        MenuLib_BtnWriteCell(hZMenu, g_iZTeleZMenuButton, MenuBtn_Style, ITEMDRAW_DISABLED);
 }
 
 /**

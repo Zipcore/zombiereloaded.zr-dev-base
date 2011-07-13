@@ -31,33 +31,6 @@
 new Module:g_moduleAntiStick;
 
 /**
- * Default player hull width.
- */
-#define MODEL_HULL_LENGTH 32.0
-
-/**
- * List of components that make up rectangular boundaries.
- * 
- * F = Front
- * B = Back
- * L = Left
- * R = Right
- * U = Upper
- * D = Down
- */
-enum AntiStickBoxBound
-{
-    BoxBound_FUR = 0, /** Front upper right */
-    BoxBound_FUL,     /** etc.. */
-    BoxBound_FDR,
-    BoxBound_FDL,
-    BoxBound_BUR,
-    BoxBound_BUL,
-    BoxBound_BDR,
-    BoxBound_BDL,
-}
-
-/**
  * Register this module.
  */
 AntiStick_Register()
@@ -65,7 +38,7 @@ AntiStick_Register()
     // Define all the module's data as layed out by enum ModuleData in project.inc.
     new moduledata[ModuleData];
     
-    moduledata[ModuleData_Disabled] = true;
+    moduledata[ModuleData_Disabled] = false;
     moduledata[ModuleData_Hidden] = false;
     strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "Anti-Stick");
     strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "antistick");
@@ -85,7 +58,7 @@ AntiStick_Register()
 public AntiStick_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleAntiStick, "Hook_StartTouch",                "AntiStick_StartTouch");
+    EventMgr_RegisterEvent(g_moduleAntiStick, "Hook_ShouldCollide",             "AntiStick_ShouldCollide");
     
     #if defined PROJECT_GAME_CSS
     
@@ -102,21 +75,41 @@ AntiStick_OnPluginStart()
 }
 
 /**
- * Called when the hooked entity touches another entity.
+ * Called when 2 entity are asking if they should collide. (touching)
  * 
- * @param client    The hooked client.
- * @param other     The entity thats being touched by the client.
+ * @param entity            Entity asking if it should collide.
+ * @param collisiongroup    Collision group flags.  SMLib has them defined in smlib_entities.inc.
+ * @param contentsmask      See sdktools_trace for contentmask flags.
  * 
- * @noreturn
+ * @return                  True to allow collision or false for no colliding.
  */
-public AntiStick_StartTouch(client, entity)
+public bool:AntiStick_ShouldCollide(entity, collisiongroup, contentsmask, bool:originalResult)
 {
-    //if (Client_IsIngame(entity))
-    //{
-        //new Float:vecMins[3] = {1.0, 1.0, 1.0};
-        //new Float:vecMaxs[3] = {2.0, 2.0, 2.0};
-        //Entity_SetMinMaxSize(client, vecMins, vecMaxs);
-        //Entity_GetMaxSize(client, vecMins);
-        //PrintToServer("%f %f %f",vecMins[0],vecMins[1],vecMins[2]);
-    //}
+    if (!Client_IsValid(entity, false))
+        return true;
+    
+    // Unstick if client is colliding with another client.
+    return !AntiStick_IsClientColliding(entity);
+}
+
+/**
+ * Check if a client is stuck in another client's model box.
+ * 
+ * @param client    The client to check.
+ */
+stock bool:AntiStick_IsClientColliding(client)
+{
+    new Float:vecMins[3], Float:vecMaxs[3], Float:pos[3];
+    GetClientMins(client, vecMins);
+    GetClientMaxs(client, vecMaxs);
+    GetClientAbsOrigin(client, pos);
+    
+    TR_TraceHullFilter(pos, pos, vecMins, vecMaxs, MASK_SOLID, AntiStick_HullFilter, client);
+    return TR_DidHit();
+}
+
+public bool:AntiStick_HullFilter(target, mask, any:client)
+{
+    // Only checking for collisions with other clients.
+    return (target != client && Client_IsValid(target, false));
 }

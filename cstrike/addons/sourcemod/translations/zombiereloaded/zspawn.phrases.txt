@@ -17,27 +17,10 @@
 		"en"		"The timelimit ({1} seconds), to use ZSpawn, has already expired."
 	}
 
+	"ZSpawn zmenu button"
+	{
+		"en"		"ZSpawn - Join late?  Spawn with this"
+	}
+
 }
 
-//	"ZSpawn menu clients title"
-//	{
-//		"en"		"Force ZSpawn (zr_zspawn_force)\nSelect a Player:"
-//	}
-//
-//	"ZSpawn command force syntax"
-//	{
-//		"en"		"Force ZSpawn on a client. Usage: zr_zspawn_force <client> ['0' = Spawn as human | '1' = Spawn as zombie]"
-//
-//	}
-//
-//	"ZSpawn command force successful"
-//	{
-//		"#format"	"{1:s}"
-//		"en"		"Player {1} was successfully spawned."
-//	}
-//
-//	"ZSpawn command force unsuccessful"
-//	{
-//		"#format"	"{1:s}"
-//		"en"		"Player {1} couldn't be spawned."
-//	}

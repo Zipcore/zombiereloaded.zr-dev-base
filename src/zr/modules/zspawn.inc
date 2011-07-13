@@ -43,6 +43,11 @@ new Handle:g_hCvarZSpawnTimeLimit;
 new Handle:g_hCvarZSpawnTimeLimitRules;
 
 /**
+ * ZSpawns's button index in ZMenu.
+ */
+new g_iZSpawnZMenuButton;
+
+/**
  * Stores the auth cache handle.
  */
 new Handle:g_hZSpawnAuthCache;
@@ -79,6 +84,8 @@ ZSpawn_Register()
 public ZSpawn_OnEventsRegister()
 {
     // Register all the events needed for this module.
+    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnZMenuCreated",              "ZSpawn_OnZMenuCreated");
+    EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnMyModuleEnable",            "ZSpawn_OnMyModuleEnable");
     EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnMyModuleDisable",           "ZSpawn_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnMapStart",                  "ZSpawn_OnMapStart");
     EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnClientDisconnect",          "ZSpawn_OnClientDisconnect");
@@ -103,7 +110,7 @@ ZSpawn_OnPluginStart()
     
     // Create cvars.
     g_hCvarZSpawn =                 Project_CreateConVar("zspawn", "1", "Allow players to use zspawn command to spawn late into a game.");
-    g_hCvarZSpawnTeam =             Project_CreateConVar("zspawn_team_zombie", "0", "Team to spawn player on when using ZSpawn. ['0' = Zombie | '1' = Human]");
+    g_hCvarZSpawnTeam =             Project_CreateConVar("zspawn_team", "human", "Team to spawn player on when using ZSpawn. ['0' = Zombie | '1' = Human]");
     g_hCvarZSpawnTimeLimit =        Project_CreateConVar("zspawn_timelimit", "120.0", "The amount of time from round start before ZSpawn changes its behavior. ['0' = No timelimit]");
     g_hCvarZSpawnTimeLimitRules =   Project_CreateConVar("zspawn_timelimit_rules", "1", "How ZSpawn should work after the timelimit has expired. ['-1' = Block ZSpawn | '0' = Spawn as zombie | '1' = Spawn as human | Dependency: zspawn_team_zombie&zspawn_timelimit]");
     
@@ -112,12 +119,48 @@ ZSpawn_OnPluginStart()
 }
 
 /**
- * The module that hooked this event callback has been disabled.
+ * Called when ZMenu is created.
+ * 
+ * @param hMenu     Handle to ZMenu.
  */
-public ZSpawn_OnMyModuleDisable()
+public ZSpawn_OnZMenuCreated(Handle:hMenu)
 {
-    // End the timer.
+    // Add ZSpawn's button to the menu.
+    g_iZSpawnZMenuButton = MenuLib_AddMenuBtnEx(hMenu, "ZSpawn zmenu button", "0", true, ITEMDRAW_DEFAULT, "ZSpawn_ZMenuButton", BtnNextMenu_None, "");
+}
+
+/**
+ * The module that hooked this event callback has been enabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
+ */
+public Action:ZSpawn_OnMyModuleEnable(String:refusalmsg[], maxlen)
+{
+    // Enable ZTele's button to the menu.
+    new Handle:hZMenu = MenuLib_FindMenuById("zmenu");
+    if (hZMenu != INVALID_HANDLE)
+        MenuLib_BtnWriteCell(hZMenu, g_iZSpawnZMenuButton, MenuBtn_Style, ITEMDRAW_DEFAULT);
+}
+
+/**
+ * The module that hooked this event callback has been disabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
+ */
+public Action:ZSpawn_OnMyModuleDisable(String:refusalmsg[], maxlen)
+{
     Util_CloseHandle(g_hZSpawnTimer);
+    
+    // Disable ZTele's button to the menu.
+    new Handle:hZMenu = MenuLib_FindMenuById("zmenu");
+    if (hZMenu != INVALID_HANDLE)
+        MenuLib_BtnWriteCell(hZMenu, g_iZSpawnZMenuButton, MenuBtn_Style, ITEMDRAW_DISABLED);
 }
 
 /**
@@ -214,6 +257,10 @@ public Action:ZSpawn_TimeLimitTimer(Handle:timer)
     g_hZSpawnTimer = INVALID_HANDLE;
 }
 
+// ************************************************************
+//  The functions in this section are ordered chronologically.
+// ************************************************************
+
 /**
  * Command callback: zspawn
  * Client command to spawn into the game late.
@@ -239,40 +286,67 @@ public Action:ZSpawn_SayCommand(client, argc)
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "Must be player");
         return Plugin_Handled;
     }
+
+    // Check everything before zspawning.
+    ZSpawn_Client(client);
     
+    return Plugin_Handled;
+}
+
+/**
+ * Checks everything before zspawning.
+ * 
+ * @param client    The client index.
+ */
+bool:ZSpawn_Client(client)
+{
     // Check if client is on a team.
     if (!Util_IsClientOnTeam(client))
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "Must be on team");
-        return Plugin_Handled;
+        return false;
     }
     
     // Check if client is alive.
     if (IsPlayerAlive(client))
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "Must be dead");
-        return Plugin_Handled;
+        return false;
     }
     
     // Check if client has already played in this round.
     if (AuthCache_ClientExists(g_hZSpawnAuthCache, client))
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "ZSpawn double spawn");
-        return Plugin_Handled;
+        return false;
     }
+    
+    ZSpawn_SpawnClient(client);
+    return true;
+}
+
+/**
+ * ZSpawns a client.
+ * 
+ * @param client    The client to ZSpawn.
+ */
+ZSpawn_SpawnClient(client)
+{
+    // Get respawn team.
+    decl String:respawnteam[32];
+    GetConVarString(g_hCvarZSpawnTeam, respawnteam, sizeof(respawnteam));
     
     new Float:timelimit = GetConVarFloat(g_hCvarZSpawnTimeLimit);
     if (timelimit == 0 || g_hZSpawnTimer != INVALID_HANDLE)
     {
-        // Spawn as a human first, then switch to zombie if we need to.
-        TLib_SetClientTeam(client, VTeam_Human);
-        CS_RespawnPlayer(client);
+        new VTeam:team = VTeam:TLib_VTeamStringToIndex(respawnteam);
+        if (team == VTeam_Invalid)
+        {
+            LogMgr_Print(g_moduleZSpawn, LogType_Error, "Invalid cvar value", "Invalid team \"%s\" defined in cvar \"%s_zspawn_team\".  Assuming human.", respawnteam, PROJECT_CVAR_PREFIX);
+            team = VTeam_Human;
+        }
         
-        
-        // Set the client's team and then spawn them.
-        new spawnteam = GetConVarInt(g_hCvarZSpawnTeam);
-        if (spawnteam == 0)
-            IInfection_ClientToZombie(client, 0, false);
+        TLib_SpawnOnTeam(client, team);
     }
     else
     {
@@ -283,18 +357,14 @@ public Action:ZSpawn_SayCommand(client, argc)
             case -1:
             {
                 TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "ZSpawn timelimit", RoundToNearest(timelimit));
-                return Plugin_Handled;
             }
             case 0:
             {
-                TLib_SetClientTeam(client, VTeam_Human);
-                CS_RespawnPlayer(client);
-                IInfection_ClientToZombie(client, 0, false);
+                TLib_SpawnOnTeam(client, VTeam_Zombie);
             }
             case 1:
             {
-                TLib_SetClientTeam(client, VTeam_Human);
-                CS_RespawnPlayer(client);
+                TLib_SpawnOnTeam(client, VTeam_Human);
             }
             default:
             {
@@ -302,12 +372,27 @@ public Action:ZSpawn_SayCommand(client, argc)
             }
         }
     }
-    
-    // This stops the "Unknown command" message in client's console.
-    return Plugin_Handled;
 }
 
-// *********************************************************************************************
+// **********************************************
+//          ZMenu ZSpawn button callback
+// **********************************************
+
+/**
+ * ZMenu callback (zspawn)
+ * ZSpawn a client.
+ * 
+ * @param menu      The menulib menu handle.
+ * @param action    Action client is doing in menu.
+ * @param client    The client index.
+ * @param slot      The menu slot selected. (starting from 1)
+ */
+public ZSpawn_ZMenuButton(Handle:hMenu, MenuAction:action, client, slot)
+{
+    // Teleport the client, but if it fails then re-resend the menu.
+    if (!ZSpawn_Client(client))
+        MenuLib_SendMenu(hMenu, client);
+}
 
 /**
  * Menu callback (zspawn_force)

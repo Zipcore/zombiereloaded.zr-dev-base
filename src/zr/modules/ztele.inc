@@ -678,7 +678,8 @@ public ZTele_ZMenuButton(Handle:hMenu, MenuAction:action, client, slot)
  */
 public ZTele_SendClientMenu(Handle:hMenu, MenuAction:action, client, slot)
 {
-    MenuLib_SendClientListMenu(client, "ZTele menu clients title", true, "ZTele_ClientMenuHandle", BtnNextMenu_LinkBack, "", UTILS_FILTER_ALIVE, "ZTele_ClientMenuFilter");
+    new Handle:hClientMenu = MenuLib_CreateClientListMenu(client, "ZTele menu clients title", true, "ZTele_ClientMenuHandle", BtnNextMenu_LinkBack, "", UTILS_FILTER_ALIVE, "ZTele_ClientMenuFilter");
+    MenuLib_SendMenu(hClientMenu, client, hMenu);
 }
 
 /**

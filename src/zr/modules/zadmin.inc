@@ -32,6 +32,8 @@ new Module:g_moduleZAdmin;
 
 /**
  * Called when ZAdmin is created.
+ * 
+ * @param hMenu     Handle to ZAdmin.
  */
 new ProjectEvent:g_evOnZAdminCreated;
 
@@ -106,18 +108,21 @@ public ZAdmin_OnAllModulesLoaded()
     // Register menu with menulib.
     g_hZAdminMenu = MenuLib_CreateMenu("zadmin", "ZAdmin title", true, false);
     
-    // Forward event.
-    EventMgr_Forward(g_evOnZAdminCreated, g_CommonEventData1, 0, 0, g_CommonDataType1);
+    // Forward event to all modules.
+    new any:eventdata[1][1];
+    eventdata[0][0] = g_hZAdminMenu;
+    EventMgr_Forward(g_evOnZAdminCreated, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
 }
 
 /**
  * Called when ZMenu is created.
+ * 
+ * @param hMenu     Handle to ZMenu.
  */
-public ZAdmin_OnZMenuCreated()
+public ZAdmin_OnZMenuCreated(Handle:hMenu)
 {
     // Add ZAdmin's button to the menu.
-    new Handle:hZMenu = MenuLib_FindMenuById("zmenu");
-    g_iZAdminZMenuButton = MenuLib_AddMenuBtnEx(hZMenu, "ZAdmin zmenu button", "0", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkMenu, "zadmin");
+    g_iZAdminZMenuButton = MenuLib_AddMenuBtnEx(hMenu, "ZAdmin zmenu button", "0", true, ITEMDRAW_DEFAULT, "", BtnNextMenu_LinkMenu, "zadmin");
 }
 
 /**

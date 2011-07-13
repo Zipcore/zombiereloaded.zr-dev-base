@@ -37,6 +37,8 @@ new Module:g_moduleZMenu;
 
 /**
  * Called when ZMenu is created.
+ * 
+ * @param hMenu     Handle to ZMenu.
  */
 new ProjectEvent:g_evOnZMenuCreated;
 
@@ -99,8 +101,10 @@ public ZMenu_OnAllModulesLoaded()
     // Register menu with menulib.
     g_hZMenu = MenuLib_CreateMenu("zmenu", "ZMenu title", true, false);
     
-    // Forward event.
-    EventMgr_Forward(g_evOnZMenuCreated, g_CommonEventData1, 0, 0, g_CommonDataType1);
+    // Forward event to all modules.
+    new any:eventdata[1][1];
+    eventdata[0][0] = g_hZMenu;
+    EventMgr_Forward(g_evOnZMenuCreated, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
 }
 
 /**

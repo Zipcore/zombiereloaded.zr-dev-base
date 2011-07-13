@@ -63,22 +63,33 @@
 		"en"		"ZTele - Stuck?  Teleport back to spawn"
 	}
 
+	"ZTele zadmin button"
+	{
+		"en"		"Force ZTele"
+	}
+
 	"ZTele menu clients title"
 	{
 		"en"		"Force ZTele (zr_ztele_force)\nSelect a Player:"
 	}
 
+	// As in "this person is currently teleporting"
+	"ZTele teleporting"
+	{
+		"en"		"teleporting"
+	}
+
 	// {1}: PROJECT_CMD_PREFIX
-	"ZTele command ztele syntax"
+	"ZTele command syntax"
 	{
 		"#format"	"{1:s}"
 		"en"		"ZTele a client. Usage: {1}_ztele_force <client>"
 
 	}
 
-	"ZTele command ztele successful"
+	"ZTele command successful"
 	{
-		"#format"	"{1:s}"
+		"#format"	"{1:N}"
 		"en"		"Player {1} was successfully teleported."
 	}
 

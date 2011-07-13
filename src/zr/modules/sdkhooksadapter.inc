@@ -43,6 +43,7 @@ new ProjectEvent:g_HkOnTakeDamage;
 new ProjectEvent:g_HkWeaponCanUse;
 new ProjectEvent:g_HkWeaponEquip;
 new ProjectEvent:g_HkWeaponDrop;
+new ProjectEvent:g_HkShouldCollide;
 
 /**
  * Register this module.
@@ -72,6 +73,7 @@ SDKHAdapt_Register()
     g_HkWeaponCanUse =      EventMgr_CreateEvent("Hook_WeaponCanUse");
     g_HkWeaponEquip =       EventMgr_CreateEvent("Hook_WeaponEquip");
     g_HkWeaponDrop =        EventMgr_CreateEvent("Hook_WeaponDrop");
+    g_HkShouldCollide =     EventMgr_CreateEvent("Hook_ShouldCollide");
     
     // Register the OnEventsRegister event to register all events in it.
     EventMgr_RegisterEvent(g_moduleSDKHAdapt, "Event_OnEventsRegister",         "SDKHAdapt_OnEventsRegister");
@@ -122,6 +124,7 @@ public Action:SDKHAdapt_OnMyModuleEnable()
         SDKHook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
         SDKHook(client, SDKHook_WeaponEquip, SDKHAdapt_WeaponEquip);
         SDKHook(client, SDKHook_WeaponDrop, SDKHAdapt_WeaponDrop);
+        SDKHook(client, SDKHook_ShouldCollide, SDKHAdapt_ShouldCollide);
     }
     
     return Plugin_Continue;
@@ -151,6 +154,7 @@ public Action:SDKHAdapt_OnMyModuleDisable()
         SDKUnhook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
         SDKUnhook(client, SDKHook_WeaponEquip, SDKHAdapt_WeaponEquip);
         SDKUnhook(client, SDKHook_WeaponDrop, SDKHAdapt_WeaponDrop);
+        SDKUnhook(client, SDKHook_ShouldCollide, SDKHAdapt_ShouldCollide);
     }
     
     return Plugin_Continue;
@@ -171,6 +175,7 @@ public SDKHAdapt_OnClientPutInServer(client)
     SDKHook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
     SDKHook(client, SDKHook_WeaponEquip, SDKHAdapt_WeaponEquip);
     SDKHook(client, SDKHook_WeaponDrop, SDKHAdapt_WeaponDrop);
+    SDKHook(client, SDKHook_ShouldCollide, AntiStick_ShouldCollide);
 }
 
 /**
@@ -188,6 +193,7 @@ public SDKHAdapt_OnClientDisconnect(client)
     SDKUnhook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
     SDKUnhook(client, SDKHook_WeaponEquip, SDKHAdapt_WeaponEquip);
     SDKUnhook(client, SDKHook_WeaponDrop, SDKHAdapt_WeaponDrop);
+    SDKUnhook(client, SDKHook_ShouldCollide, AntiStick_ShouldCollide);
 }
 
 /**
@@ -375,4 +381,27 @@ public Action:SDKHAdapt_WeaponDrop(client, weapon)
     eventdata[1][0] = weapon;
     
     return EventMgr_Forward(g_HkWeaponDrop, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+}
+
+/**
+ * Called when 2 entity are asking if they should collide. (touching)
+ * 
+ * @param entity            Entity asking if it should collide.
+ * @param collisiongroup    Collision group flags.  SMLib has them defined in smlib_entities.inc.
+ * @param contentsmask      See sdktools_trace for contentmask flags.
+ * 
+ * @return                  True to allow collision or false for no colliding.
+ */
+public bool:SDKHAdapt_ShouldCollide(entity, collisiongroup, contentsmask, bool:originalResult)
+{
+    // Forward event to all modules.
+    static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell, DataType_Cell, DataType_Cell};
+    new any:eventdata[sizeof(eventdatatypes)][32];
+    
+    eventdata[0][0] = entity;
+    eventdata[1][0] = collisiongroup;
+    eventdata[2][0] = contentsmask;
+    eventdata[3][0] = originalResult;
+    
+    return bool:EventMgr_Forward(g_HkShouldCollide, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
 }

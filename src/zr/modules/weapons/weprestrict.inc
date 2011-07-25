@@ -84,8 +84,7 @@ public WepRestrict_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnZAdminCreated",        "WepRestrict_OnZAdminCreated");
     EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnMyModuleEnable",       "WepRestrict_OnMyModuleEnable");
     EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnMyModuleDisable",      "WepRestrict_OnMyModuleDisable");
-    EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnClientPutInServer",    "WepRestrict_OnClientPutInServer");
-    EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnClientDisconnect",     "WepRestrict_OnClientDisconnect");
+    EventMgr_RegisterEvent(g_moduleWepRestrict, "Hook_WeaponCanUse",            "WepRestrict_CanUse");
 }
 
 /**
@@ -149,16 +148,6 @@ public Action:WepRestrict_OnMyModuleEnable(String:refusalmsg[], maxlen)
     if (hZAdmin != INVALID_HANDLE)
         MenuLib_BtnWriteCell(hZAdmin, g_iWepRestrictZAdminButton, MenuBtn_Style, ITEMDRAW_DEFAULT);
     
-    // Hook all clients in the server.
-    for (new client = 1; client <= MaxClients; client++)
-    {
-        if (!IsClientInGame(client))
-            continue;
-        
-        // Hook WeaponCanUse on the client for restricting the weapon.
-        SDKHook(client, SDKHook_WeaponCanUse, WepRestrict_CanUse);
-    }
-    
     return Plugin_Continue;
 }
 
@@ -177,37 +166,7 @@ public Action:WepRestrict_OnMyModuleDisable(String:refusalmsg[], maxlen)
     if (hZAdmin != INVALID_HANDLE)
         MenuLib_BtnWriteCell(hZAdmin, g_iWepRestrictZAdminButton, MenuBtn_Style, ITEMDRAW_DISABLED);
     
-    // Unhook all clients in the server.
-    for (new client = 1; client <= MaxClients; client++)
-    {
-        if (!IsClientInGame(client))
-            continue;
-        
-        SDKUnhook(client, SDKHook_WeaponCanUse, WepRestrict_CanUse);
-    }
-    
     return Plugin_Continue;
-}
-
-/**
- * Client has joined the server.
- * 
- * @param client    The client index.
- */
-public WepRestrict_OnClientPutInServer(client)
-{
-    // Hook WeaponCanUse on the client for restricting the weapon.
-    SDKHook(client, SDKHook_WeaponCanUse, WepRestrict_CanUse);
-}
-
-/**
- * Client is disconnecting from the server.
- * 
- * @param client    The client index.
- */
-public WepRestrict_OnClientDisconnect(client)
-{
-    SDKUnhook(client, SDKHook_WeaponCanUse, WepRestrict_CanUse);
 }
 
 /**

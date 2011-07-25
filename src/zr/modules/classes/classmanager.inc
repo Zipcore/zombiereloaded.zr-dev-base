@@ -786,7 +786,7 @@ public ClassMgr_PlayerSpawn(client)
         
         // Get zombie class name and inform player about class assignment.
         ClsGeneric_GetDisplayName(randomZombie, className, sizeof(className), ClassCache_Modified);
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "Classes random assignment", className);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "Classes random assignment", className);
         
         // Set selected human class index.
         g_ClassSelected[client][ClassTeam_Humans] = randomHuman;
@@ -794,7 +794,7 @@ public ClassMgr_PlayerSpawn(client)
         // Get human class name and inform player about class assignment.
         className[0] = 0;
         ClsGeneric_GetDisplayName(randomHuman, className, sizeof(className), ClassCache_Modified);
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "Classes random assignment", className);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "Classes random assignment", className);
     }
     
     // Display class menu configs according to config.
@@ -958,7 +958,7 @@ static bool:ClsMgr_ValidateRequirements(bool:cacheDefaults = false)
     new bool:failed = false;
     
     // Find a clean default zombie class, log error if not found.
-    new zombie = ClassMgr_GetDefaultClass(ClassTeam_Zombies, _, ClassCache_Original);
+    new zombie = ClassMgr_GetDefaultClass(ClassTeam_Zombies, g_ClassNoSpecialClasses, ClassCache_Original);
     if (zombie < 0)
     {
         LogMgr_Print(g_moduleClassMgr, LogType_Error, "Config Validation", "Error: Unable to find a clean default zombie class. Check class config. (Error code: %d)", zombie);
@@ -978,7 +978,7 @@ static bool:ClsMgr_ValidateRequirements(bool:cacheDefaults = false)
     }
     
     // Find a clean default human class, log error if not found.
-    new human = ClassMgr_GetDefaultClass(ClassTeam_Humans, _, ClassCache_Original);
+    new human = ClassMgr_GetDefaultClass(ClassTeam_Humans, g_ClassNoSpecialClasses, ClassCache_Original);
     if (human < 0)
     {
         LogMgr_Print(g_moduleClassMgr, LogType_Error, "Config Validation", "Error: Unable to find a clean default human class. Check class config. (Error code: %d)", human);

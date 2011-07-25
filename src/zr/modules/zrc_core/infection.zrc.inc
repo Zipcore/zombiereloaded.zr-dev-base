@@ -231,7 +231,7 @@ public ZRCInfect_OnClientDisconnect(client)
             new newzombie = ZRCInfect_MotherZombie(1);
             if (newzombie != -1)
             {
-                TransMgr_PrintText(newzombie, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC infect disconnect");
+                TransMgr_PrintText(newzombie, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC infect disconnect");
             }
         }
     }
@@ -333,19 +333,19 @@ public ZRCInfect_PlayerSpawn(client)
         if (g_bZombiesPresent)
         {
             ZRCInfect_ClientToZombie(client, 0, false);
-            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC spawn as zombie");
+            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC spawn as zombie");
         }
         else
         {
             ZRCInfect_ClientToZombie(client, 0, true);
-            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC client to mother zombie");
+            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC client to mother zombie");
         }
     }
     
     if (TLib_IsClientHuman(client))
     {
         ZRCInfect_ClientToHuman(client);
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC spawn as human");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC spawn as human");
     }
 }
 
@@ -374,7 +374,7 @@ public ZRCInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon
             if (StrEqual(weapon, "knife"))
             {
                 ZRCInfect_ClientToZombie(victim, attacker, false);
-                TransMgr_PrintText(victim, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC client to zombie");
+                TransMgr_PrintText(victim, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC client to zombie");
             }
         #endif
     }
@@ -519,7 +519,7 @@ ZRCInfect_MotherZombie(override_count = 0)
         randindex = GetRandomInt(0, count - 1);
         randclient = GetArrayCell(adtClients, randindex);
         ZRCInfect_ClientToZombie(randclient, 0, true);
-        TransMgr_PrintText(randclient, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC client to mother zombie");
+        TransMgr_PrintText(randclient, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC client to mother zombie");
         RemoveFromArray(adtClients, randindex); count--;
         
         // Store first infected client.
@@ -605,14 +605,14 @@ public Action:ZRCInfect_InfectCommand(client, argc)
     // Check if the client has permission to use this.
     if (!AccessMgr_HasAccess(client, g_moduleZRCInfect))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "No access to command");
         return Plugin_Handled;
     }
     
     // If not enough arguments given, then stop.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command infect syntax");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "ZRC command infect syntax");
         return Plugin_Handled;
     }
     
@@ -646,20 +646,20 @@ public Action:ZRCInfect_InfectCommand(client, argc)
             if (g_bZombiesPresent)
             {
                 ZRCInfect_ClientToZombie(targets[tindex], 0, false);
-                TransMgr_PrintText(targets[tindex], MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC client to zombie");
+                TransMgr_PrintText(targets[tindex], MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC client to zombie");
                 if (result == 1)
                 {
-                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command infect successful", targets[tindex]);
+                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "ZRC command infect successful", targets[tindex]);
                 }
             }
             else
             {
                 Util_CloseHandle(g_hMotherInfect);
                 ZRCInfect_ClientToZombie(targets[tindex], 0, true);
-                TransMgr_PrintText(targets[tindex], MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC client to mother zombie");
+                TransMgr_PrintText(targets[tindex], MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC client to mother zombie");
                 if (result == 1)
                 {
-                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command infect mother successful", targets[tindex]);
+                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "ZRC command infect mother successful", targets[tindex]);
                 }
             }
         }
@@ -667,7 +667,7 @@ public Action:ZRCInfect_InfectCommand(client, argc)
         {
             if (result == 1)
             {
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command infect unsuccessful", targets[tindex]);
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "ZRC command infect unsuccessful", targets[tindex]);
             }
         }
     }
@@ -691,14 +691,14 @@ public Action:ZRCInfect_HumanCommand(client, argc)
     // Check if the client has permission to use this.
     if (!AccessMgr_HasAccess(client, g_moduleZRCInfect))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "No access to command");
         return Plugin_Handled;
     }
     
     // If not enough arguments given, then stop.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command human syntax");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "ZRC command human syntax");
         return Plugin_Handled;
     }
     
@@ -733,17 +733,17 @@ public Action:ZRCInfect_HumanCommand(client, argc)
         if (TLib_IsClientZombie(targets[tindex]))
         {
             ZRCInfect_ClientToHuman(targets[tindex]);
-            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC zombie to human");
+            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC zombie to human");
             if (result == 1)
             {
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command human successful", targets[tindex]);
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "ZRC command human successful", targets[tindex]);
             }
         }
         else
         {
             if (result == 1)
             {
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZRC command human unsuccessful", targets[tindex]);
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "ZRC command human unsuccessful", targets[tindex]);
             }
         }
     }

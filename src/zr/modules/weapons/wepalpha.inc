@@ -106,7 +106,7 @@ public WepAlpha_WeaponEquip(client, weapon)
     
     // Set new alpha on weapon.
     SetEntityRenderMode(weapon, RENDER_TRANSALPHA);
-    SetEntityRenderColor(weapon, _, _, _, color[3]);
+    SetEntityRenderColor(weapon, 255, 255, 255, color[3]);
 }
 
 /**
@@ -125,7 +125,7 @@ public WepAlpha_WeaponDrop(client, weapon)
     
     // Reset alpha to default on the dropped weapon.
     SetEntityRenderMode(weapon, RENDER_TRANSALPHA);
-    SetEntityRenderColor(weapon, _, _, _, 255);
+    SetEntityRenderColor(weapon, 255, 255, 255, 255);
 }
 
 /**
@@ -149,6 +149,6 @@ stock WepAlpha_Apply(client, alpha)
             continue;
         
         SetEntityRenderMode(weapons[sindex], RENDER_TRANSALPHA);
-        SetEntityRenderColor(weapons[sindex], _, _, _, alpha);
+        SetEntityRenderColor(weapons[sindex], 255, 255, 255, alpha);
     }
 }

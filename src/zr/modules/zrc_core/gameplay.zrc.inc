@@ -254,7 +254,7 @@ public ZRCGPlay_OnClientHuman(client)
 public ZRCGPlay_RoundStart()
 {
     // Print ZR objective.
-    TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC gameplay round objective");
+    TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC gameplay round objective");
     
     // Stop round timer.
     Util_CloseHandle(g_hZRCRoundTimer);

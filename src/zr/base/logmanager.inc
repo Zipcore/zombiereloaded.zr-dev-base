@@ -233,7 +233,7 @@ stock LogMgr_Print(Module:module, LogTypes:logtype, const String:description[], 
         if (GetConVarBool(g_hCvarLogPrintAdmins))
         {
             // Print text to admins.
-            TransMgr_PrintTextAll(false, true, MsgFormat_None, MsgType_Chat, _, true, logbuffer);
+            TransMgr_PrintTextAll(false, true, MsgFormat_None, MsgType_Chat, INVALID_MODULE, true, logbuffer);
         }
     #endif
     

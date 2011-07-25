@@ -523,14 +523,14 @@ static stock ZRiotStages_PrintStageMessage(index)
         // Print to the right audience.
         if (index >=0 && index <= 2)
         {
-            TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, _, true, message);
+            TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, true, message);
         }
         else if (index >=3 && index <= 5)
         {
             for(new client = 1; client <= MaxClients; client++)
             {
                 if (IsClientInGame(client) && TLib_GetClientTeam(client) == VTeam_Zombie)
-                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, true, message);
+                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, true, message);
             }
         }
         else if (index >=6 && index <= 8)
@@ -538,7 +538,7 @@ static stock ZRiotStages_PrintStageMessage(index)
             for(new client = 1; client <= MaxClients; client++)
             {
                 if (IsClientInGame(client) && TLib_GetClientTeam(client) == VTeam_Human)
-                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, true, message);
+                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, true, message);
             }
         }
     }

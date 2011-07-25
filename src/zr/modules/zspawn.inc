@@ -276,14 +276,14 @@ public Action:ZSpawn_SayCommand(client, argc)
     
     if (!GetConVarBool(g_hCvarZSpawn))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "Feature is disabled");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, INVALID_MODULE, "Feature is disabled");
         return Plugin_Handled;
     }
     
     // If client is console, then stop and tell them this feature is for players only.
     if (client == SERVER_INDEX)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "Must be player");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, INVALID_MODULE, "Must be player");
         return Plugin_Handled;
     }
 
@@ -303,21 +303,21 @@ bool:ZSpawn_Client(client)
     // Check if client is on a team.
     if (!Util_IsClientOnTeam(client))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "Must be on team");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, INVALID_MODULE, "Must be on team");
         return false;
     }
     
     // Check if client is alive.
     if (IsPlayerAlive(client))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "Must be dead");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, INVALID_MODULE, "Must be dead");
         return false;
     }
     
     // Check if client has already played in this round.
     if (AuthCache_ClientExists(g_hZSpawnAuthCache, client))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "ZSpawn double spawn");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, INVALID_MODULE, "ZSpawn double spawn");
         return false;
     }
     
@@ -356,7 +356,7 @@ ZSpawn_SpawnClient(client)
         {
             case -1:
             {
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, _, "ZSpawn timelimit", RoundToNearest(timelimit));
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZSpawn, INVALID_MODULE, "ZSpawn timelimit", RoundToNearest(timelimit));
             }
             case 0:
             {

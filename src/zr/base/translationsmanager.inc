@@ -298,14 +298,14 @@ stock TransMgr_ReplyToTargetError(client, reason)
 {
     switch (reason)
     {
-        case COMMAND_TARGET_NONE:         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No matching client");
-        case COMMAND_TARGET_NOT_ALIVE:    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Target must be alive");
-        case COMMAND_TARGET_NOT_DEAD:     TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Target must be dead");
-        case COMMAND_TARGET_NOT_IN_GAME:  TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Target is not in game");
-        case COMMAND_TARGET_IMMUNE:       TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Unable to target");
-        case COMMAND_TARGET_EMPTY_FILTER: TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No matching clients");
-        case COMMAND_TARGET_NOT_HUMAN:    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Cannot target bot");
-        case COMMAND_TARGET_AMBIGUOUS:    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "More than one client matched");
+        case COMMAND_TARGET_NONE:         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "No matching client");
+        case COMMAND_TARGET_NOT_ALIVE:    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Target must be alive");
+        case COMMAND_TARGET_NOT_DEAD:     TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Target must be dead");
+        case COMMAND_TARGET_NOT_IN_GAME:  TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Target is not in game");
+        case COMMAND_TARGET_IMMUNE:       TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Unable to target");
+        case COMMAND_TARGET_EMPTY_FILTER: TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "No matching clients");
+        case COMMAND_TARGET_NOT_HUMAN:    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Cannot target bot");
+        case COMMAND_TARGET_AMBIGUOUS:    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "More than one client matched");
     }
 }
 

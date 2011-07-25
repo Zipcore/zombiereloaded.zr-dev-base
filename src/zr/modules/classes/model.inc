@@ -821,7 +821,7 @@ ClsModel_SetAlpha(client, alpha)
     SetEntityRenderMode(client, RENDER_TRANSALPHA);
     
     // Set alpha value on the client.
-    SetEntityRenderColor(client, _, _, _, alpha);
+    SetEntityRenderColor(client, 255, 255, 255, alpha);
     
     // Trigger alpha changed event.
     static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell};

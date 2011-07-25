@@ -401,13 +401,13 @@ public Action:ZTele_SayCommand(client, argc)
     
     if (!GetConVarBool(g_hCvarZTele))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZTele, _, "Feature is disabled");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZTele, INVALID_MODULE, "Feature is disabled");
         return Plugin_Handled;
     }
     
     if (client == SERVER_INDEX)
     {
-        TransMgr_PrintText(SERVER_INDEX, MsgFormat_Plugin, MsgType_Server, _, _, "Must be player");
+        TransMgr_PrintText(SERVER_INDEX, MsgFormat_Plugin, MsgType_Server, INVALID_MODULE, false, "Must be player");
         return Plugin_Handled;
     }
     
@@ -427,13 +427,13 @@ bool:ZTele_Client(client)
     // If the client is dead, then stop.
     if (!IsPlayerAlive(client))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "Must be alive");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "Must be alive");
         return false;
     }
     
     if (!g_bZTeleRoundInProgress)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZTele restricted round not active");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZTele restricted round not active");
         return false;
     }
     
@@ -445,7 +445,7 @@ bool:ZTele_Client(client)
     if (zombie && !ztelezombie)
     {
         // Tell client they must be human to use this feature.
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZTele restricted zombie");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZTele restricted zombie");
         return false;
     }
     
@@ -454,7 +454,7 @@ bool:ZTele_Client(client)
     if (human && !ztelehuman)
     {
         // Tell client that feature is restricted at this time.
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZTele restricted human");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZTele restricted human");
         return false;
     }
     
@@ -463,14 +463,14 @@ bool:ZTele_Client(client)
     if (g_iZTeleCount[client] >= ztelemax)
     {
         // Tell client that they have already reached their limit.
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZTele max", ztelemax);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZTele max", ztelemax);
         return false;
     }
     
     // If teleport is already in progress, then stop.
     if (g_hZTeleTimer[client] != INVALID_HANDLE)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZTele in progress");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZTele in progress");
         return false;
     }
     
@@ -497,7 +497,7 @@ ZTele_StartTeleport(client, time)
         g_iZTeleTimeLeft[client] = time;
         
         // Tell client how much time is left until teleport.
-        TransMgr_PrintText(client, MsgFormat_None, MsgType_Center, _, _, "ZTele countdown", g_iZTeleTimeLeft[client]);
+        TransMgr_PrintText(client, MsgFormat_None, MsgType_Center, INVALID_MODULE, false, "ZTele countdown", g_iZTeleTimeLeft[client]);
         g_hZTeleTimer[client] = CreateTimer(1.0, ZTele_Timer, client, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
         
         // Forward event to all modules.
@@ -515,7 +515,7 @@ ZTele_StartTeleport(client, time)
         ZTele_TeleportClient(client);
         
         new ztelemax = TLib_IsClientZombie(client) ? GetConVarInt(g_hCvarZTeleMaxZombie) : GetConVarInt(g_hCvarZTeleMaxHuman);
-        TransMgr_PrintText(client, MsgFormat_None, MsgType_Center, _, _, "ZTele countdown end", g_iZTeleCount[client], ztelemax);
+        TransMgr_PrintText(client, MsgFormat_None, MsgType_Center, INVALID_MODULE, false, "ZTele countdown end", g_iZTeleCount[client], ztelemax);
     }
 }
 
@@ -555,8 +555,8 @@ bool:ZTele_AutoCancelCheck(client)
         g_hZTeleTimer[client] = INVALID_HANDLE;
         
         // Tell client teleport has been cancelled.
-        TransMgr_PrintText(client, MsgFormat_None, MsgType_Center, _, _, "ZTele cancel");
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZTele autocancel", strDistance);
+        TransMgr_PrintText(client, MsgFormat_None, MsgType_Center, INVALID_MODULE, false, "ZTele cancel");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZTele autocancel", strDistance);
         
         // Forward event to all modules.
         new any:eventdata[1][1];
@@ -598,13 +598,13 @@ public Action:ZTele_Timer(Handle:timer, any:client)
         g_iZTeleCount[client]++;
         
         new ztelemax = TLib_IsClientZombie(client) ? GetConVarInt(g_hCvarZTeleMaxZombie) : GetConVarInt(g_hCvarZTeleMaxHuman);
-        TransMgr_PrintText(client, MsgFormat_None, MsgType_Center, _, _, "ZTele countdown end", g_iZTeleCount[client], ztelemax);
+        TransMgr_PrintText(client, MsgFormat_None, MsgType_Center, INVALID_MODULE, false, "ZTele countdown end", g_iZTeleCount[client], ztelemax);
         
         // Stop repeating timer.
         g_hZTeleTimer[client] = INVALID_HANDLE;
         return Plugin_Stop;
     }
-    TransMgr_PrintText(client, MsgFormat_None, MsgType_Center, _, _, "ZTele countdown", g_iZTeleTimeLeft[client]);
+    TransMgr_PrintText(client, MsgFormat_None, MsgType_Center, INVALID_MODULE, false, "ZTele countdown", g_iZTeleTimeLeft[client]);
     
     // Allow timer to continue repeating.
     return Plugin_Continue;
@@ -744,14 +744,14 @@ public Action:ZTele_ForceCommand(client, argc)
     // Check if client has access.
     if (!AccessMgr_HasAccess(client, g_moduleZTele))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "No access to command");
         return Plugin_Handled;
     }
     
     // If not enough arguments given, then stop.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZTele command syntax", PROJECT_CMD_PREFIX);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "ZTele command syntax", PROJECT_CMD_PREFIX);
         return Plugin_Handled;
     }
     
@@ -781,7 +781,7 @@ public Action:ZTele_ForceCommand(client, argc)
         // Tell admin the outcome of the command if only 1 client was targetted.
         if (result == 1)
         {
-            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ZTele command successful", targets[tindex]);
+            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "ZTele command successful", targets[tindex]);
         }
         
         LogMgr_Print(g_moduleZTele, LogType_Normal, "ZTele Command", "\"%L\" teleported \"%L\" to spawn.", client, targets[tindex]);

@@ -214,7 +214,7 @@ public Action:SuiciIntcpt_Listener(client, const String:command[], argc)
         }
     }
     
-    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Suicide intercept message");
+    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Suicide intercept message");
     LogMgr_Print(g_moduleSuiciIntcpt, LogType_Normal, "Suicide Intercepted", "\"%L\" attempted suicide, but it was caught and blocked.", client);
     
     return Plugin_Handled;

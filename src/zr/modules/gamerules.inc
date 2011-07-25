@@ -446,7 +446,7 @@ public GameRules_OnMapStart()
  */
 public GameRules_OnConfigReload(configindex)
 {
-    TransMgr_PrintText(SERVER_INDEX, MsgFormat_Plugin, MsgType_Reply, g_moduleGameRules, _, "Game Rules config reload", GAMERULES_FILE);
+    TransMgr_PrintText(SERVER_INDEX, MsgFormat_Plugin, MsgType_Reply, g_moduleGameRules, INVALID_MODULE, "Game Rules config reload", GAMERULES_FILE);
 }
 
 /**
@@ -716,14 +716,14 @@ public Action:GameRules_NextRuleSet(client, argc)
     // Check if client has access.
     if (!AccessMgr_HasAccess(client, g_moduleGameRules))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "No access to command");
         return Plugin_Handled;
     }
     
     // If not enough arguments given, then stop.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Game Rules nextruleset command syntax", PROJECT_CMD_PREFIX);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Game Rules nextruleset command syntax", PROJECT_CMD_PREFIX);
         return Plugin_Handled;
     }
     

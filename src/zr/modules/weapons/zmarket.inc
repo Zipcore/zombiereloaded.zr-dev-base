@@ -259,7 +259,7 @@ stock bool:ZMarket_MenuMain(client)
     // If the module isn't enabled, then stop.
     if (ModuleMgr_IsDisabled(g_moduleZMarket))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "Feature is disabled");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "Feature is disabled");
         return false;
     }
     
@@ -814,7 +814,7 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
     if (!IsPlayerAlive(client))
     {
         ZMarket_AddWeaponToSlot(client, slot, windex, set);
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Weapons zmarket updated weapon setup");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Weapons zmarket updated weapon setup");
     }
     
     decl String:weaponentity[64];
@@ -826,7 +826,7 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
         // Update cookie with new weapon.
         if (slot != Slot_Projectile || !ZMarket_IsGrenadeCountMaxedEx(client, weaponentity))
             ZMarket_AddWeaponToSlot(client, slot, windex, set);
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Weapons zmarket updated weapon setup");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Weapons zmarket updated weapon setup");
         return false;
     }
     
@@ -860,11 +860,11 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
         if (rebuy)
         {
             ZMarket_RemoveWeaponFromSlot(client, slot, weaponname, true);
-            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Weapons zmarket weapon setup restricted", weaponname);
+            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Weapons zmarket weapon setup restricted", weaponname);
         }
         else
         {
-            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Weapon is restricted", weaponname);
+            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Weapon is restricted", weaponname);
         }
         
         return false;
@@ -877,7 +877,7 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
     if (buylimit > 0 && buysleft <= 0)
     {
         if (!rebuy)
-            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Weapons zmarket buylimit exceeded", weaponname, buylimit);
+            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Weapons zmarket buylimit exceeded", weaponname, buylimit);
         return false;
     }
     
@@ -901,7 +901,7 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
             // Client can't carry any more of this type of grenade.
             if (!rebuy)
             {
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Weapons zmarket grenade max", grenadelimit);
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Weapons zmarket grenade max", grenadelimit);
             }
             
             return false;
@@ -916,7 +916,7 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
         // Update cookie with new weapon.
         if (slot != Slot_Projectile || !ZMarket_IsGrenadeCountMaxedEx(client, weaponentity))
             ZMarket_AddWeaponToSlot(client, slot, windex, set);
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Weapons zmarket updated weapon setup");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Weapons zmarket updated weapon setup");
         return false;
     }
     
@@ -963,9 +963,9 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
         {
             // Tell client they bought a weapon.
             if (slot == Slot_Primary || slot == Slot_Secondary)
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Weapons zmarket buy with ammo", weaponname);
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Weapons zmarket buy with ammo", weaponname);
             else
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Weapons zmarket buy no ammo", weaponname);
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Weapons zmarket buy no ammo", weaponname);
         }
     }
     else if (!rebuy)
@@ -998,13 +998,13 @@ stock bool:ZMarket_SaveCurrentSetup(client)
 {
     if (!IsPlayerAlive(client))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Must be alive");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Must be alive");
         return false;
     }
     
     if (TLib_GetClientTeam(client) != VTeam_Human)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Must be human");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Must be human");
         return false;
     }
     
@@ -1065,7 +1065,7 @@ stock bool:ZMarket_SaveCurrentSetup(client)
     
     #endif
     
-    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Weapons zmarket save current weapon setup");
+    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Weapons zmarket save current weapon setup");
     return true;
 }
 
@@ -1193,19 +1193,19 @@ stock ZMarket_RebuySavedSetup(client, bool:autorebuy = false)
 {
     if (!IsPlayerAlive(client))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Must be alive");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Must be alive");
         return;
     }
     
     if (!TLib_IsClientHuman(client))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Must be human");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Must be human");
         return;
     }
     
     if (!autorebuy && GetConVarBool(g_hCvarZMarketBuyzone) && !WepLib_InBuyZone(client))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Weapons zmarket buyzone");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Weapons zmarket buyzone");
         return;
     }
     
@@ -1245,8 +1245,8 @@ stock ZMarket_ToggleAutoRebuy(client)
     new bool:autorebuystate = CookieLib_GetBool(client, g_hZMarketAutoRebuyCookie);
     CookieLib_SetBool(client, g_hZMarketAutoRebuyCookie, !autorebuystate);
     
-    if (autorebuystate)     TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Weapons zmarket auto-rebuy toggle off");
-    else                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, _, "Weapons zmarket auto-rebuy toggle on");
+    if (autorebuystate)     TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Weapons zmarket auto-rebuy toggle off");
+    else                    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Weapons zmarket auto-rebuy toggle on");
 }
 
 /**
@@ -1266,7 +1266,7 @@ public Action:Command_ZMarket(client, argc)
     if (client > SERVER_INDEX)
         ZMarket_MenuMain(client);
     else
-        TransMgr_PrintText(SERVER_INDEX, MsgFormat_Plugin, MsgType_Server, g_moduleZMarket, _, "Must be player");
+        TransMgr_PrintText(SERVER_INDEX, MsgFormat_Plugin, MsgType_Server, g_moduleZMarket, false, "Must be player");
     
     // This stops the "Unknown command" message in client's console.
     return Plugin_Handled;

@@ -357,7 +357,7 @@ stock WepLib_SetAmmoEx(client, index, value, bool:add = false)
     if (add)
         ammovalue = WeaponAmmoGetGrenadeCount(client, type);
     
-    SetEntData(client, offsAmmo + (index * 4), ammovalue + value, _, true);
+    SetEntData(client, offsAmmo + (index * 4), ammovalue + value, 4, true);
 }
 
 // **********************************************

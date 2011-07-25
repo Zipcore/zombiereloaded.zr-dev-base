@@ -274,7 +274,7 @@ public Action:ZRiotWeps_BuyListener(client, const String:command[], argc)
     // Only humans can buy weapons.
     if (!TLib_IsClientHuman(client))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRiot weapons zombie cant use weapon");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRiot weapons zombie cant use weapon");
         return Plugin_Handled;
     }
     

@@ -255,7 +255,7 @@ public ZRiotGPlay_OnClientHuman(client)
 public ZRiotGPlay_RoundStart()
 {
     // Print ZRiot objective.
-    TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRiot gameplay round objective");
+    TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRiot gameplay round objective");
     
     // Stop round timer.
     Util_CloseHandle(g_hZRiotRoundTimer);

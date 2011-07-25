@@ -196,7 +196,7 @@ public Action:WepRestrict_BuyListener(client, const String:command[], argc)
     // Stop the command if the weapon is restricted.
     if (WepRestrict_IsRestricted(windex))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "Weapon is restricted", weapondisp);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "Weapon is restricted", weapondisp);
         return Plugin_Handled;
     }
     
@@ -321,11 +321,11 @@ stock WepRestrict_PrintQueryResponse(client, RestrictQuery:query, bool:single, b
     
     if (client > 0 && client <= MaxClients)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, g_strRestrictionResponses[query][_:single][_:restrict], target);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, g_strRestrictionResponses[query][_:single][_:restrict], target);
     }
     else
     {
-        TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, _, _, g_strRestrictionResponses[query][_:single][_:restrict], target);
+        TransMgr_PrintTextAll(true, false, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, g_strRestrictionResponses[query][_:single][_:restrict], target);
     }
 }
 
@@ -439,14 +439,14 @@ public Action:Command_Restrict(client, argc)
     // Check if client has access.
     if (!AccessMgr_HasAccess(client, g_moduleWepRestrict))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "No access to command");
         return Plugin_Handled;
     }
     
     // Check if enough arguments were given.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Weapons command restrict syntax", PROJECT_CMD_PREFIX);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Weapons command restrict syntax", PROJECT_CMD_PREFIX);
         return Plugin_Handled;
     }
     
@@ -487,14 +487,14 @@ public Action:Command_Unrestrict(client, argc)
     // Check if client has access.
     if (!AccessMgr_HasAccess(client, g_moduleWepRestrict))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "No access to command");
         return Plugin_Handled;
     }
     
     // Check if enough arguments were given.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Weapons command unrestrict syntax", PROJECT_CMD_PREFIX);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Weapons command unrestrict syntax", PROJECT_CMD_PREFIX);
         return Plugin_Handled;
     }
     

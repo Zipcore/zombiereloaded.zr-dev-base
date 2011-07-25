@@ -361,14 +361,14 @@ public Action:Respawn_Command(client, argc)
     // Check if the client has permission to use this.
     if (!AccessMgr_HasAccess(client, g_moduleRespawn))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "No access to command");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "No access to command");
         return Plugin_Handled;
     }
     
     // If not enough arguments given, then stop.
     if (argc < 1)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Respawn command syntax", PROJECT_CMD_PREFIX);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Respawn command syntax", PROJECT_CMD_PREFIX);
         return Plugin_Handled;
     }
     
@@ -397,7 +397,7 @@ public Action:Respawn_Command(client, argc)
         team = VTeam:TLib_VTeamStringToIndex(strTeam);
         if (team == VTeam_Invalid)
         {
-            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Respawn command invalid team");
+            TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Respawn command invalid team");
             return Plugin_Handled;
         }
     }
@@ -415,12 +415,12 @@ public Action:Respawn_Command(client, argc)
         {
             TLib_SpawnOnTeam(targets[tindex], respawnteam);
             if (result == 1)
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Respawn command success", targets[tindex]);
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Respawn command success", targets[tindex]);
         }
         else
         {
             if(result == 1)
-                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "Respawn command fail", targets[tindex]);
+                TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Respawn command fail", targets[tindex]);
         }
     }
     

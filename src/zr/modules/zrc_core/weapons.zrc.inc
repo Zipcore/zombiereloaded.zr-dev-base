@@ -275,7 +275,7 @@ public Action:ZRCWeps_BuyListener(client, const String:command[], argc)
     // Only humans can buy weapons.
     if (!TLib_IsClientHuman(client))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, _, _, "ZRC weapons zombie cant use weapon");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC weapons zombie cant use weapon");
         return Plugin_Handled;
     }
     

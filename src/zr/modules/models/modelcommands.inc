@@ -51,7 +51,7 @@ public Action:ModelCmd_List(client, argc)
     if (argc == 0)
     {
         // No parameters. Print syntax.
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ModelMgr list syntax", PROJECT_CMD_PREFIX);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "ModelMgr list syntax", PROJECT_CMD_PREFIX);
         ReplyToCommand(client, "\n");
         
         // Print a list with all models.
@@ -126,7 +126,7 @@ public Action:ModelCmd_List(client, argc)
     else
     {
         // Invalid command. Print syntax.
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ModelMgr list syntax", PROJECT_CMD_PREFIX);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "ModelMgr list syntax", PROJECT_CMD_PREFIX);
     }
     
     return Plugin_Handled;
@@ -168,7 +168,7 @@ ModelCmd_PrintList(client, Handle:list = INVALID_HANDLE)
     
     if (count == 0)
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, _, _, "ModelMgr no models found");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "ModelMgr no models found");
         return;
     }
     

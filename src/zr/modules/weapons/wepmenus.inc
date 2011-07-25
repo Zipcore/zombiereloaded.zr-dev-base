@@ -27,80 +27,22 @@
  */
 
 /**
- * Sends main weapon menu to client.
- * 
- * @param client    The client index.
- */
-stock WepMenus_Main(client)
-{
-    // Create menu handle.
-    new Handle:menu_weapons_main = CreateMenu(WepMenu_MainHandle);
-    
-    decl String:title[128];
-    decl String:restrict[128];
-    
-    Format(title, sizeof(title), "%T\n ", "Weapons menu main title", client);
-    Format(restrict, sizeof(restrict), "%T", "Weapons menu restrict main restrict", client);
-    
-    // Draw items, make unselectable if module is disabled.
-    SetMenuTitle(menu_weapons_main, title);
-    AddMenuItem(menu_weapons_main, "restrict", restrict, MenuLib_GetMenuItemDraw(!ModuleMgr_IsDisabled(g_moduleWepRestrict)));
-    
-    SetMenuExitBackButton(menu_weapons_main, true);
-    DisplayMenu(menu_weapons_main, client, MENU_TIME_FOREVER);
-}
-
-/**
- * Called when client selects option in the weapons main menu, and handles it.
- *  
- * @param menu_weapons_main     Handle of the menu being used.
- * @param action                The action done on the menu (see menus.inc, enum MenuAction).
- * @param client                The client index.
- * @param slot                  The slot index selected (starting from 0).
- */
-public WepMenu_MainHandle(Handle:menu_weapons_main, MenuAction:action, client, slot)
-{
-    
-    // Client selected an option.
-    if (action == MenuAction_Select)
-    {
-        switch(slot)
-        {
-            case 0: WepMenus_Types(client);
-        }
-    }
-    // Client is closing the menu.
-    else if (action == MenuAction_Cancel)
-    {
-        // Client hit "Back" button.
-        if (slot == MenuCancel_ExitBack)
-        {
-            //ZAdminMenu(client);
-            // TODO: Link back to admin menu.
-        }
-    }
-    // Menu is closing.
-    else if (action == MenuAction_End)
-        CloseHandle(menu_weapons_main);
-}
-
-/**
  * Sends weapon type list to client.
- *  
+ * 
  * @param client    The client index.
  */
 stock WepMenus_Types(client)
 {
     // Create menu handle.
-    new Handle:menu_weapons_types = CreateMenu(WepMenus_TypesHandle);
+    new Handle:hMenu = CreateMenu(WepMenus_TypesHandle);
     
-    SetMenuTitle(menu_weapons_types,  "%T\n ", "Weapons menu restrict types title", client);
+    SetMenuTitle(hMenu,  "%T\n ", "Weapons menu restrict types title", client);
     
     decl String:typename[64];
     for (new wtindex = 0; wtindex < g_iWeaponTypeCount; wtindex++)
     {
         Weapons_ReadWTypeName(wtindex, typename, sizeof(typename));
-        AddMenuItem(menu_weapons_types, typename, typename);
+        AddMenuItem(hMenu, typename, typename);
     }
     
     // If there are no weapons, add an "(Empty)" line.
@@ -108,24 +50,24 @@ stock WepMenus_Types(client)
     {
         decl String:empty[64];
         Format(empty, sizeof(empty), "(%T)", "_Empty", client);
-        AddMenuItem(menu_weapons_types, "empty", empty, ITEMDRAW_DISABLED);
+        AddMenuItem(hMenu, "empty", empty, ITEMDRAW_DISABLED);
     }
     
     // Set exit back button.
-    SetMenuExitBackButton(menu_weapons_types, true);
+    SetMenuExitBackButton(hMenu, true);
     
-    DisplayMenu(menu_weapons_types, client, MENU_TIME_FOREVER);
+    DisplayMenu(hMenu, client, MENU_TIME_FOREVER);
 }
 
 /**
  * Called when client selects option in the weapons list menu, and handles it.
  *  
- * @param menu_weapons_types    Handle of the menu being used.
- * @param action                The action done on the menu (see menus.inc, enum MenuAction).
- * @param client                The client index.
- * @param slot                  The slot index selected (starting from 0).
+ * @param hMenu     Handle of the menu being used.
+ * @param action    The action done on the menu (see menus.inc, enum MenuAction).
+ * @param client    The client index.
+ * @param slot      The slot index selected (starting from 0).
  */
-public WepMenus_TypesHandle(Handle:menu_weapons_types, MenuAction:action, client, slot)
+public WepMenus_TypesHandle(Handle:hMenu, MenuAction:action, client, slot)
 {
     // Client selected an option.
     if (action == MenuAction_Select)
@@ -136,11 +78,11 @@ public WepMenus_TypesHandle(Handle:menu_weapons_types, MenuAction:action, client
     {
         // Client hit "Back" button.
         if (slot == MenuCancel_ExitBack)
-            WepMenus_Main(client);
+            MenuLib_SendMenu(g_hWepRestrictLastMenu[client], client);
     }
     // Client hit "Exit" button.
     else if (action == MenuAction_End)
-        CloseHandle(menu_weapons_types);
+        CloseHandle(hMenu);
 }
 
 /**
@@ -153,7 +95,7 @@ new g_WepMenusSelectedIndex[MAXPLAYERS + 1];
 stock WepMenus_TypeWeapons(client, typeindex)
 {
     // Create menu handle.
-    new Handle:menu_weapons_typeweapons = CreateMenu(WepMenus_TypeWeaponsHandle);
+    new Handle:hMenu = CreateMenu(WepMenus_TypeWeaponsHandle);
     
     decl String:typename[64];
     Weapons_ReadWTypeName(typeindex, typename, sizeof(typename));
@@ -162,15 +104,15 @@ stock WepMenus_TypeWeapons(client, typeindex)
     decl String:restrictall[128];
     decl String:unrestrictall[128];
     
-    Format(title, sizeof(title), "%T\n ", "Weapons menu restrict types weapon type title", client, typename);
+    Format(title, sizeof(title), "%T\n ", "Weapons menu restrict weapon list title", client, typename);
     Format(restrictall, sizeof(restrictall), "%T", "Weapons menu restrict types restrict all", client, typename);
     Format(unrestrictall, sizeof(unrestrictall), "%T\n ", "Weapons menu restrict types unrestrict all", client, typename);
     
     // Draw items as selectable only if not all weapons within the type are restricted or unrestricted.
-    SetMenuTitle(menu_weapons_typeweapons, title);
+    SetMenuTitle(hMenu, title);
     
-    AddMenuItem(menu_weapons_typeweapons, "restrictall", restrictall, MenuLib_GetMenuItemDraw(!WepRestrict_AreWeaponsUniform(typeindex, true)));
-    AddMenuItem(menu_weapons_typeweapons, "unrestrictall", unrestrictall, MenuLib_GetMenuItemDraw(!WepRestrict_AreWeaponsUniform(typeindex, true)));
+    AddMenuItem(hMenu, "restrictall", restrictall, MenuLib_GetMenuItemDraw(!WepRestrict_AreWeaponsUniform(typeindex, true)));
+    AddMenuItem(hMenu, "unrestrictall", unrestrictall, MenuLib_GetMenuItemDraw(!WepRestrict_AreWeaponsUniform(typeindex, false)));
     
     decl String:typeweapon[WEPCONFIG_NAME];
     decl String:display[64 + 2]; // +2 to allow room for the [ ] if its restricted.
@@ -193,13 +135,13 @@ stock WepMenus_TypeWeapons(client, typeindex)
             Format(display, sizeof(display), "[%s]", typeweapon);
         
         // Add the item to the menu
-        AddMenuItem(menu_weapons_typeweapons, typeweapon, display, MenuLib_GetMenuItemDraw(bool:Weapons_ReadCell(windex, WepConfig_Toggleable)));
+        AddMenuItem(hMenu, typeweapon, display, MenuLib_GetMenuItemDraw(bool:Weapons_ReadCell(windex, WepConfig_Toggleable)));
     }
     
     CloseHandle(hWeapons);
     
-    SetMenuExitBackButton(menu_weapons_typeweapons, true);
-    DisplayMenu(menu_weapons_typeweapons, client, MENU_TIME_FOREVER);
+    SetMenuExitBackButton(hMenu, true);
+    DisplayMenu(hMenu, client, MENU_TIME_FOREVER);
     
     g_WepMenusSelectedIndex[client] = typeindex;
 }
@@ -207,12 +149,12 @@ stock WepMenus_TypeWeapons(client, typeindex)
 /**
  * Called when client selects option in the weapon group menu, and handles it.
  * 
- * @param menu_weapons_typeweapons  Handle of the menu being used.
- * @param action                    The action done on the menu (see menus.inc, enum MenuAction).
- * @param client                    The client index.
- * @param slot                      The slot index selected (starting from 0).
+ * @param hMenu     Handle of the menu being used.
+ * @param action    The action done on the menu (see menus.inc, enum MenuAction).
+ * @param client    The client index.
+ * @param slot      The slot index selected (starting from 0).
  */
-public WepMenus_TypeWeaponsHandle(Handle:menu_weapons_typeweapons, MenuAction:action, client, slot)
+public WepMenus_TypeWeaponsHandle(Handle:hMenu, MenuAction:action, client, slot)
 {
     // Client selected an option.
     if (action == MenuAction_Select)
@@ -244,7 +186,7 @@ public WepMenus_TypeWeaponsHandle(Handle:menu_weapons_typeweapons, MenuAction:ac
             {
                 // Get weappon name.
                 decl String:typeweapon[64];
-                GetMenuItem(menu_weapons_typeweapons, slot, typeweapon, sizeof(typeweapon));
+                GetMenuItem(hMenu, slot, typeweapon, sizeof(typeweapon));
                 
                 // Get weapon index.
                 new windex = Weapons_NameToIndex(typeweapon);
@@ -286,5 +228,5 @@ public WepMenus_TypeWeaponsHandle(Handle:menu_weapons_typeweapons, MenuAction:ac
     }
     // Client hit "Exit" button.
     else if (action == MenuAction_End)
-        CloseHandle(menu_weapons_typeweapons);
+        CloseHandle(hMenu);
 }

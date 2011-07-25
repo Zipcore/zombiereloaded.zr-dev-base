@@ -25,11 +25,6 @@
  * ============================================================================
  */
 
-/**
- * TODO:
- * Weapon menu zadmin
- */
-
 // Include libraries.
 #include "zr/libraries/cookielib"
 #include "zr/libraries/functionlib"

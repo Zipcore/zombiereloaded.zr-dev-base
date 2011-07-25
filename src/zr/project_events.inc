@@ -239,6 +239,11 @@ public OnConfigsExecuted()
 }
 
 /**
+ * TODO:  This kinda sucks.  updating weapon alphas shouldnt be this expensive.  updating it should only need to happen when zr is changing player alpha.
+ * we can basically move this event to the alpha-changing function. we dont need to try and support other plugins changing player alpha. it's not that important.
+ * 
+ * I don't see why we can't make player spawn post a timer off of player_spawn.  we may not even need this anymore because classes should just rely on the OnClientHuman event now
+ *   
  * Fires every game frame.
  * Events inside:
  * - OnClientAlphaChanged

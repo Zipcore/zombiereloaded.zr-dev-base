@@ -5,7 +5,7 @@
  *  Dependencies: weapons.inc
  *
  *  File:          restrict.inc
- *  Type:          Core
+ *  Type:          Module
  *  Description:   Weapon restriction system.
  *
  *  Copyright (C) 2009-2011  Greyscale, Richard Helgeby
@@ -30,6 +30,16 @@
  * This module's identifier.
  */
 new Module:g_moduleWepRestrict;
+
+/**
+ * Weapon restriction's button index in ZAdmin
+ */
+new g_iWepRestrictZAdminButton;
+
+/**
+ * Handle of the last menu lib handle before the weapon restriction menus.
+ */
+new Handle:g_hWepRestrictLastMenu[MAXPLAYERS + 1];
 
 /**
  * Query results returned when (un)restricting a weapon.
@@ -71,6 +81,7 @@ WepRestrict_Register()
 public WepRestrict_OnEventsRegister()
 {
     // Register all the events needed for this module.
+    EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnZAdminCreated",        "WepRestrict_OnZAdminCreated");
     EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnMyModuleEnable",       "WepRestrict_OnMyModuleEnable");
     EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnMyModuleDisable",      "WepRestrict_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleWepRestrict, "Event_OnClientPutInServer",    "WepRestrict_OnClientPutInServer");
@@ -98,6 +109,32 @@ WepRestrict_OnPluginStart()
 }
 
 /**
+ * Called when ZAdmin is created.
+ * 
+ * @param hMenu     Handle to ZAdmin.
+ */
+public WepRestrict_OnZAdminCreated(Handle:hMenu)
+{
+    // Add button to the menu.
+    g_iWepRestrictZAdminButton = MenuLib_AddMenuBtnEx(hMenu, "Weapons zadmin button", "0", true, ITEMDRAW_DEFAULT, "WepRestrict_SendRestrictMenu", BtnNextMenu_None, "");
+}
+
+/**
+ * Menu callback (weapon restrictions)
+ * Sends the weapon menu to the client.
+ * 
+ * @param menu      The menu handle.
+ * @param action    Action client is doing in menu.
+ * @param client    The client index.
+ * @param slot      The menu slot selected. (starting from 0)
+ */
+public WepRestrict_SendRestrictMenu(Handle:hMenu, MenuAction:action, client, slot)
+{
+    g_hWepRestrictLastMenu[client] = hMenu;
+    WepMenus_Types(client);
+}
+
+/**
  * The module that hooked this event callback has been enabled.
  * 
  * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
@@ -107,6 +144,11 @@ WepRestrict_OnPluginStart()
  */
 public Action:WepRestrict_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
+    // Enable button in ZAdmin menu.
+    new Handle:hZAdmin = MenuLib_FindMenuById("zadmin");
+    if (hZAdmin != INVALID_HANDLE)
+        MenuLib_BtnWriteCell(hZAdmin, g_iWepRestrictZAdminButton, MenuBtn_Style, ITEMDRAW_DEFAULT);
+    
     // Hook all clients in the server.
     for (new client = 1; client <= MaxClients; client++)
     {
@@ -130,6 +172,11 @@ public Action:WepRestrict_OnMyModuleEnable(String:refusalmsg[], maxlen)
  */
 public Action:WepRestrict_OnMyModuleDisable(String:refusalmsg[], maxlen)
 {
+    // Disable button in ZAdmin menu.
+    new Handle:hZAdmin = MenuLib_FindMenuById("zadmin");
+    if (hZAdmin != INVALID_HANDLE)
+        MenuLib_BtnWriteCell(hZAdmin, g_iWepRestrictZAdminButton, MenuBtn_Style, ITEMDRAW_DISABLED);
+    
     // Unhook all clients in the server.
     for (new client = 1; client <= MaxClients; client++)
     {

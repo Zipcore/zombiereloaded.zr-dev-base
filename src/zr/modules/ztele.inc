@@ -401,7 +401,7 @@ public Action:ZTele_SayCommand(client, argc)
     
     if (!GetConVarBool(g_hCvarZTele))
     {
-        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZTele, INVALID_MODULE, "Feature is disabled");
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleZTele, false, "Feature is disabled");
         return Plugin_Handled;
     }
     

@@ -275,12 +275,7 @@
 	//               Weapon Menus		       //
 	/////////////////////////////////////////////////
 
-	"Weapons menu main title"
-	{
-		"en"		"Weapons Management"
-	}
-
-	"Weapons menu restrict main restrict"
+	"Weapons zadmin button"
 	{
 		"en"		"Weapon Restrictions"
 	}
@@ -291,7 +286,7 @@
 	}
 
 	// {1}: The type of weapons being displayed in a menu.
-	"Weapons menu restrict types weapon type title"
+	"Weapons menu restrict weapon list title"
 	{
 		"#format"	"{1:s}"
 		"en"		"Weapon Restrictions\nWeapon Type: {1}\n[] = Restricted"

@@ -446,7 +446,7 @@ public GameRules_OnMapStart()
  */
 public GameRules_OnConfigReload(configindex)
 {
-    TransMgr_PrintText(SERVER_INDEX, MsgFormat_Plugin, MsgType_Reply, g_moduleGameRules, INVALID_MODULE, "Game Rules config reload", GAMERULES_FILE);
+    TransMgr_PrintText(SERVER_INDEX, MsgFormat_Plugin, MsgType_Reply, g_moduleGameRules, false, "Game Rules config reload", GAMERULES_FILE);
 }
 
 /**

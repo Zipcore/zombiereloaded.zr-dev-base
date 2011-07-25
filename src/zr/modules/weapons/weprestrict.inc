@@ -166,6 +166,13 @@ public Action:WepRestrict_OnMyModuleDisable(String:refusalmsg[], maxlen)
     if (hZAdmin != INVALID_HANDLE)
         MenuLib_BtnWriteCell(hZAdmin, g_iWepRestrictZAdminButton, MenuBtn_Style, ITEMDRAW_DISABLED);
     
+    #if defined PROJECT_GAME_CSS
+        // Stop listening for buy commands.
+        RemoveCommandListener(WepRestrict_BuyListener, "buy");
+        RemoveCommandListener(WepRestrict_BuyListener, "autobuy");
+        RemoveCommandListener(WepRestrict_BuyListener, "rebuy");
+    #endif
+    
     return Plugin_Continue;
 }
 

@@ -148,6 +148,7 @@ public GameRules_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnModuleDisable",          "GameRules_OnModuleDisable");
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnMyModuleDisable",        "GameRules_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnMapStart",               "GameRules_OnMapStart");
+    EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnAutoConfigsBuffered",    "GameRules_OnAutoConfigsBuffered");
 }
 
 /**
@@ -442,6 +443,22 @@ public GameRules_OnMapStart()
 }
 
 /**
+ * This is called before OnConfigsExecuted but any time after OnMapStart.
+ * Per-map settings should be set here. 
+ */
+public GameRules_OnAutoConfigsBuffered()
+{
+    // Execute this ruleset's cfg file.
+    decl String:cfgfile[PLATFORM_MAX_PATH];
+    GameRules_GetCvarConfigPath(cfgfile);
+    if (cfgfile[0])
+    {
+        ServerCommand("exec %s", cfgfile);
+        LogMgr_Print(g_moduleGameRules, LogType_Debug, "Game Rule Configs", "Executed ruleset cfg file: %s", cfgfile);
+    }
+}
+
+/**
  * Called when a registered config file (by this module) is manually.
  */
 public GameRules_OnConfigReload(configindex)
@@ -666,15 +683,6 @@ stock GameRules_ApplyRuleSet(ruleSet)
     // Enable the core's root module.
     if (GRULESET_CORE != INVALID_MODULE)
         ModuleMgr_Enable(GRULESET_CORE);
-    
-    // Execute this ruleset's cfg file.
-    decl String:cfgfile[PLATFORM_MAX_PATH];
-    GameRules_GetCvarConfigPath(cfgfile);
-    if (cfgfile[0])
-    {
-        ServerCommand("exec %s", cfgfile);
-        LogMgr_Print(g_moduleGameRules, LogType_Debug, "Game Rule Configs", "Executed ruleset cfg file: %s", cfgfile);
-    }
     
     // Loop through each module and apply its action.
     // Loop through all the modules.

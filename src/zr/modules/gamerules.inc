@@ -42,9 +42,10 @@ new ProjectEvent:g_EvOnMyCoreShutdown;
 new ProjectEvent:g_EvOnMyCoreActivate;
 
 /**
- * Location of gamerules config file.
+ * Location of gamerules config files.
  */
 #define GAMERULES_FILE "configs/zr/gamerules.txt"
+#define GAMERULES_MAPS_FILE "configs/zr/gamerules_maps.txt"
 
 /**
  * Available game rule actions.
@@ -108,6 +109,11 @@ new g_iGameRuleCount;
 new g_iCurGameRuleSet = -1;
 
 /**
+ * Handle to trie that stores a game mode for a map.
+ */
+new Handle:g_hGameRulesMaps;
+
+/**
  * Register this module.
  */
 GameRules_Register()
@@ -133,7 +139,8 @@ GameRules_Register()
     EventMgr_RegisterEvent(g_moduleGameRules, "Event_OnEventsRegister",         "GameRules_OnEventsRegister");
     
     // Register config file(s) that this module will use.
-    ConfigMgr_Register(g_moduleGameRules, "GameRules_OnConfigReload", "");
+    ConfigMgr_Register(g_moduleGameRules, "GameRules_OnRuleSetConfigReload", "");
+    ConfigMgr_Register(g_moduleGameRules, "GameRules_OnMapRulesCfgReload", "");
 }
 
 /**
@@ -157,6 +164,9 @@ public GameRules_OnEventsRegister()
 public GameRules_OnEventsReady()
 {
     // It's important that GameRules_OnMapStart fires before that of any core modules.
+    
+    // Game mode configs come before map configs.
+    EventMgr_GivePriority("Event_OnAutoConfigsBuffered", g_moduleGameRules, MapConfig_GetIdentifier());
 }
 
 /**
@@ -172,6 +182,9 @@ GameRules_OnPluginStart()
     
     // Create array.
     g_hGameRules = CreateArray(sizeof(g_RuleSetCache));
+    
+    // Create map trie.
+    g_hGameRulesMaps = CreateTrie();
 }
 
 /**
@@ -182,6 +195,7 @@ public GameRules_OnPluginEnd()
     // Clean up data.
     GameRules_CleanCache();
     CloseHandle(g_hGameRules);
+    CloseHandle(g_hGameRulesMaps);
 }
 
 /**
@@ -254,6 +268,9 @@ public Action:GameRules_OnMyModuleDisable(String:refusalmsg[], maxlen)
     return Plugin_Handled;
 }
 
+/**
+ * Goes through all rulesets and destroys the handles.
+ */
 static stock GameRules_CleanCache()
 {
     // Cleanup tries in gamerules data.
@@ -411,6 +428,49 @@ GameRules_CacheGameRulesData()
 }
 
 /**
+ * Re-cache all map game rules data from disk.
+ */
+GameRules_CacheMapRulesData()
+{
+    if (ConfigMgr_ValidateFile(GAMERULES_MAPS_FILE))
+    {
+        ConfigMgr_WriteString(g_moduleGameRules, CM_CONFIGINDEX_SECOND, ConfigData_Path, CM_DATA_PATH, GAMERULES_MAPS_FILE);
+    }
+    else
+    {
+        LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Warning: Missing map game rules config file: \"%s\"", GAMERULES_MAPS_FILE);
+        return;
+    }
+    
+    // Get data from file.
+    ClearTrie(g_hGameRulesMaps);
+    new count;
+    decl String:line[256];
+    new Handle:hMapRules = ConfigMgr_CacheFile(g_moduleGameRules, CM_CONFIGINDEX_SECOND, sizeof(line), count);
+    
+    // Transfer and validate this data.
+    decl String:map[128], String:gamemode[128];
+    new breakpoint;
+    for (new i = 0; i < count; i++)
+    {
+        GetArrayString(hMapRules, i, line, sizeof(line));
+        breakpoint = BreakString(line, map, sizeof(map));
+        if (breakpoint == -1)
+        {
+            LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Error: Invalid map rule (%s) in map game rules config file: \"%s\"", line, GAMERULES_MAPS_FILE);
+            continue;
+        }
+        BreakString(line[breakpoint], gamemode, sizeof(gamemode));
+        if (GameRules_FindRuleSet(gamemode) == -1)
+        {
+            LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Error: Invalid rule set/game mode (%s) in map game rules config file: \"%s\"", gamemode, GAMERULES_MAPS_FILE);
+            continue;
+        }
+        SetTrieString(g_hGameRulesMaps, map, gamemode);
+    }
+}
+
+/**
  * Check if game rules has ever been cached.
  * 
  * @return  True if it has, false if not.
@@ -425,20 +485,61 @@ stock bool:GameRules_IsConfigCached()
  */
 public GameRules_OnMapStart()
 {
+    new bool:wasCached = GameRules_IsConfigCached();
+    
+    GameRules_CacheGameRulesData();
+    GameRules_CacheMapRulesData();
+    
+    // The config hasn't been cached yet, so cache it and load the first ruleset.
+    if (!wasCached)
+    {
+        GameRules_LoadRuleSet();
+        LogMgr_Print(g_moduleGameRules, LogType_Normal, "Ruleset", "Applied default ruleset: \"%s\"", GRULESET_NAME);
+        return;
+    }
+    
     // If this global variable is non-null, then use this as the ruleset.
     if (g_strNextRuleSet[0])
     {
-        GameRules_CacheGameRulesData();
-        GameRules_LoadRuleSet(g_strNextRuleSet[0]);
+        if (GameRules_FindRuleSet(g_strNextRuleSet) != -1)
+        {
+            GameRules_LoadRuleSet(g_strNextRuleSet);
+            LogMgr_Print(g_moduleGameRules, LogType_Normal, "Ruleset", "Applied ruleset \"%s\" as defined by zr_nextruleset.", GRULESET_NAME);
+        }
+        else
+        {
+            GameRules_LoadRuleSet();
+            LogMgr_Print(g_moduleGameRules, LogType_Normal, "Ruleset", "Invalid ruleset defined in zr_nextruleset (%s), falling back on default ruleset: \"%s\"", g_strNextRuleSet, GRULESET_NAME);
+        }
         g_strNextRuleSet[0] = '\0';
         return;
     }
     
-    // The config hasn't been cached yet, so cache it and load the first ruleset.
-    if (!GameRules_IsConfigCached())
+    // Next check if a game mode is defined for the current map.
+    decl String:map[128];
+    GetCurrentMap(map, sizeof(map));
+    
+    decl String:ruleset[128];
+    if (GetTrieString(g_hGameRulesMaps, map, ruleset, sizeof(ruleset)))
     {
-        GameRules_CacheGameRulesData();
+        if (!StrEqual(GRULESET_NAME, ruleset, false))
+        {
+            GameRules_LoadRuleSet(ruleset);
+            LogMgr_Print(g_moduleGameRules, LogType_Normal, "Ruleset", "Applied ruleset \"%s\" as defined by current map.", GRULESET_NAME);
+            return;
+        }
+    }
+    
+    // Transfer the cached data to another static array cache that holds the current game mode.
+    // And if this game mode no longer exists, load the default.
+    new rulesetindex = GameRules_FindRuleSet(GRULESET_NAME);
+    if (rulesetindex != -1)
+        GameRules_UpdateCache(rulesetindex);
+    else
+    {
         GameRules_LoadRuleSet();
+        LogMgr_Print(g_moduleGameRules, LogType_Normal, "Ruleset", "The current ruleset was removed from the configs, falling back on default ruleset: \"%s\"", GRULESET_NAME);
+        return;
     }
 }
 
@@ -461,9 +562,17 @@ public GameRules_OnAutoConfigsBuffered()
 /**
  * Called when a registered config file (by this module) is manually.
  */
-public GameRules_OnConfigReload(configindex)
+public GameRules_OnRuleSetConfigReload(configindex)
 {
     TransMgr_PrintText(SERVER_INDEX, MsgFormat_Plugin, MsgType_Reply, g_moduleGameRules, false, "Game Rules config reload", GAMERULES_FILE);
+}
+
+/**
+ * Called when a registered config file (by this module) is manually.
+ */
+public GameRules_OnMapRulesCfgReload(configindex)
+{
+    GameRules_CacheMapRulesData();
 }
 
 /**
@@ -579,6 +688,8 @@ stock GRuleModuleCmds:GameRules_ModuleCmdToSymbol(const String:modulecmd[])
  * Loads a named ruleset.
  * 
  * @param ruleset   The ruleset as listed in gamerules config file.  Pass a null string to load first ruleset in the config file.
+ * 
+ * @return          The rule set index.  
  */
 stock GameRules_LoadRuleSet(const String:ruleset[] = "")
 {
@@ -596,6 +707,7 @@ stock GameRules_LoadRuleSet(const String:ruleset[] = "")
             LogMgr_Print(g_moduleGameRules, LogType_Error, "Config Validation", "Invalid ruleset name \"%s\", falling back to first defined ruleset \"%s\".", ruleset, gameRuleSet[GameRuleSet_Name]);
     }
     GameRules_ApplyRuleSet(rulesetindex);
+    return rulesetindex;
 }
 
 /**
@@ -669,7 +781,7 @@ stock GameRules_ApplyRuleSet(ruleSet)
         EventMgr_Forward(g_EvOnMyCoreShutdown, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
     }
     
-    GetArrayArray(g_hGameRules, ruleSet, g_RuleSetCache[0], sizeof(g_RuleSetCache));
+    GameRules_UpdateCache(ruleSet);
     g_iCurGameRuleSet = ruleSet;    // Hiding behind this line above in case ruleSet is invalid.
     
     // Disable all other cores.
@@ -702,14 +814,22 @@ stock GameRules_ApplyRuleSet(ruleSet)
         }
     }
     
-    LogMgr_Print(g_moduleGameRules, LogType_Normal, "Ruleset", "Applied ruleset: \"%s\"", GRULESET_NAME);
-    
     // Send this event only to the module being affected.
     if (GRULESET_CORE != INVALID_MODULE)
     {
         eventdata[0][0] = GRULESET_CORE;
         EventMgr_Forward(g_EvOnMyCoreActivate, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
     }
+}
+
+/**
+ * Updates the cache given a ruleset index.
+ * 
+ * @ruleset The ruleset index.
+ */
+GameRules_UpdateCache(ruleset)
+{
+    GetArrayArray(g_hGameRules, ruleset, g_RuleSetCache[0], sizeof(g_RuleSetCache));
 }
 
 /**

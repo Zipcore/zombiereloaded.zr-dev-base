@@ -20,4 +20,41 @@
 		"#format"	"{1:s}"
 		"en"		"Set the ruleset to be applied for next map.  Usage: {1}_nextruleset <ruleset>"
 	}
+
+	// {1}: A game mode
+	"Game Rules next ruleset"
+	{
+		"#format"	"{1:s}"
+		"en"		"The \"{1}\" game mode will be applied on the next map."
+	}
+
+	// {1}: PROJECT_CMD_PREFIX
+	"Game Rules setmapruleset command syntax"
+	{
+		"#format"	"{1:s}"
+		"en"		"Define a given ruleset/game mode to be loaded for a map.  Usage: {1}_setmapruleset <map> <ruleset>"
+	}
+
+	// {1}: A game mode
+	// {2}: A map
+	"Game Rules set map ruleset"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"Game mode \"{1}\" will be loaded whenever map \"{2}\" is played."
+	}
+
+	// {1}: A game mode
+	// {2}: A map
+	"Game Rules overwrite map ruleset"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"The old game mode for map \"{1}\" has been overwritten with \"{2}\".  If this map is defined in the config file it will be overwritten when the map changes."
+	}
+
+	// {1}: Invalid game mode
+	"Game Rules invalid ruleset"
+	{
+		"#format"	"{1:s}"
+		"en"		"Invalid ruleset/game mode: \"{1}\"."
+	}
 }

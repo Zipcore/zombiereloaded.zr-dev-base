@@ -179,6 +179,7 @@ GameRules_OnPluginStart()
     
     // Create commands.
     Project_RegConsoleCmd("nextruleset", GameRules_NextRuleSet, "Set the ruleset to be applied for next map.  Usage: <prefix>_nextruleset <ruleset>");
+    Project_RegConsoleCmd("setmapruleset", GameRules_SetMapRuleSet, "Define a given ruleset/game mode to be loaded for a map.  Usage: <prefix>_setmapruleset <map> <ruleset>");
     
     // Create array.
     g_hGameRules = CreateArray(sizeof(g_RuleSetCache));
@@ -443,7 +444,7 @@ GameRules_CacheMapRulesData()
     }
     
     // Get data from file.
-    ClearTrie(g_hGameRulesMaps);
+    //ClearTrie(g_hGameRulesMaps);
     new count;
     decl String:line[256];
     new Handle:hMapRules = ConfigMgr_CacheFile(g_moduleGameRules, CM_CONFIGINDEX_SECOND, sizeof(line), count);
@@ -861,10 +862,56 @@ public Action:GameRules_NextRuleSet(client, argc)
     if (GameRules_FindRuleSet(arg1) != -1)
     {
         strcopy(g_strNextRuleSet, sizeof(g_strNextRuleSet), arg1);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleGameRules, false, "Game Rules next ruleset", arg1);
         LogMgr_Print(g_moduleGameRules, LogType_Normal, "zr_nextruleset", "%N queued rule set \"%s\" to be loaded with the next map.", client, arg1);
     }
     else
-        LogMgr_Print(g_moduleGameRules, LogType_Normal, "zr_nextruleset", "WARNING: %N attempted to set zr_nextruleset to an invalid value: \"%s\"", client, arg1);
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleGameRules, false, "Game Rules invalid ruleset", arg1);
+        LogMgr_Print(g_moduleGameRules, LogType_Normal, "zr_nextruleset", "%N attempted to set zr_nextruleset to an invalid value: \"%s\"", client, arg1);
+    }
+    
+    return Plugin_Handled;
+}
+
+/**
+ * Command callback (zr_setmapruleset)
+ * Define a given ruleset/game mode to be loaded for a map.
+ * 
+ * @param client    The client index.
+ * @param argc      Argument count.
+ */
+public Action:GameRules_SetMapRuleSet(client, argc)
+{
+    // Check if client has access.
+    if (!AccessMgr_HasAccess(client, g_moduleGameRules))
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "No access to command");
+        return Plugin_Handled;
+    }
+    
+    // If not enough arguments given, then stop.
+    if (argc < 1)
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Game Rules setmapruleset command syntax", PROJECT_CMD_PREFIX);
+        return Plugin_Handled;
+    }
+    
+    // Get and validate the input.
+    decl String:arg1[128], String:arg2[GAMERULES_DATA_NAME];
+    GetCmdArg(1, arg1, sizeof(arg1));
+    GetCmdArg(2, arg2, sizeof(arg2));
+    if (GameRules_FindRuleSet(arg2) != -1)
+    {
+        SetTrieString(g_hGameRulesMaps, arg1, arg2);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleGameRules, false, "Game Rules set map ruleset", arg2, arg1);
+        LogMgr_Print(g_moduleGameRules, LogType_Normal, "zr_setmapruleset", "%N set map \"%s\" to load ruleset \"%s\"", client, arg1, arg2);
+    }
+    else
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, g_moduleGameRules, false, "Game Rules invalid ruleset", arg2);
+        LogMgr_Print(g_moduleGameRules, LogType_Normal, "zr_setmapruleset", "%N attempted to define an invalid game mode (%s) for map: \"%s\"", client, arg2, arg1);
+    }
     
     return Plugin_Handled;
 }

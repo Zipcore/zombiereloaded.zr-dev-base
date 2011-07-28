@@ -315,11 +315,6 @@ public Action:ClsGeneric_OnClassValidate(classIndex)
         ClassMgr_LogAttribErrString(g_moduleClsGeneric, "display_name", className, classIndex, classCache[ClassAttrib_DisplayName]);
         hasErrors = true;
     }
-    if (!ClsGeneric_IsValidDescription(classCache[ClassAttrib_Description]))
-    {
-        ClassMgr_LogAttribErrString(g_moduleClsGeneric, "description", className, classIndex, classCache[ClassAttrib_Description]);
-        hasErrors = true;
-    }
     
     // Check if name is empty.
     if (strlen(className) == 0)
@@ -1095,23 +1090,6 @@ static bool:ClsGeneric_IsValidFlagList(const String:flagList[], const String:sep
 static bool:ClsGeneric_IsValidDisplayName(const String:displayName[])
 {
     if (strlen(displayName) > 0)
-    {
-        return true;
-    }
-    
-    return false;
-}
-
-/**
- * Validates description.
- *
- * @param description   Description to validate.
- *
- * @return              True if valid, false otherwise.
- */
-static bool:ClsGeneric_IsValidDescription(const String:description[])
-{
-    if (strlen(description) > 0)
     {
         return true;
     }

@@ -247,6 +247,30 @@ public Respawn_PlayerDeath(victim, attacker, const String:weapon[], bool:headsho
 #endif
 
 /**
+ * Respawn a client on a given team or their current team.
+ * 
+ * @param client    The client to respawn.
+ * @param team      The team to respawn them on.  Anything other than zombie or human means their current team.
+ * 
+ * @return          True if respawned as zombie or human, false if they couldn't be respawned.
+ */
+stock bool:Respawn_Client(client, VTeam:team)
+{
+    // Set the variable to the team this client should respawn on.
+    new VTeam:respawnteam;
+    if (team == VTeam_Zombie || team == VTeam_Human)
+        respawnteam = team;
+    else
+        respawnteam = TLib_GetClientTeam(client);
+    
+    if (respawnteam == VTeam_Zombie || respawnteam == VTeam_Human)
+    {
+        TLib_SpawnOnTeam(client, respawnteam);
+        return true;
+    }
+    return false;
+        
+/**
  * Timer callback, respawns a client.
  * 
  * @param timer     The timer handle.
@@ -274,12 +298,11 @@ public Action:Respawn_Timer(Handle:timer, any:client)
         decl String:respawn_team[32];
         GetConVarString(g_hCvarRespawnTeam, respawn_team, sizeof(respawn_team));
         new VTeam:team = TLib_VTeamStringToIndex(respawn_team);
+        Respawn_Client(client, team);
+        
+        // Log an error if client was respawned on their current team.
         if (team == VTeam_Invalid)
-        {
-            LogMgr_Print(g_moduleRespawn, LogType_Fatal_Module, "Cvar zr_respawn_team", "Invalid value (%s) set in cvar,", respawn_team);
-            return;
-        }
-        TLib_SpawnOnTeam(client, team);
+            LogMgr_Print(g_moduleRespawn, LogType_Error, "Cvar zr_respawn_team", "Invalid value (%s) set in cvar, spawning player on their current team instead.", respawn_team);
     }
     g_iRespawnCount[client]++;  // Increment their spawn count.
     
@@ -405,15 +428,9 @@ public Action:Respawn_Command(client, argc)
     new VTeam:respawnteam;
     for (new tindex = 0; tindex < result; tindex++)
     {
-        // Set the variable to the team this client should respawn on.
-        if (team == VTeam_Zombie || team == VTeam_Human)
-            respawnteam = team;
-        else
-            respawnteam = TLib_GetClientTeam(targets[tindex]);
-        
-        if (respawnteam == VTeam_Zombie || respawnteam == VTeam_Human)
+        // Respawn targets.
+        if (Respawn_Client(targets[tindex], team))
         {
-            TLib_SpawnOnTeam(targets[tindex], respawnteam);
             if (result == 1)
                 TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Respawn command success", targets[tindex]);
         }

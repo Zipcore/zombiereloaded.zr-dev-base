@@ -84,6 +84,7 @@
 #include "zr/modules/sfx"
 #include "zr/modules/fog"
 #include "zr/modules/ztele"
+#include "zr/modules/flashlight"
 #include "zr/modules/stripobjectives"
 
 // Game-specific modules

@@ -76,7 +76,7 @@ stock ForwardOnPluginStart()
     SFX_OnPluginStart();
     Fog_OnPluginStart();
     ZTele_OnPluginStart();
-    
+    Flashlight_OnPluginStart();
     StripObj_OnPluginStart();
     
     

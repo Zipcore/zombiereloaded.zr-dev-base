@@ -38,7 +38,7 @@
 // flags                    text        List of flag names to authorize. Separated by comma (,). See auth_mode.
 // groups                   text        List of groups to authorize. Separated by comma (,). See auth_mode.
 // display_name             text        The class name used in class menu.
-// description              text        The class description used in class menu.
+// description              text        Optional. The class description used in class menu.
 // model                    text        Name of model to use, or predefined filter option.
 // alpha_mode               text        Alpha blending mode. Options: none, switch, switch_once, linear and exp.
 // alpha_invert             yes/no      Invert alpha blending (transparent when low health, opaque when high health).

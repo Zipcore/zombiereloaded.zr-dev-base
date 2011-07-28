@@ -187,7 +187,6 @@ static CheckReadyState(client)
     }
 }
 
-
 // **********************************************
 //            SourceMod Forwards
 // **********************************************
@@ -239,47 +238,16 @@ public OnConfigsExecuted()
 }
 
 /**
- * TODO:  This kinda sucks.  updating weapon alphas shouldnt be this expensive.  updating it should only need to happen when zr is changing player alpha.
- * we can basically move this event to the alpha-changing function. we dont need to try and support other plugins changing player alpha. it's not that important.
- * 
- * I don't see why we can't make player spawn post a timer off of player_spawn.  we may not even need this anymore because classes should just rely on the OnClientHuman event now
- *   
  * Fires every game frame.
- * Events inside:
- * - OnClientAlphaChanged
- * - OnPlayerSpawnPost
  */
 public OnGameFrame()
 {
-    // Create an array of clients that's remembered.
-    static lastalpha[MAXPLAYERS + 1];
-    new color[4];
-    
     new Float:gameTime = GetGameTime();
     
     for (new client = 1; client <= MaxClients; client++)
     {
         if (!IsClientInGame(client))
             continue;
-        
-        /****************************
-         *   OnClientAlphaChanged   *
-         ****************************/
-        
-        OffsLib_GetEntityColor(client, color);
-        if (lastalpha[client] != color[3])
-        {
-            // Forward event to all modules.
-            static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell};
-            new any:eventdata[2][1];
-            eventdata[0][0] = client;
-            eventdata[1][0] = color[3];
-            
-            EventMgr_Forward(g_EvOnClientAlphaChanged, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
-        }
-        
-        lastalpha[client] = color[3];
-        
         
         /*************************
          *   OnPlayerSpawnPost   *

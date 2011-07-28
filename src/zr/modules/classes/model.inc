@@ -25,6 +25,9 @@
  * ============================================================================
  */
 
+// Include libraries.
+#include "zr/libraries/zrwrappers"
+
 /**
  * This module's identifier.
  */
@@ -821,7 +824,7 @@ ClsModel_SetAlpha(client, alpha)
     SetEntityRenderMode(client, RENDER_TRANSALPHA);
     
     // Set alpha value on the client.
-    SetEntityRenderColor(client, 255, 255, 255, alpha);
+    Wrapper_SetEntRenderClr(client, 255, 255, 255, alpha);
     
     // Trigger alpha changed event.
     static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell};

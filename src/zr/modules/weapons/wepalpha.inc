@@ -26,6 +26,9 @@
  * ============================================================================
  */
 
+// Include libraries.
+#include "zr/libraries/zrwrappers"
+
 /**
  * This module's identifier.
  */
@@ -106,7 +109,7 @@ public WepAlpha_WeaponEquip(client, weapon)
     
     // Set new alpha on weapon.
     SetEntityRenderMode(weapon, RENDER_TRANSALPHA);
-    SetEntityRenderColor(weapon, 255, 255, 255, color[3]);
+    Wrapper_SetEntRenderClr(weapon, 255, 255, 255, color[3]);
 }
 
 /**
@@ -125,7 +128,7 @@ public WepAlpha_WeaponDrop(client, weapon)
     
     // Reset alpha to default on the dropped weapon.
     SetEntityRenderMode(weapon, RENDER_TRANSALPHA);
-    SetEntityRenderColor(weapon, 255, 255, 255, 255);
+    Wrapper_SetEntRenderClr(weapon, 255, 255, 255, 255);
 }
 
 /**
@@ -149,6 +152,6 @@ stock WepAlpha_Apply(client, alpha)
             continue;
         
         SetEntityRenderMode(weapons[sindex], RENDER_TRANSALPHA);
-        SetEntityRenderColor(weapons[sindex], 255, 255, 255, alpha);
+        Wrapper_SetEntRenderClr(weapons[sindex], 255, 255, 255, alpha);
     }
 }

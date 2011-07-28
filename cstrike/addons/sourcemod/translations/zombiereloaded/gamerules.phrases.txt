@@ -43,14 +43,6 @@
 		"en"		"Game mode \"{1}\" will be loaded whenever map \"{2}\" is played."
 	}
 
-	// {1}: A game mode
-	// {2}: A map
-	"Game Rules overwrite map ruleset"
-	{
-		"#format"	"{1:s},{2:s}"
-		"en"		"The old game mode for map \"{1}\" has been overwritten with \"{2}\".  If this map is defined in the config file it will be overwritten when the map changes."
-	}
-
 	// {1}: Invalid game mode
 	"Game Rules invalid ruleset"
 	{

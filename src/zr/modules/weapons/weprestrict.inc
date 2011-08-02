@@ -26,6 +26,9 @@
  * ============================================================================
  */
 
+// Include libraries.
+#include "zr/libraries/menulib"
+
 /**
  * This module's identifier.
  */
@@ -115,19 +118,18 @@ WepRestrict_OnPluginStart()
 public WepRestrict_OnZAdminCreated(Handle:hMenu)
 {
     // Add button to the menu.
-    g_iWepRestrictZAdminButton = MenuLib_AddMenuBtnEx(hMenu, "Weapons zadmin button", "0", true, ITEMDRAW_DEFAULT, "WepRestrict_SendRestrictMenu", BtnNextMenu_None, "");
+    g_iWepRestrictZAdminButton = MenuLib_AddMenuBtnEx(hMenu, "Weapons zadmin button", "0", true, ITEMDRAW_DEFAULT, WepRestrict_SendRestrictMenu, BtnNextMenu_None, "");
 }
 
 /**
- * Menu callback (weapon restrictions)
- * Sends the weapon menu to the client.
+ * Menu callback
+ * Called when a certain button in a menu is pressed.  The menu action is always MenuAction_Select.
  * 
- * @param menu      The menu handle.
- * @param action    Action client is doing in menu.
+ * @param menu      The menulib menu handle.
  * @param client    The client index.
  * @param slot      The menu slot selected. (starting from 0)
  */
-public WepRestrict_SendRestrictMenu(Handle:hMenu, MenuAction:action, client, slot)
+public WepRestrict_SendRestrictMenu(Handle:hMenu, client, slot)
 {
     g_hWepRestrictLastMenu[client] = hMenu;
     WepMenus_Types(client);

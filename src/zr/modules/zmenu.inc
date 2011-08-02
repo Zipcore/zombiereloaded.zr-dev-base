@@ -99,7 +99,7 @@ ZMenu_OnPluginStart()
 public ZMenu_OnAllModulesLoaded()
 {
     // Register menu with menulib.
-    g_hZMenu = MenuLib_CreateMenu("zmenu", "ZMenu title", true, false);
+    g_hZMenu = MenuLib_CreateMenu("zmenu", INVALID_FUNCTION, "ZMenu title", true, false, false);
     
     // Forward event to all modules.
     new any:eventdata[1][1];

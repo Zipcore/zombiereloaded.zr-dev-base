@@ -45,4 +45,60 @@
 		"#format"	"{1:N}"
 		"en"		"Could not respawn player {green}{1}{default}."
 	}
+
+	"Respawn zadmin button"
+	{
+		"en"		"Respawn player"
+	}
+
+	"Respawn menu main title"
+	{
+		"en"		"Choose first parameter:\nThe unchosen option will be picked second"
+	}
+
+	"Respawn menu main choose client"
+	{
+		"en"		"Choose client"
+	}
+
+	"Respawn menu main choose team"
+	{
+		"en"		"Choose team"
+	}
+
+	"Respawn menu clients title"
+	{
+		"en"		"Choose client to respawn:"
+	}
+
+	"Respawn menu choose team title 1"
+	{
+		"en"		"Choose a team:"
+	}
+
+	"Respawn menu choose team title 2"
+	{
+		"en"		"Respawn {1}\nChoose a team:"
+	}
+
+	"Respawn menu choose team cvar"
+	{
+		"en"		"Team defined in configs ({1})"
+	}
+
+	"Respawn menu choose team current"
+	{
+		"en"		"Player's current team"
+	}
+
+	"Respawn menu choose team zombie"
+	{
+		"en"		"Zombie"
+	}
+
+	"Respawn menu choose team human"
+	{
+		"en"		"Human"
+	}
+
 }

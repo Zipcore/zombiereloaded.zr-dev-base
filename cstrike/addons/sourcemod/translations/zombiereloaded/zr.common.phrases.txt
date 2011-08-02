@@ -55,6 +55,20 @@
 	}
 
 	//
+	// General adjectives
+	//
+
+	"ZR alive"
+	{
+		"en"		"Alive"
+	}
+
+	"ZR dead"
+	{
+		"en"		"Dead"
+	}
+
+	//
 	//   Teams
 	//
 

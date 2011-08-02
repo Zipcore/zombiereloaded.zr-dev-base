@@ -106,7 +106,7 @@ ZAdmin_OnPluginStart()
 public ZAdmin_OnAllModulesLoaded()
 {
     // Register menu with menulib.
-    g_hZAdminMenu = MenuLib_CreateMenu("zadmin", "ZAdmin title", true, false);
+    g_hZAdminMenu = MenuLib_CreateMenu("zadmin", INVALID_FUNCTION, "ZAdmin title", true, false, false);
     
     // Forward event to all modules.
     new any:eventdata[1][1];
@@ -122,7 +122,7 @@ public ZAdmin_OnAllModulesLoaded()
 public ZAdmin_OnZMenuCreated(Handle:hMenu)
 {
     // Add ZAdmin's button to the menu.
-    g_iZAdminZMenuButton = MenuLib_AddMenuBtnEx(hMenu, "ZAdmin zmenu button", "0", true, ITEMDRAW_DEFAULT, "", BtnNextMenu_LinkMenu, "zadmin");
+    g_iZAdminZMenuButton = MenuLib_AddMenuBtnEx(hMenu, "ZAdmin zmenu button", "0", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkMenu, "zadmin");
 }
 
 /**

@@ -106,7 +106,7 @@ ZAdmin_OnPluginStart()
 public ZAdmin_OnAllModulesLoaded()
 {
     // Register menu with menulib.
-    g_hZAdminMenu = MenuLib_CreateMenu("zadmin", INVALID_FUNCTION, "ZAdmin title", true, false, false);
+    g_hZAdminMenu = MenuLib_CreateMenu("zadmin", INVALID_FUNCTION, INVALID_FUNCTION, "ZAdmin title", true, false, false);
     
     // Forward event to all modules.
     new any:eventdata[1][1];

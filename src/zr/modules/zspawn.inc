@@ -27,6 +27,7 @@
 
 // Include libraries
 #include "zr/libraries/authcachelib"
+#include "zr/libraries/menulib"
 #include "zr/libraries/teamlib"
 
 /**
@@ -126,7 +127,7 @@ ZSpawn_OnPluginStart()
 public ZSpawn_OnZMenuCreated(Handle:hMenu)
 {
     // Add ZSpawn's button to the menu.
-    g_iZSpawnZMenuButton = MenuLib_AddMenuBtnEx(hMenu, "ZSpawn zmenu button", "0", true, ITEMDRAW_DEFAULT, "ZSpawn_ZMenuButton", BtnNextMenu_None, "");
+    g_iZSpawnZMenuButton = MenuLib_AddMenuBtnEx(hMenu, "ZSpawn zmenu button", "0", true, ITEMDRAW_DEFAULT, ZSpawn_ZMenuButton, BtnNextMenu_None, "");
 }
 
 /**
@@ -379,15 +380,14 @@ ZSpawn_SpawnClient(client)
 // **********************************************
 
 /**
- * ZMenu callback (zspawn)
- * ZSpawn a client.
+ * Menu callback
+ * Called when a certain button in a menu is pressed.  The menu action is always MenuAction_Select.
  * 
  * @param menu      The menulib menu handle.
- * @param action    Action client is doing in menu.
  * @param client    The client index.
- * @param slot      The menu slot selected. (starting from 1)
+ * @param slot      The menu slot selected. (starting from 0)
  */
-public ZSpawn_ZMenuButton(Handle:hMenu, MenuAction:action, client, slot)
+public ZSpawn_ZMenuButton(Handle:hMenu, client, slot)
 {
     // Teleport the client, but if it fails then re-resend the menu.
     if (!ZSpawn_Client(client))

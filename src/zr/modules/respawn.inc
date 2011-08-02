@@ -44,6 +44,31 @@ new Handle:g_hCvarRespawnLimit;
 new Handle:g_hCvarRespawnZombieIfSuicide;
 
 /**
+ * Respawn's button indexes in menus.
+ */
+new g_iRespawnZAdminButton;
+
+/**
+ * Respawn menus.
+ */
+new Handle:hRespawnMainMenu;
+new Handle:hRespawnTeamMenu;
+
+/**
+ * These represent menu paths for collecting values to respawn a client.
+ */
+enum RespawnMenuPaths
+{
+    RespawnMenuPath_Clients,    /** Choose client -> Choose team */
+    RespawnMenuPath_Team        /** Choose team -> Choose client */
+}
+
+/**
+ * Store values that depend on what a client chooses in a menu.
+ */
+new RespawnMenuPaths:g_RespawnMenuPath[MAXPLAYERS + 1];
+
+/**
  * Per-client respawn timer handles.
  */
 new Handle:g_hRespawnTimer[MAXPLAYERS + 1];
@@ -91,6 +116,9 @@ Respawn_Register()
 public Respawn_OnEventsRegister()
 {
     // Register all the events needed for this module.
+    EventMgr_RegisterEvent(g_moduleRespawn, "Event_OnZAdminCreated",            "Respawn_OnZAdminCreated");
+    EventMgr_RegisterEvent(g_moduleRespawn, "Event_OnMyModuleEnable",           "Respawn_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleRespawn, "Event_OnMyModuleDisable",          "Respawn_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleRespawn, "Event_OnClientPutInServer",        "Respawn_OnClientPutInServer");
     EventMgr_RegisterEvent(g_moduleRespawn, "Event_OnClientDisconnect",         "Respawn_OnClientDisconnect");
     
@@ -122,6 +150,61 @@ Respawn_OnPluginStart()
     
     // Create commands.
     Project_RegConsoleCmd("spawn", Respawn_Command, "Respawn a client on a given team.  Usage: <prefix>_spawn <client> <zombie|human>");
+    
+    // Build respawn menus.
+    
+    // Main respawn menu.
+    hRespawnMainMenu = MenuLib_CreateMenu("respawn_main", INVALID_FUNCTION, "Respawn menu main title", true, false, false);
+    MenuLib_AddMenuBtnEx(hRespawnMainMenu, "Respawn menu main choose client", "", true, ITEMDRAW_DEFAULT, Respawn_BtnSendClientMenu, BtnNextMenu_None, "");
+    MenuLib_AddMenuBtnEx(hRespawnMainMenu, "Respawn menu main choose team", "", true, ITEMDRAW_DEFAULT, Respawn_BtnSendTeamMenu, BtnNextMenu_LinkMenu, "respawn_team");
+    
+    // Choose team.
+    hRespawnTeamMenu = MenuLib_CreateMenu("respawn_team", Respawn_ChooseTeamHandle, "Respawn menu choose team title 1", true, true, false);
+    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team cvar", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkCurrent, "");
+    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team current", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkCurrent, "");
+    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team zombie", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkCurrent, "");
+    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team human", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkCurrent, "");
+}
+
+/**
+ * Called when ZAdmin is created.
+ * 
+ * @param hMenu     Handle to ZAdmin.
+ */
+public Respawn_OnZAdminCreated(Handle:hMenu)
+{
+    // Add Respawn's button to the menu.
+    g_iRespawnZAdminButton = MenuLib_AddMenuBtnEx(hMenu, "Respawn zadmin button", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkMenu, "respawn_main");
+}
+
+/**
+ * The module that hooked this event callback has been enabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
+ */
+public Action:Respawn_OnMyModuleEnable(String:refusalmsg[], maxlen)
+{
+    new Handle:hZAdmin = MenuLib_FindMenuById("zadmin");
+    if (hZAdmin != INVALID_HANDLE)
+        MenuLib_BtnWriteCell(hZAdmin, g_iRespawnZAdminButton, MenuBtn_Style, ITEMDRAW_DEFAULT);
+}
+
+/**
+ * The module that hooked this event callback has been disabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
+ */
+public Action:Respawn_OnMyModuleDisable(String:refusalmsg[], maxlen)
+{
+    new Handle:hZAdmin = MenuLib_FindMenuById("zadmin");
+    if (hZAdmin != INVALID_HANDLE)
+        MenuLib_BtnWriteCell(hZAdmin, g_iRespawnZAdminButton, MenuBtn_Style, ITEMDRAW_DISABLED);
 }
 
 /**
@@ -269,7 +352,8 @@ stock bool:Respawn_Client(client, VTeam:team)
         return true;
     }
     return false;
-        
+}
+
 /**
  * Timer callback, respawns a client.
  * 
@@ -425,7 +509,6 @@ public Action:Respawn_Command(client, argc)
         }
     }
     
-    new VTeam:respawnteam;
     for (new tindex = 0; tindex < result; tindex++)
     {
         // Respawn targets.
@@ -442,4 +525,141 @@ public Action:Respawn_Command(client, argc)
     }
     
     return Plugin_Handled;
+}
+
+// **********************************************
+//                     Menus
+// **********************************************
+
+/**
+ * Menu callback
+ * Called when a certain button in a menu is pressed.  The menu action is always MenuAction_Select.
+ * 
+ * @param menu      The menulib menu handle.
+ * @param client    The client index.
+ * @param slot      The menu slot selected. (starting from 0)
+ */
+public Respawn_BtnSendClientMenu(Handle:hMenu, client, slot)
+{
+    g_RespawnMenuPath[client] = RespawnMenuPath_Clients;
+    Respawn_SendClientMenu(client, hMenu);
+}
+
+/**
+ * Menu callback
+ * Called when a certain button in a menu is pressed.  The menu action is always MenuAction_Select.
+ * 
+ * @param menu      The menulib menu handle.
+ * @param client    The client index.
+ * @param slot      The menu slot selected. (starting from 0)
+ */
+public Respawn_BtnSendTeamMenu(Handle:hMenu, client, slot)
+{
+    g_RespawnMenuPath[client] = RespawnMenuPath_Team;
+}
+
+/**
+ * Send a menu of a clients to a client.
+ * 
+ * @param client    The client to send menu to.
+ * @param hMenu     Menu to link back to. 
+ */
+stock Respawn_SendClientMenu(client, Handle:hMenu = INVALID_HANDLE)
+{
+    new Handle:hClientMenu;
+    switch(g_RespawnMenuPath[client])
+    {
+        case RespawnMenuPath_Clients:
+        {
+            hClientMenu = MenuLib_CreateClientListMenu(client, "Respawn menu clients title", true, false, Respawn_ClientMenuHandle, BtnNextMenu_LinkMenu, "respawn_team", UTILS_FILTER_TEAM, Respawn_ClientMenuFilter);
+        }
+        case RespawnMenuPath_Team:
+            hClientMenu = MenuLib_CreateClientListMenu(client, "Respawn menu clients title", true, false, Respawn_ClientMenuHandle, BtnNextMenu_None, "", UTILS_FILTER_TEAM, Respawn_ClientMenuFilter);
+    }
+    MenuLib_SendMenu(hClientMenu, client, hMenu);
+}
+
+/**
+ * Called for each client added to the menu being generated by MenuLib_GenerateClientMenu. 
+ *
+ * @param menu          Menu handle the clients are being added to.
+ * @param client        Index of client that is about to be added to the menu.
+ * @param buttontxt     The text that will be shown for this client's button.
+ *                      Default is just the client's in-game name.
+ * @param info          The button's information string.  Be careful modifying this, it will break MenuLib_GetClientIndex so you will have to interpret this data yourself.
+ *
+ * @return              Follows rules of a normal hook.  (Plugin_Stop will behave the same as Plugin_Handled)
+ */
+public Action:Respawn_ClientMenuFilter(Handle:menu, client, String:buttontxt[], String:buttoninfo[])
+{
+    // Tells if the client is dead or alive.
+    if (IsPlayerAlive(client))  Format(buttontxt, 256, "%s (%T)", buttontxt, "ZR alive", client);
+    else                        Format(buttontxt, 256, "%s (%T)", buttontxt, "ZR dead", client);
+    
+    return Plugin_Changed;
+}
+
+/**
+ * Menu callback (respawn)
+ * Respawns a client.
+ * 
+ * @param menu      The menu handle.
+ * @param action    Action client is doing in menu.
+ * @param client    The client index.
+ * @param slot      The menu slot selected. (starting from 0)
+ */
+public Respawn_ClientMenuHandle(Handle:hMenu, MenuAction:action, client, slot)
+{
+    if (action == MenuAction_Select)
+    {
+        // Get the client index of the selected client.
+        new target = MenuLib_GetClientIndex(hMenu, slot);
+        
+        // Target is no longer available.
+        if (target == 0 || !IsPlayerAlive(target))
+        {
+            Respawn_SendClientMenu(client);
+            return;
+        }
+        
+        switch(g_RespawnMenuPath[client])
+        {
+            case RespawnMenuPath_Team:
+            {
+                Respawn_SendClientMenu(client);
+                PrintToChatAll("Respawned %N!", target);
+            }
+        }
+    }
+}
+
+/**
+ * Menu callback
+ * Called when for all MenuAction actions except voting.  See menus.inc.
+ * 
+ * @param menu      The menulib menu handle.
+ * @param action    Action client is doing in menu.  May be any action except voting ones.  MenuAction_Select can be handled in other callbacks.
+ * @param client    The client index.
+ * @param slot      The menu slot selected. (starting from 0)
+ */
+public Respawn_ChooseTeamHandle(Handle:hMenu, MenuAction:action, client, slot)
+{
+    if (action == MenuAction_Select)
+    {
+        // Respawn the client
+        if (g_RespawnMenuPath[client] == RespawnMenuPath_Clients)
+            PrintToChatAll("Respawned client!");
+        else if (g_RespawnMenuPath[client] == RespawnMenuPath_Team)
+            Respawn_SendClientMenu(client, hMenu);
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (slot == MenuCancel_ExitBack)
+        {
+            if (g_RespawnMenuPath[client] == RespawnMenuPath_Clients)
+                Respawn_SendClientMenu(client, INVALID_HANDLE);
+            else if (g_RespawnMenuPath[client] == RespawnMenuPath_Team)
+                MenuLib_MenuGoBack(client);
+        }
+    }
 }

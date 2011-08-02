@@ -154,12 +154,12 @@ Respawn_OnPluginStart()
     // Build respawn menus.
     
     // Main respawn menu.
-    hRespawnMainMenu = MenuLib_CreateMenu("respawn_main", INVALID_FUNCTION, "Respawn menu main title", true, false, false);
+    hRespawnMainMenu = MenuLib_CreateMenu("respawn_main", INVALID_FUNCTION, INVALID_FUNCTION, "Respawn menu main title", true, false, false);
     MenuLib_AddMenuBtnEx(hRespawnMainMenu, "Respawn menu main choose client", "", true, ITEMDRAW_DEFAULT, Respawn_BtnSendClientMenu, BtnNextMenu_None, "");
     MenuLib_AddMenuBtnEx(hRespawnMainMenu, "Respawn menu main choose team", "", true, ITEMDRAW_DEFAULT, Respawn_BtnSendTeamMenu, BtnNextMenu_LinkMenu, "respawn_team");
     
     // Choose team.
-    hRespawnTeamMenu = MenuLib_CreateMenu("respawn_team", Respawn_ChooseTeamHandle, "Respawn menu choose team title 1", true, true, false);
+    hRespawnTeamMenu = MenuLib_CreateMenu("respawn_team", INVALID_FUNCTION, Respawn_ChooseTeamHandle, "Respawn menu choose team title 1", true, true, false);
     MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team cvar", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkCurrent, "");
     MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team current", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkCurrent, "");
     MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team zombie", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkCurrent, "");
@@ -571,10 +571,10 @@ stock Respawn_SendClientMenu(client, Handle:hMenu = INVALID_HANDLE)
     {
         case RespawnMenuPath_Clients:
         {
-            hClientMenu = MenuLib_CreateClientListMenu(client, "Respawn menu clients title", true, false, Respawn_ClientMenuHandle, BtnNextMenu_LinkMenu, "respawn_team", UTILS_FILTER_TEAM, Respawn_ClientMenuFilter);
+            hClientMenu = MenuLib_CreateClientListMenu(client, "Respawn menu clients title", true, false, INVALID_FUNCTION, Respawn_ClientMenuHandle, BtnNextMenu_LinkMenu, "respawn_team", UTILS_FILTER_TEAM, Respawn_ClientMenuFilter);
         }
         case RespawnMenuPath_Team:
-            hClientMenu = MenuLib_CreateClientListMenu(client, "Respawn menu clients title", true, false, Respawn_ClientMenuHandle, BtnNextMenu_None, "", UTILS_FILTER_TEAM, Respawn_ClientMenuFilter);
+            hClientMenu = MenuLib_CreateClientListMenu(client, "Respawn menu clients title", true, false, INVALID_FUNCTION, Respawn_ClientMenuHandle, BtnNextMenu_None, "", UTILS_FILTER_TEAM, Respawn_ClientMenuFilter);
     }
     MenuLib_SendMenu(hClientMenu, client, hMenu);
 }

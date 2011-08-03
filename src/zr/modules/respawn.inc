@@ -26,6 +26,7 @@
  */
 
 // Include libraries.
+#include "zr/libraries/menulib"
 #include "zr/libraries/teamlib"
 
 /**
@@ -64,9 +65,22 @@ enum RespawnMenuPaths
 }
 
 /**
+ * These represent what team a client selected in the respawn menu.
+ */
+enum RespawnMenuTeam
+{
+    RespawnMenuTeam_Cvar,       /** Cvar-defined team. */
+    RespawnMenuTeam_Current,    /** Respawn on client's current team. */
+    RespawnMenuTeam_Zombies,    /** Respawn as zombie. */
+    RespawnMenuTeam_Humans      /** Respawn as human. */
+}
+
+/**
  * Store values that depend on what a client chooses in a menu.
  */
 new RespawnMenuPaths:g_RespawnMenuPath[MAXPLAYERS + 1];
+new RespawnMenuTeam:g_RespawnMenuTeam[MAXPLAYERS + 1];
+new g_iRespawnMenuClient[MAXPLAYERS + 1];
 
 /**
  * Per-client respawn timer handles.
@@ -156,14 +170,14 @@ Respawn_OnPluginStart()
     // Main respawn menu.
     hRespawnMainMenu = MenuLib_CreateMenu("respawn_main", INVALID_FUNCTION, INVALID_FUNCTION, "Respawn menu main title", true, false, false);
     MenuLib_AddMenuBtnEx(hRespawnMainMenu, "Respawn menu main choose client", "", true, ITEMDRAW_DEFAULT, Respawn_BtnSendClientMenu, BtnNextMenu_None, "");
-    MenuLib_AddMenuBtnEx(hRespawnMainMenu, "Respawn menu main choose team", "", true, ITEMDRAW_DEFAULT, Respawn_BtnSendTeamMenu, BtnNextMenu_LinkMenu, "respawn_team");
+    MenuLib_AddMenuBtnEx(hRespawnMainMenu, "Respawn menu main choose team", "", true, ITEMDRAW_DEFAULT, Respawn_BtnSendTeamMenu, BtnNextMenu_None, "");
     
     // Choose team.
-    hRespawnTeamMenu = MenuLib_CreateMenu("respawn_team", INVALID_FUNCTION, Respawn_ChooseTeamHandle, "Respawn menu choose team title 1", true, true, false);
-    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team cvar", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkCurrent, "");
-    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team current", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkCurrent, "");
-    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team zombie", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkCurrent, "");
-    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team human", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkCurrent, "");
+    hRespawnTeamMenu = MenuLib_CreateMenu("respawn_team", Respawn_ChooseTeamPreSend, Respawn_ChooseTeamHandle, "", false, true, false);
+    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team cvar", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
+    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team current", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
+    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team zombie", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
+    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team human", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
 }
 
 /**
@@ -556,6 +570,7 @@ public Respawn_BtnSendClientMenu(Handle:hMenu, client, slot)
 public Respawn_BtnSendTeamMenu(Handle:hMenu, client, slot)
 {
     g_RespawnMenuPath[client] = RespawnMenuPath_Team;
+    MenuLib_SendMenu(hRespawnTeamMenu, client, hMenu);
 }
 
 /**
@@ -566,16 +581,7 @@ public Respawn_BtnSendTeamMenu(Handle:hMenu, client, slot)
  */
 stock Respawn_SendClientMenu(client, Handle:hMenu = INVALID_HANDLE)
 {
-    new Handle:hClientMenu;
-    switch(g_RespawnMenuPath[client])
-    {
-        case RespawnMenuPath_Clients:
-        {
-            hClientMenu = MenuLib_CreateClientListMenu(client, "Respawn menu clients title", true, false, INVALID_FUNCTION, Respawn_ClientMenuHandle, BtnNextMenu_LinkMenu, "respawn_team", UTILS_FILTER_TEAM, Respawn_ClientMenuFilter);
-        }
-        case RespawnMenuPath_Team:
-            hClientMenu = MenuLib_CreateClientListMenu(client, "Respawn menu clients title", true, false, INVALID_FUNCTION, Respawn_ClientMenuHandle, BtnNextMenu_None, "", UTILS_FILTER_TEAM, Respawn_ClientMenuFilter);
-    }
+    new Handle:hClientMenu = MenuLib_CreateClientListMenu(client, "", false, false, Respawn_ClientMenuPreSend, Respawn_ClientMenuHandle, BtnNextMenu_None, "", UTILS_FILTER_TEAM, Respawn_ClientMenuFilter);
     MenuLib_SendMenu(hClientMenu, client, hMenu);
 }
 
@@ -592,11 +598,54 @@ stock Respawn_SendClientMenu(client, Handle:hMenu = INVALID_HANDLE)
  */
 public Action:Respawn_ClientMenuFilter(Handle:menu, client, String:buttontxt[], String:buttoninfo[])
 {
-    // Tells if the client is dead or alive.
-    if (IsPlayerAlive(client))  Format(buttontxt, 256, "%s (%T)", buttontxt, "ZR alive", client);
-    else                        Format(buttontxt, 256, "%s (%T)", buttontxt, "ZR dead", client);
-    
+    if (g_RespawnMenuPath[client] == RespawnMenuPath_Clients || g_RespawnMenuTeam[client] != RespawnMenuTeam_Current)
+    {
+        // Tells if the client is dead or alive.
+        if (IsPlayerAlive(client))  Format(buttontxt, 256, "%s (%T)", buttontxt, "ZR alive", client);
+        else                        Format(buttontxt, 256, "%s (%T)", buttontxt, "ZR dead", client);
+    }
+    else
+    {
+        PrintToChatAll("TLib_GetClientTeam %d", TLib_GetClientTeam(client));
+        if (TLib_IsClientZombie(client))        Format(buttontxt, 256, "%s (%T)", buttontxt, "ZR team zombie", client);
+        else if (TLib_IsClientHuman(client))    Format(buttontxt, 256, "%s (%T)", buttontxt, "ZR team human", client);
+    }
     return Plugin_Changed;
+}
+
+/**
+ * Menu callback
+ * Called right before the menu is displayed to a client.  Menu data changed here will show up in the menu.
+ * 
+ * @param menu      The menulib menu handle.
+ * @param client    The client index.
+ */
+public Respawn_ClientMenuPreSend(Handle:hMenu, client)
+{
+    new String:title[128];
+    decl String:team[32];
+    switch(g_RespawnMenuPath[client])
+    {
+        case RespawnMenuPath_Clients:
+        {
+            Format(title, sizeof(title), "%T", "Respawn menu clients title 1", client);
+        }
+        case RespawnMenuPath_Team:
+        {
+            if (g_RespawnMenuTeam[client] == RespawnMenuTeam_Cvar)
+            {
+                GetConVarString(g_hCvarRespawnTeam, team, sizeof(team));
+                Format(title, sizeof(title), "%T", "Respawn menu clients title 2", client, team);
+            }
+            else if (g_RespawnMenuTeam[client] == RespawnMenuTeam_Current)
+                Format(title, sizeof(title), "%T", "Respawn menu clients title 1", client, team);
+            else if (g_RespawnMenuTeam[client] == RespawnMenuTeam_Zombies)
+                Format(title, sizeof(title), "%T", "Respawn menu clients title 3", client);
+            else if (g_RespawnMenuTeam[client] == RespawnMenuTeam_Humans)
+                Format(title, sizeof(title), "%T", "Respawn menu clients title 4", client);
+        }
+    }
+    MenuLib_MenuWriteString(hMenu, MenuData_Title, ML_DATA_TITLE, title);
 }
 
 /**
@@ -624,6 +673,11 @@ public Respawn_ClientMenuHandle(Handle:hMenu, MenuAction:action, client, slot)
         
         switch(g_RespawnMenuPath[client])
         {
+            case RespawnMenuPath_Clients:
+            {
+                g_iRespawnMenuClient[client] = target;
+                MenuLib_SendMenu(hRespawnTeamMenu, client);
+            }
             case RespawnMenuPath_Team:
             {
                 Respawn_SendClientMenu(client);
@@ -631,6 +685,30 @@ public Respawn_ClientMenuHandle(Handle:hMenu, MenuAction:action, client, slot)
             }
         }
     }
+}
+
+/**
+ * Menu callback
+ * Called right before the menu is displayed to a client.  Menu data changed here will show up in the menu.
+ * 
+ * @param menu      The menulib menu handle.
+ * @param client    The client index.
+ */
+public Respawn_ChooseTeamPreSend(Handle:hMenu, client)
+{
+    new String:title[128];
+    switch(g_RespawnMenuPath[client])
+    {
+        case RespawnMenuPath_Clients:
+        {
+            Format(title, sizeof(title), "%T", "Respawn menu choose team title 2", client, g_iRespawnMenuClient[client]);
+        }
+        case RespawnMenuPath_Team:
+        {
+            Format(title, sizeof(title), "%T", "Respawn menu choose team title 1", client);
+        }
+    }
+    MenuLib_MenuWriteString(hMenu, MenuData_Title, ML_DATA_TITLE, title);
 }
 
 /**
@@ -646,9 +724,14 @@ public Respawn_ChooseTeamHandle(Handle:hMenu, MenuAction:action, client, slot)
 {
     if (action == MenuAction_Select)
     {
+        g_RespawnMenuTeam[client] = RespawnMenuTeam:slot;
+        
         // Respawn the client
         if (g_RespawnMenuPath[client] == RespawnMenuPath_Clients)
+        {
             PrintToChatAll("Respawned client!");
+            MenuLib_SendMenu(hMenu, client);
+        }
         else if (g_RespawnMenuPath[client] == RespawnMenuPath_Team)
             Respawn_SendClientMenu(client, hMenu);
     }

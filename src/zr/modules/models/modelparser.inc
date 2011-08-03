@@ -418,8 +418,6 @@ ModelDB_ParseCollection(client, const String:entry[], bool:asList = false, Handl
  */
 ModelDB_GetStringMarker(pos, String:buffer[], maxlen)
 {
-    new count = 0;
-    
     // Check if the marker is outside the buffer space.
     if (pos > maxlen - 2)
     {
@@ -439,10 +437,8 @@ ModelDB_GetStringMarker(pos, String:buffer[], maxlen)
     // Terminate string.
     buffer[pos + 1] = 0;
     
-    // pos - 1 for the loop, and + 2 for marker and null terminator.
-    count = pos + 1;
-    
-    return count;
+    // +1 for the terminator, +1 to get off zero-based number.
+    return pos + 2;
 }
 
 /**

@@ -73,7 +73,7 @@
     // This is definitely something we want to avoid at all costs, it goes against the philosophy of ZR's structure.
 #endif
 
-#include "zr/modules/classes/classmanager"  // Model attribute module depends on model manager.
+//#include "zr/modules/classes/classmanager"  // Model attribute module depends on model manager.
 #include "zr/modules/downloader"
 #include "zr/modules/zmenu"
 #include "zr/modules/zadmin"

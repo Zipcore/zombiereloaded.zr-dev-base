@@ -72,14 +72,24 @@
 	//   Teams
 	//
 
+	"ZR team zombies"
+	{
+		"en"		"Zombies"
+	}
+
 	"ZR team humans"
 	{
 		"en"		"Humans"
 	}
 
-	"ZR team zombies"
+	"ZR team zombie"
 	{
-		"en"		"Zombies"
+		"en"		"Zombie"
+	}
+
+	"ZR team human"
+	{
+		"en"		"Human"
 	}
 
 	"ZR team both"

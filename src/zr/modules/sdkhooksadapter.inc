@@ -175,7 +175,7 @@ public SDKHAdapt_OnClientPutInServer(client)
     SDKHook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
     SDKHook(client, SDKHook_WeaponEquip, SDKHAdapt_WeaponEquip);
     SDKHook(client, SDKHook_WeaponDrop, SDKHAdapt_WeaponDrop);
-    SDKHook(client, SDKHook_ShouldCollide, AntiStick_ShouldCollide);
+    SDKHook(client, SDKHook_ShouldCollide, SDKHAdapt_ShouldCollide);
 }
 
 /**
@@ -193,7 +193,7 @@ public SDKHAdapt_OnClientDisconnect(client)
     SDKUnhook(client, SDKHook_WeaponCanUse, SDKHAdapt_WeaponCanUse);
     SDKUnhook(client, SDKHook_WeaponEquip, SDKHAdapt_WeaponEquip);
     SDKUnhook(client, SDKHook_WeaponDrop, SDKHAdapt_WeaponDrop);
-    SDKUnhook(client, SDKHook_ShouldCollide, AntiStick_ShouldCollide);
+    SDKUnhook(client, SDKHook_ShouldCollide, SDKHAdapt_ShouldCollide);
 }
 
 /**

@@ -66,9 +66,25 @@
 		"en"		"Choose team"
 	}
 
-	"Respawn menu clients title"
+	"Respawn menu clients title 1"
 	{
 		"en"		"Choose client to respawn:"
+	}
+
+	"Respawn menu clients title 2"
+	{
+		"#format"	"{1:s}"
+		"en"		"Choose client to respawn:\nCvar respawn_team: {1}"
+	}
+
+	"Respawn menu clients title 3"
+	{
+		"en"		"Choose client to respawn:\nTeam: Zombies"
+	}
+
+	"Respawn menu clients title 4"
+	{
+		"en"		"Choose client to respawn:\nTeam: Humans"
 	}
 
 	"Respawn menu choose team title 1"
@@ -78,7 +94,8 @@
 
 	"Respawn menu choose team title 2"
 	{
-		"en"		"Respawn {1}\nChoose a team:"
+		"#format"	"{1:N}"
+		"en"		"Respawn player: {1}\nChoose a team:"
 	}
 
 	"Respawn menu choose team cvar"

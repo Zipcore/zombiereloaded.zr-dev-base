@@ -131,6 +131,7 @@ public Respawn_OnEventsRegister()
 {
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleRespawn, "Event_OnZAdminCreated",            "Respawn_OnZAdminCreated");
+    EventMgr_RegisterEvent(g_moduleRespawn, "Event_OnZAdminDeleted",            "Respawn_OnZAdminDeleted");
     EventMgr_RegisterEvent(g_moduleRespawn, "Event_OnMyModuleEnable",           "Respawn_OnMyModuleEnable");
     EventMgr_RegisterEvent(g_moduleRespawn, "Event_OnMyModuleDisable",          "Respawn_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleRespawn, "Event_OnClientPutInServer",        "Respawn_OnClientPutInServer");
@@ -164,20 +165,6 @@ Respawn_OnPluginStart()
     
     // Create commands.
     Project_RegConsoleCmd("spawn", Respawn_Command, "Respawn a client on a given team.  Usage: <prefix>_spawn <client> <zombie|human>");
-    
-    // Build respawn menus.
-    
-    // Main respawn menu.
-    hRespawnMainMenu = MenuLib_CreateMenu("respawn_main", INVALID_FUNCTION, INVALID_FUNCTION, "Respawn menu main title", true, false, false);
-    MenuLib_AddMenuBtnEx(hRespawnMainMenu, "Respawn menu main choose client", "", true, ITEMDRAW_DEFAULT, Respawn_BtnSendClientMenu, BtnNextMenu_None, "");
-    MenuLib_AddMenuBtnEx(hRespawnMainMenu, "Respawn menu main choose team", "", true, ITEMDRAW_DEFAULT, Respawn_BtnSendTeamMenu, BtnNextMenu_None, "");
-    
-    // Choose team.
-    hRespawnTeamMenu = MenuLib_CreateMenu("respawn_team", Respawn_ChooseTeamPreSend, Respawn_ChooseTeamHandle, "", false, true, false);
-    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "", "", false, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
-    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team current", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
-    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team zombie", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
-    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team human", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
 }
 
 /**
@@ -189,6 +176,18 @@ public Respawn_OnZAdminCreated(Handle:hMenu)
 {
     // Add Respawn's button to the menu.
     g_iRespawnZAdminButton = MenuLib_AddMenuBtnEx(hMenu, "Respawn zadmin button", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkMenu, "respawn_main");
+    
+    Respawn_CreateMenus();
+}
+
+/**
+ * Called when ZAdmin is deleted.
+ * 
+ * @param hMenu     Handle to ZAdmin.
+ */
+public Respawn_OnZAdminDeleted(Handle:hMenu)
+{
+    Respawn_DeleteMenus();
 }
 
 /**
@@ -204,6 +203,8 @@ public Action:Respawn_OnMyModuleEnable(String:refusalmsg[], maxlen)
     new Handle:hZAdmin = MenuLib_FindMenuById("zadmin");
     if (hZAdmin != INVALID_HANDLE)
         MenuLib_BtnWriteCell(hZAdmin, g_iRespawnZAdminButton, MenuBtn_Style, ITEMDRAW_DEFAULT);
+    
+    Respawn_CreateMenus();
 }
 
 /**
@@ -219,6 +220,32 @@ public Action:Respawn_OnMyModuleDisable(String:refusalmsg[], maxlen)
     new Handle:hZAdmin = MenuLib_FindMenuById("zadmin");
     if (hZAdmin != INVALID_HANDLE)
         MenuLib_BtnWriteCell(hZAdmin, g_iRespawnZAdminButton, MenuBtn_Style, ITEMDRAW_DISABLED);
+    
+    Respawn_DeleteMenus();
+}
+
+Respawn_CreateMenus()
+{
+    // Build respawn menus.
+    
+    // Main respawn menu.
+    hRespawnMainMenu = MenuLib_CreateMenu("respawn_main", INVALID_FUNCTION, INVALID_FUNCTION, "Respawn menu main title", true, false, false);
+    MenuLib_AddMenuBtnEx(hRespawnMainMenu, "Respawn menu main choose client", "", true, ITEMDRAW_DEFAULT, Respawn_BtnSendClientMenu, BtnNextMenu_None, "");
+    MenuLib_AddMenuBtnEx(hRespawnMainMenu, "Respawn menu main choose team", "", true, ITEMDRAW_DEFAULT, Respawn_BtnSendTeamMenu, BtnNextMenu_None, "");
+    
+    // Choose team.
+    hRespawnTeamMenu = MenuLib_CreateMenu("respawn_team", Respawn_ChooseTeamPreSend, Respawn_ChooseTeamHandle, "", false, true, false);
+    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "", "", false, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
+    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team current", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
+    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team zombie", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
+    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team human", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
+}
+
+Respawn_DeleteMenus()
+{
+    // Delete respawn menus.
+    MenuLib_DeleteMenu(hRespawnMainMenu);
+    MenuLib_DeleteMenu(hRespawnTeamMenu);
 }
 
 /**

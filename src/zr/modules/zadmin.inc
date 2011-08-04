@@ -38,6 +38,13 @@ new Module:g_moduleZAdmin;
 new ProjectEvent:g_evOnZAdminCreated;
 
 /**
+ * Called when ZAdmin is deleted.
+ * 
+ * @param hMenu     Handle to ZAdmin.
+ */
+new ProjectEvent:g_evOnZAdminDeleted;
+
+/**
  * ZAdmin's menu handle.
  */
 new Handle:g_hZAdminMenu;
@@ -60,13 +67,15 @@ ZAdmin_Register()
     strcopy(moduledata[ModuleData_FullName], MM_DATA_FULLNAME, "ZAdmin");
     strcopy(moduledata[ModuleData_ShortName], MM_DATA_SHORTNAME, "zadmin");
     strcopy(moduledata[ModuleData_Description], MM_DATA_DESCRIPTION, "Admin menu for ZR commands.");
-    moduledata[ModuleData_Dependencies][0] = INVALID_MODULE;
+    moduledata[ModuleData_Dependencies][0] = ZMenu_GetIdentifier();
+    moduledata[ModuleData_Dependencies][1] = INVALID_MODULE;
     
     // Send this array of data to the module manager.
     g_moduleZAdmin = ModuleMgr_Register(moduledata);
     
     // Create custom events.
     g_evOnZAdminCreated = EventMgr_CreateEvent("Event_OnZAdminCreated");
+    g_evOnZAdminDeleted = EventMgr_CreateEvent("Event_OnZAdminDeleted");
     
     // Register the OnEventsRegister event to register all events in it.
     EventMgr_RegisterEvent(g_moduleZAdmin, "Event_OnEventsRegister",            "ZAdmin_OnEventsRegister");
@@ -105,13 +114,7 @@ ZAdmin_OnPluginStart()
  */
 public ZAdmin_OnAllModulesLoaded()
 {
-    // Register menu with menulib.
-    g_hZAdminMenu = MenuLib_CreateMenu("zadmin", INVALID_FUNCTION, INVALID_FUNCTION, "ZAdmin title", true, false, false);
-    
-    // Forward event to all modules.
-    new any:eventdata[1][1];
-    eventdata[0][0] = g_hZAdminMenu;
-    EventMgr_Forward(g_evOnZAdminCreated, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+    ZAdmin_CreateMenu();
 }
 
 /**
@@ -121,8 +124,7 @@ public ZAdmin_OnAllModulesLoaded()
  */
 public ZAdmin_OnZMenuCreated(Handle:hMenu)
 {
-    // Add ZAdmin's button to the menu.
-    g_iZAdminZMenuButton = MenuLib_AddMenuBtnEx(hMenu, "ZAdmin zmenu button", "0", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkMenu, "zadmin");
+    ZAdmin_AddButtonToMenu(hMenu);
 }
 
 /**
@@ -137,8 +139,9 @@ public Action:ZAdmin_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
     // Enable ZAdmin's button to the menu.
     new Handle:hZMenu = MenuLib_FindMenuById("zmenu");
-    if (hZMenu != INVALID_HANDLE)
-        MenuLib_BtnWriteCell(hZMenu, g_iZAdminZMenuButton, MenuBtn_Style, ITEMDRAW_DEFAULT);
+    MenuLib_BtnWriteCell(hZMenu, g_iZAdminZMenuButton, MenuBtn_Style, ITEMDRAW_DEFAULT);
+    
+    ZAdmin_CreateMenu();
 }
 
 /**
@@ -155,6 +158,46 @@ public Action:ZAdmin_OnMyModuleDisable(String:refusalmsg[], maxlen)
     new Handle:hZMenu = MenuLib_FindMenuById("zmenu");
     if (hZMenu != INVALID_HANDLE)
         MenuLib_BtnWriteCell(hZMenu, g_iZAdminZMenuButton, MenuBtn_Style, ITEMDRAW_DISABLED);
+    
+    ZAdmin_DeleteMenu();
+}
+
+ZAdmin_AddButtonToMenu(Handle:hMenu)
+{
+    // Add ZAdmin's button to the menu if possible.
+    decl String:info[16];
+    new count = MenuLib_GetMenuBtnCount(hMenu);
+    for (new i = 0; i < count; i++)
+    {
+        MenuLib_BtnReadString(hMenu, i, MenuBtn_Info, info, sizeof(info));
+        if (StrEqual(info, "zadmin"))
+            return;
+    }
+    g_iZAdminZMenuButton = MenuLib_AddMenuBtnEx(hMenu, "ZAdmin zmenu button", "zadmin", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_LinkMenu, "zadmin");
+}
+
+ZAdmin_CreateMenu()
+{
+    ZAdmin_AddButtonToMenu(MenuLib_FindMenuById("zmenu"));
+    
+    // Register menu with menulib.
+    g_hZAdminMenu = MenuLib_CreateMenu("zadmin", INVALID_FUNCTION, INVALID_FUNCTION, "ZAdmin title", true, false, false);
+    
+    // Forward event to all modules.
+    new any:eventdata[1][1];
+    eventdata[0][0] = g_hZAdminMenu;
+    EventMgr_Forward(g_evOnZAdminCreated, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+}
+
+ZAdmin_DeleteMenu()
+{
+    // Forward event to all modules.
+    new any:eventdata[1][1];
+    eventdata[0][0] = g_hZAdminMenu;
+    EventMgr_Forward(g_evOnZAdminDeleted, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+    
+    // Delete the entire menu tree.
+    MenuLib_DeleteMenu(g_hZAdminMenu);
 }
 
 /**

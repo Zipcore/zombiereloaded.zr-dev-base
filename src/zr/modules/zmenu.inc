@@ -36,11 +36,23 @@
 new Module:g_moduleZMenu;
 
 /**
+ * Function for outside files to use to return the module's identifier.
+ */
+stock Module:ZMenu_GetIdentifier() { return g_moduleZMenu; }
+
+/**
  * Called when ZMenu is created.
  * 
  * @param hMenu     Handle to ZMenu.
  */
 new ProjectEvent:g_evOnZMenuCreated;
+
+/**
+ * Called when ZMenu is deleted.
+ * 
+ * @param hMenu     Handle to ZMenu.
+ */
+new ProjectEvent:g_evOnZMenuDeleted;
 
 /**
  * Handle to ZMenu.
@@ -65,11 +77,12 @@ ZMenu_Register()
     // Send this array of data to the module manager.
     g_moduleZMenu = ModuleMgr_Register(moduledata);
     
-    // Create custom events.
-    g_evOnZMenuCreated = EventMgr_CreateEvent("Event_OnZMenuCreated");
-    
     // Register the OnEventsRegister event to register all events in it.
     EventMgr_RegisterEvent(g_moduleZMenu, "Event_OnEventsRegister",             "ZMenu_OnEventsRegister");
+    
+    // Create custom events.
+    g_evOnZMenuCreated = EventMgr_CreateEvent("Event_OnZMenuCreated");
+    g_evOnZMenuDeleted = EventMgr_CreateEvent("Event_OnZMenuDeleted");
 }
 
 /**
@@ -79,6 +92,8 @@ public ZMenu_OnEventsRegister()
 {
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleZMenu, "Event_OnAllModulesLoaded",           "ZMenu_OnAllModulesLoaded");
+    EventMgr_RegisterEvent(g_moduleZMenu, "Event_OnMyModuleEnable",             "ZMenu_OnMyModuleEnable");
+    EventMgr_RegisterEvent(g_moduleZMenu, "Event_OnMyModuleDisable",            "ZMenu_OnMyModuleDisable");
 }
 
 /**
@@ -98,6 +113,37 @@ ZMenu_OnPluginStart()
  */
 public ZMenu_OnAllModulesLoaded()
 {
+    ZMenu_CreateMenu();
+}
+
+/**
+ * The module that hooked this event callback has been enabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop enable, and Plugin_Continue to allow it.
+ */
+public Action:ZMenu_OnMyModuleEnable(String:refusalmsg[], maxlen)
+{
+    ZMenu_CreateMenu();
+}
+
+/**
+ * The module that hooked this event callback has been disabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
+ */
+public Action:ZMenu_OnMyModuleDisable(String:refusalmsg[], maxlen)
+{
+    ZMenu_DeleteMenu();
+}
+
+ZMenu_CreateMenu()
+{
     // Register menu with menulib.
     g_hZMenu = MenuLib_CreateMenu("zmenu", INVALID_FUNCTION, INVALID_FUNCTION, "ZMenu title", true, false, false);
     
@@ -105,6 +151,17 @@ public ZMenu_OnAllModulesLoaded()
     new any:eventdata[1][1];
     eventdata[0][0] = g_hZMenu;
     EventMgr_Forward(g_evOnZMenuCreated, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+}
+
+ZMenu_DeleteMenu()
+{
+    // Forward event to all modules.
+    new any:eventdata[1][1];
+    eventdata[0][0] = g_hZMenu;
+    EventMgr_Forward(g_evOnZMenuDeleted, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+    
+    // Delete the entire menu tree.
+    MenuLib_DeleteMenu(g_hZMenu);
 }
 
 /**

@@ -713,18 +713,21 @@ public Action:ZTele_ClientMenuFilter(Handle:menu, client, String:buttontxt[], St
  */
 public ZTele_ClientMenuHandle(Handle:hMenu, MenuAction:action, client, slot)
 {
-   // Get the client index of the selected client.
-    new target = MenuLib_GetClientIndex(hMenu, slot);
-    
-    // Target is no longer available.
-    if (target == 0 || !IsPlayerAlive(target))
-        return;
-    
-    // ZTele the client.
-    Util_CloseHandle(g_hZTeleTimer[target]); // Stop the countdown if they were already ztele'ing.
-    ZTele_StartTeleport(target, 0);
-    TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "ZTele command successful", target);
-    LogMgr_Print(g_moduleZTele, LogType_Normal, "ZTele Command", "\"%L\" teleported \"%L\" to spawn.", client, target);
+    if (action == MenuAction_Select)
+    {
+        // Get the client index of the selected client.
+        new target = MenuLib_GetClientIndex(hMenu, slot);
+        
+        // Target is no longer available.
+        if (target == 0 || !IsPlayerAlive(target))
+            return;
+        
+        // ZTele the client.
+        Util_CloseHandle(g_hZTeleTimer[target]); // Stop the countdown if they were already ztele'ing.
+        ZTele_StartTeleport(target, 0);
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "ZTele command successful", target);
+        LogMgr_Print(g_moduleZTele, LogType_Normal, "ZTele Command", "\"%L\" teleported \"%L\" to spawn.", client, target);
+    }
 }
 
 /**

@@ -100,6 +100,7 @@
 
 	"Respawn menu choose team cvar"
 	{
+		"#format"	"{1:s}"
 		"en"		"Team defined in configs ({1})"
 	}
 

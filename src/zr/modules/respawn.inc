@@ -174,7 +174,7 @@ Respawn_OnPluginStart()
     
     // Choose team.
     hRespawnTeamMenu = MenuLib_CreateMenu("respawn_team", Respawn_ChooseTeamPreSend, Respawn_ChooseTeamHandle, "", false, true, false);
-    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team cvar", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
+    MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "", "", false, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
     MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team current", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
     MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team zombie", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
     MenuLib_AddMenuBtnEx(hRespawnTeamMenu, "Respawn menu choose team human", "", true, ITEMDRAW_DEFAULT, INVALID_FUNCTION, BtnNextMenu_None, "");
@@ -546,6 +546,40 @@ public Action:Respawn_Command(client, argc)
 // **********************************************
 
 /**
+ * Respawn a client reading from data received via menu.
+ * 
+ * @param client    Client to respawn.
+ * @param team      The team selected from menu.
+ */
+stock Respawn_MenuRespawnClient(client, RespawnMenuTeam:menu_team)
+{
+    switch(menu_team)
+    {
+        case RespawnMenuTeam_Cvar:
+        {
+            decl String:respawn_team[32];
+            GetConVarString(g_hCvarRespawnTeam, respawn_team, sizeof(respawn_team));
+            new VTeam:team = TLib_VTeamStringToIndex(respawn_team);
+            Respawn_Client(client, team);
+            if (team == VTeam_Invalid)
+                LogMgr_Print(g_moduleRespawn, LogType_Error, "Cvar zr_respawn_team", "Invalid value (%s) set in cvar, spawning player on their current team instead.", respawn_team);
+        }
+        case RespawnMenuTeam_Current:
+        {
+            Respawn_Client(client, VTeam_Invalid);
+        }
+        case RespawnMenuTeam_Zombies:
+        {
+            Respawn_Client(client, VTeam_Zombie);
+        }
+        case RespawnMenuTeam_Humans:
+        {
+            Respawn_Client(client, VTeam_Human);
+        }
+    }
+}
+
+/**
  * Menu callback
  * Called when a certain button in a menu is pressed.  The menu action is always MenuAction_Select.
  * 
@@ -681,7 +715,7 @@ public Respawn_ClientMenuHandle(Handle:hMenu, MenuAction:action, client, slot)
             case RespawnMenuPath_Team:
             {
                 Respawn_SendClientMenu(client);
-                PrintToChatAll("Respawned %N!", target);
+                Respawn_MenuRespawnClient(target, g_RespawnMenuTeam[client]);
             }
         }
     }
@@ -696,6 +730,12 @@ public Respawn_ClientMenuHandle(Handle:hMenu, MenuAction:action, client, slot)
  */
 public Respawn_ChooseTeamPreSend(Handle:hMenu, client)
 {
+    // Update label that shows cvar value.
+    new String:label[64], String:respawn_team[32];
+    GetConVarString(g_hCvarRespawnTeam, respawn_team, sizeof(respawn_team));
+    Format(label, sizeof(label), "%T", "Respawn menu choose team cvar", client, respawn_team);
+    MenuLib_BtnWriteString(hMenu, 0, MenuBtn_Label, ML_DATA_LABEL, label);
+    
     new String:title[128];
     switch(g_RespawnMenuPath[client])
     {
@@ -729,7 +769,7 @@ public Respawn_ChooseTeamHandle(Handle:hMenu, MenuAction:action, client, slot)
         // Respawn the client
         if (g_RespawnMenuPath[client] == RespawnMenuPath_Clients)
         {
-            PrintToChatAll("Respawned client!");
+            Respawn_MenuRespawnClient(g_iRespawnMenuClient[client], g_RespawnMenuTeam[client]);
             MenuLib_SendMenu(hMenu, client);
         }
         else if (g_RespawnMenuPath[client] == RespawnMenuPath_Team)

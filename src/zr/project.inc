@@ -65,7 +65,7 @@ stock ForwardOnPluginStart()
     ZRiot_OnPluginStart();
     SDKHAdapt_OnPluginStart();
     SndProfs_OnPluginStart();
-    //ClassMgr_OnPluginStart();
+    ClassMgr_OnPluginStart();
     DLR_OnPluginStart();
     ZMenu_OnPluginStart();
     ZAdmin_OnPluginStart();

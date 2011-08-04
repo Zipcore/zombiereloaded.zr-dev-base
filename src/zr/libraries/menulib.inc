@@ -186,8 +186,9 @@ stock Handle:MenuLib_CreateMenu(const String:id[], MenuLibPreCallback:precallbac
     menudata[MenuData_ForceBack] = forceback;
     menudata[MenuData_Temp] = temp;
     
-    PushArrayArray(hMenu, menudata[0]);
+    PushArrayArray(hMenu, menudata[0], sizeof(menudata));
     SetTrieValue(g_hMenuLibCache, id, hMenu);
+    
     return hMenu;
 }
 
@@ -285,7 +286,7 @@ static stock MenuLib_EradicateMenu(Handle:hMenu)
  */
 stock MenuLib_AddMenuBtn(Handle:hMenu, menubtndata[MenuLib_Button])
 {
-    PushArrayArray(hMenu, menubtndata[0]);
+    PushArrayArray(hMenu, menubtndata[0], sizeof(menubutndata));
     return GetArraySize(hMenu) - 2;
 }
 
@@ -315,7 +316,7 @@ stock MenuLib_AddMenuBtnEx(Handle:hMenu, String:label[], const String:info[], bo
     menubtndata[MenuBtn_NextMenu] = NextMenu;
     strcopy(menubtndata[MenuBtn_LinkedMenu], sizeof(menubtndata[MenuBtn_LinkedMenu]), strLinkedMenu);
     
-    PushArrayArray(hMenu, menubtndata[0]);
+    PushArrayArray(hMenu, menubtndata[0], sizeof(menubtndata));
     return GetArraySize(hMenu) - 2;
 }
 

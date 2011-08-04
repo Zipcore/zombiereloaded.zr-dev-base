@@ -136,6 +136,17 @@ public ZRiotInfect_PlayerSpawn(client)
     if (!Util_IsClientOnTeam(client))
         return;
     
+    CreateTimer(0.1, ZRiotInfect_PlayerSpawnPost, 0, client);
+}
+
+/**
+ * Client has spawned. (post)
+ * 
+ * @param client    The client index.
+ * 
+ */
+public Action:ZRiotInfect_PlayerSpawnPost(Handle:timer, any:client)
+{
     // Automatically turn a client into a zombie or human depending on their virtual team.
     if (TLib_IsClientZombie(client))
         ZRiotInfect_ClientToZombie(client);

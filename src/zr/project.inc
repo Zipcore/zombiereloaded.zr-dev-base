@@ -71,6 +71,7 @@ stock ForwardOnPluginStart()
     ZAdmin_OnPluginStart();
     AntiStick_OnPluginStart();
     SuiciIntcpt_OnPluginStart();
+    Voice_OnPluginStart();
     Speed_OnPluginStart();
     Respawn_OnPluginStart();
     SFX_OnPluginStart();

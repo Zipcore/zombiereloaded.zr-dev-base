@@ -79,6 +79,7 @@
 #include "zr/modules/zadmin"
 #include "zr/modules/antistick"
 #include "zr/modules/suicideintercept"
+#include "zr/modules/voice"
 #include "zr/modules/speed"
 #include "zr/modules/respawn"
 #include "zr/modules/sfx"

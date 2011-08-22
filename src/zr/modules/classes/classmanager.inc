@@ -295,16 +295,24 @@ stock g_ClassNoFilter[ClassFilter];
  */
 stock g_ClassNoSpecialClasses[ClassFilter] = {false, 0, CLASS_SPECIALFLAGS, -1};
 
+/**
+ * Handle to main class menu (menulib menu handle).
+ */
+new Handle:g_ClassMenuMain;
+
 
 // Libraries.
 #include "zr/libraries/authlib"
 #include "zr/libraries/cookielib"
+#include "zr/libraries/menulib"
+#include "zr/libraries/dynmenulib"
 
 // Utility and logic includes.
 #include "zr/modules/classes/attributeregister"
 #include "zr/modules/classes/nextindexes"
 #include "zr/modules/classes/instantchange"
 #include "zr/modules/classes/classfilter"
+#include "zr/modules/classes/classmenus"
 
 // Attribute module includes
 #include "zr/modules/classes/genericattributes"

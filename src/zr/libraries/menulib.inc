@@ -52,7 +52,7 @@ functag public MenuLibPreCallback(Handle:menu, client);
 
 /**
  * Menu callback
- * Called when for all MenuAction actions except voting.  See menus.inc.  Menu data changed here won't be in time to show in the menu.
+ * Called for all MenuAction actions except voting.  See menus.inc.  Menu data changed here won't be in time to show in the menu.
  * 
  * @param menu      The menulib menu handle.
  * @param action    Action client is doing in menu.  May be any action except voting ones.  MenuAction_Select can be handled in other callbacks.
@@ -188,7 +188,6 @@ stock Handle:MenuLib_CreateMenu(const String:id[], MenuLibPreCallback:precallbac
     
     PushArrayArray(hMenu, menudata[0], sizeof(menudata));
     SetTrieValue(g_hMenuLibCache, id, hMenu);
-    
     return hMenu;
 }
 
@@ -286,7 +285,7 @@ static stock MenuLib_EradicateMenu(Handle:hMenu)
  */
 stock MenuLib_AddMenuBtn(Handle:hMenu, menubtndata[MenuLib_Button])
 {
-    PushArrayArray(hMenu, menubtndata[0], sizeof(menubutndata));
+    PushArrayArray(hMenu, menubtndata[0], sizeof(menubtndata));
     return GetArraySize(hMenu) - 2;
 }
 
@@ -825,6 +824,9 @@ public MenuLib_Handler(Handle:menu, MenuAction:action, client, slot)
             Call_PushCell(slot);
             Call_Finish();
         }
+        
+        // Update menu data in case something was changed in the callback.
+        MenuLib_MenuReadAll(hMenu, menudata);
         
         if (menudata[MenuData_Temp])
             MenuLib_EradicateMenu(hMenu);

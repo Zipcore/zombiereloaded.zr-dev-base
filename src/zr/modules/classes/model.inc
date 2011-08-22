@@ -65,7 +65,8 @@ enum ClassAlphaModes
  */
 enum ClassModelAttributes
 {
-    String:ClassAttrib_Model[MODEL_MAX_QUERY_LEN],  /** Model query string. */
+    String:ClassAttrib_Model[MODEL_MAX_QUERY_LEN],  /** Model query string. This will result in a model index that's used in CurrentModel below. */
+    ClassAttrib_CurrentModel,                       /** Current model index. May be negative. If so, the query will be executed again. */
     ClassAlphaModes:ClassAttrib_AlphaFadeMode,      /** Alpha blending mode. */
     bool:ClassAttrib_AlphaInvert,                   /** Invert alpha blending (transparent when close, and opaque on distance). */
     ClassAttrib_AlphaHealth,                        /** Health level (switch mode) or minimum health level (fading modes). */
@@ -533,6 +534,7 @@ public ClsModel_PlayerHurt(victim, attacker, health, armor, const String:weapon[
 ClsModel_ClearClass(classIndex, ClassCacheType:cache = ClassCache_Original)
 {
     decl attributes[ClassModelAttributes];
+    attributes[ClassAttrib_CurrentModel] = -1;
     attributes[ClassAttrib_Model][0] = 0;
     attributes[ClassAttrib_AlphaFadeMode] = ClassAlphaFade_None;
     attributes[ClassAttrib_AlphaInvert] = false;
@@ -896,7 +898,7 @@ public bool:ClsModel_IsValidModel(const String:model[], &errCode, &errPos)
     // Parse model query.
     ModelDB_ParseQuery(0, model, ModelParser_First, INVALID_HANDLE, errCode, errPos);
     
-    // Check if valid.
+    // Check if query is valid.
     if (errCode == 0)
     {
         return true;

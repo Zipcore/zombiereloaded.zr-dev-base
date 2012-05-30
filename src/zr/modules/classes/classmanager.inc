@@ -583,14 +583,18 @@ public ClassMgr_OnMapStart()
     // Loop through all classes and send validation event. Read final result from event manager.
     for (new classIndex = 0; classIndex < g_ClassCount; classIndex++)
     {
-        eventdata[0][0] = classIndex;
-        result = EventMgr_Forward(g_EvOnClassValidate, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
-        
-        // Check for validation errors.
-        if (result == Plugin_Handled)
+        // Only validate enabled classes.
+        if (ClsGeneric_IsEnabled(classIndex, ClassCache_Original))
         {
-            // Disable class.
-            ClsGeneric_SetEnabled(classIndex, false);
+            eventdata[0][0] = classIndex;
+            result = EventMgr_Forward(g_EvOnClassValidate, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
+            
+            // Check for validation errors.
+            if (result == Plugin_Handled)
+            {
+                // Disable class.
+                ClsGeneric_SetEnabled(classIndex, false);
+            }
         }
     }
     

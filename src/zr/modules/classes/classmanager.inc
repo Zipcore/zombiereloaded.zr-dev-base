@@ -112,6 +112,15 @@ new ProjectEvent:g_EvOnClassPlayerLoad;
 new ProjectEvent:g_EvOnClassApply;
 
 /**
+ * The player selected a new class.
+ *
+ * @param client        Client index.
+ * @param classIndex    Selected class.
+ * OnClassSelected(client, classIndex)
+ */
+new ProjectEvent:g_EvOnClassSelected;
+
+/**
  * A player was infected. This event is fired AFTER class attributes are applied.
  * Attribute modules should use this event and not the infection module's event when
  * initializing zombie specific features.
@@ -354,6 +363,7 @@ ClassMgr_Register()
     g_EvOnClassPlayerPreload =      EventMgr_CreateEvent("Event_OnClassPlayerPreload");
     g_EvOnClassPlayerLoad =         EventMgr_CreateEvent("Event_OnClassPlayerLoad");
     g_EvOnClassApply =              EventMgr_CreateEvent("Event_OnClassApply");
+    g_EvOnClassSelected =           EventMgr_CreateEvent("Event_OnClassSelected");
     g_EvOnClassPlayerInfect =       EventMgr_CreateEvent("Event_OnClassPlayerInfect");
     g_EvOnClassPlayerHuman =        EventMgr_CreateEvent("Event_OnClassPlayerHuman");
     
@@ -385,6 +395,8 @@ public ClassMgr_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnClientHuman",             "ClassMgr_OnClientHuman");
     EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnClientReady",             "ClassMgr_OnClientReady");
     
+    EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnClassSelected",           "ClassMgr_OnClassSelected");
+    
     #if defined PROJECT_GAME_CSS
         EventMgr_RegisterEvent(g_moduleClassMgr, "Event_PlayerSpawn",           "ClassMgr_PlayerSpawn");
         EventMgr_RegisterEvent(g_moduleClassMgr, "Event_PlayerSpawnPost",       "ClassMgr_PlayerSpawnPost");
@@ -405,7 +417,7 @@ public Action:ClassMgr_OnMyModuleEnable(String:refusalmsg[], maxlen)
     // Don't let the module load unless the configs cached successfully.
     if (!g_ClassLoaded && !ClassMgr_LoadClasses())
     {
-        Format(refusalmsg, maxlen, "%T", "ClassMgr refuse enable", LANG_SERVER);
+        Format(refusalmsg, maxlen, "%T", LANG_SERVER, "ClassMgr refuse enable");
         return Plugin_Handled;
     }
     
@@ -942,6 +954,33 @@ public ClassMgr_OnClientHuman(client)
     
 }
 
+/**
+ * The player selected a new class.
+ *
+ * @param client        Client index.
+ * @param classIndex    Selected class.
+ */
+public ClassMgr_OnClassSelected(client, classIndex)
+{
+    PrintToChat(client, "DEBUG: You selected class %d.", classIndex);
+    
+    // Get class team.
+    
+    // Check if client is playing on that team, and is allowed to do instant
+    // change.
+    
+    // If not allowed:
+    // Set next index.
+    // Notify player.
+    
+    // If change is allowed:
+    // Update selected index.
+    // Apply attributes if player is alive (send event).
+    // Notify player.
+    
+    // Save new class index in cookies if save is enabled.
+}
+
 /******************************
  *    INTERNAL TOOLS/LOGIC    *
  ******************************/
@@ -1277,6 +1316,46 @@ stock ClassMgr_GetActiveIndex(client)
     
     // Return the active class for the current team.
     return g_ClassSelected[client][team];
+}
+
+/**
+ * Gets the next class that will be used next spawn, for the current team.
+ *
+ * @param client    Client index.
+ *
+ * @return          Class index or -1 if no next class set for the current team.
+ */
+stock ClassMgr_GetNextClassIndex(client)
+{
+    if (TLib_IsClientHuman(client))
+    {
+        return g_ClassNextClass[client][ClassTeam_Humans];
+    }
+    else
+    {
+        return g_ClassNextClass[client][ClassTeam_Zombies];
+    }
+}
+
+/**
+ * Gets the next class name that will be used next spawn, for the current team.
+ *
+ * @param client    Client index.
+ * @param buffer    Destination string buffer.
+ * @param maxlen    Size of buffer.
+ *
+ * @return          Number of cells written.
+ */
+stock ClassMgr_GetNextClassName(client, String:buffer, maxlen)
+{
+    new nextClass = ClassMgr_GetNextClassIndex(client);
+    
+    if (ClassMgr_IsValidIndex(nextClass))
+    {
+        return ClsGeneric_GetDisplayName(nextClass, buffer, maxlen);
+    }
+    
+    return 0;
 }
 
 /**

@@ -641,6 +641,42 @@ public ClsGeneric_GetDisplayName(classIndex, String:buffer[], maxlen, ClassCache
 }
 
 /**
+ * Gets the display name from several class indexes in a source ADT array.
+ *
+ * @param sourceList    ADT array with class indexes.
+ * @param cache         Specifies what class cache to read from, except
+ *                      ClassCache_Player.
+ *
+ * @return              Handle to array with display names. Must be closed when
+ *                      no longer used.
+ */
+public Handle:ClsGeneric_GetDisplayNames(Handle:sourceList, ClassCacheType:cache)
+{
+    if (cache == ClassCache_Player)
+    {
+        ThrowError("ClassCache_Player can't be by ClsGeneric_GetDisplayNames.");
+        return INVALID_HANDLE;
+    }
+
+    new Handle:result = CreateArray();
+    new size = GetArraySize(sourceList);
+    
+    // Loop through source list.
+    for (new i = 0; i < size; i++)
+    {
+        new classIndex = GetArrayCell(sourceList, i);
+        
+        decl className[CLASS_NAME_LEN];
+        className[0] = 0;
+        
+        ClsGeneric_GetDisplayName(classIndex, className, sizeof(className), cache);
+        PushArrayString(result, className);
+    }
+    
+    return result;
+}
+
+/**
  * Gets the description of the specified class.
  *
  * @param index         Class index or client index.

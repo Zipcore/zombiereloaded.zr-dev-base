@@ -36,6 +36,16 @@
 */
 
 /**
+ * Temporary list of class indexes while displaying menus.
+ */
+new Handle:g_ClassMgr_TempClassList[MAXPLAYERS] = {INVALID_HANDLE, ...};
+
+/**
+ * Temporary list of class names while displaying menus.
+ */
+new Handle:g_ClassMgr_TempNameList[MAXPLAYERS] = {INVALID_HANDLE, ...};
+
+/**
  * Builds the main class menu (zclass) for a player.
  *
  * This menu is used to display information about the current and eventually
@@ -61,44 +71,118 @@ Handle:ClassMgr_CreateMainMenu(client)
     currentName[0] = 0;
     nextName[0] = 0;
     
-    new human;
-    new zombie;
-    new nextHuman;
-    new nextZombie;
-    
     // Generate a unique ID based on client and game time. This isn't used by
     // anything, but menulib requires it.
     new Float:time = GetGameTime();
     Format(id, sizeof(id), "%d %0.2", client, time);
     
     // Build the menu.
-    menu = MenuLib_CreateMenu(id,                           // id
-                              INVALID_FUNCTION,             // pre-callback
-                              ClassMgr_MenuMainHandler,     // callback
-                              "Class main menu title",      // title
-                              true,                         // translate title
-                              false,                        // forceback
-                              true);                        // temp menu
+    menu = MenuLib_CreateMenu(
+            id,                         // id
+            INVALID_FUNCTION,           // pre-callback
+            INVALID_FUNCTION,           // callback
+            "ClassMgr main menu title", // title
+            true,                       // translate title
+            false,                      // forceback
+            true);                      // temp menu
     
     // Check if failed.
     if (menu == INVALID_HANDLE)
     {
+        LogMgr_Print(g_moduleClassMgr, LogType_Error, "Main menu", "Failed to create class menu. This is a bug, report to developers.");
         return INVALID_HANDLE;
     }
     
     // Get current and next classes.
     // (Note: Next classes are classes that will be used next time the player
-    //        spawn. They may not be set.)
-    human = g_ClassSelected[client][ClassTeam_Humans];
-    zombie = g_ClassSelected[client][ClassTeam_Zombies];
-    nextHuman = g_ClassNextClass[client][ClassTeam_Humans];
-    nextZombie = g_ClassNextClass[client][ClassTeam_Zombies];
+    //        spawn. They are optional and may not be set.)
+    new human = g_ClassSelected[client][ClassTeam_Humans];
+    new zombie = g_ClassSelected[client][ClassTeam_Zombies];
+    new nextHuman = g_ClassNextClass[client][ClassTeam_Humans];
+    new nextZombie = g_ClassNextClass[client][ClassTeam_Zombies];
     
+    // Get current class names.
+    decl String:humanName[CLASS_NAME_LEN];
+    decl String:zombieName[CLASS_NAME_LEN]
+    humanName[0] = 0;
+    zombieName[0] = 0;
+    ClsGeneric_GetDisplayName(human, humanName, sizeof(humanName));
+    ClsGeneric_GetDisplayName(zombie, zombieName, sizeof(zombieName));
     
-    // get whether player can change class - per team.
-    // disable buttons the player doesn't have access to.
+    // Add current class info.
+    decl String:currentLabel[ML_DATA_LABEL];
+    currentLabel[0] = 0;
+    Format(currentLabel, sizeof(currentLabel), "%T %s", client, "ClassMgr menu current class", nextClassName);
+    MenuLib_AddMenuBtnEx(
+            menu,                           // menu handle
+            currentLabel,                   // label
+            "",                             // info
+            false,                          // translate
+            ITEMDRAW_RAWLINE,               // style
+            INVALID_FUNCTION,               // callback
+            BtnNextMenu_None,               // NextMenu
+            "");                            // strLinkedMenu
     
-    // add buttons.
+    // Get next class name, if any.
+    decl String:nextClassName[CLASS_NAME_LEN];
+    nextClassName[0] = 0;
+    new bool:hasNextClass = bool:ClassMgr_GetNextClassName(client, String:buffer, maxlen);
+
+    // Add next class info.
+    if (hasNextClass)
+    {
+        decl String:nextLabel[ML_DATA_LABEL];
+        nextLabel[0] = 0;
+        
+        Format(nextLabel, sizeof(nextLabel), "%T %s", client, "ClassMgr menu next class", nextClassName);
+        
+        MenuLib_AddMenuBtnEx(
+                menu,                           // menu handle
+                nextLabel,                      // label
+                "",                             // info
+                false,                          // translate
+                ITEMDRAW_RAWLINE,               // style
+                INVALID_FUNCTION,               // callback
+                BtnNextMenu_None,               // NextMenu
+                "");                            // strLinkedMenu
+    }
+    
+    // Add space.
+    MenuLib_AddMenuBtnEx(
+                menu,                           // menu handle
+                "\n",                           // label
+                "",                             // info
+                false,                          // translate
+                ITEMDRAW_RAWLINE,               // style
+                INVALID_FUNCTION,               // callback
+                BtnNextMenu_None,               // NextMenu
+                "");                            // strLinkedMenu
+    
+    // Get whether player can change class, per team.
+    new humanStyle = GetConVarBool(g_hCvarClassesHumanSelect) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
+    new zombieStyle = GetConVarBool(g_hCvarClassesZombieSelect) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
+    
+    // Add zombie button.
+    MenuLib_AddMenuBtnEx(
+            menu,                           // menu handle
+            "ClassMgr menu select zombie",  // label
+            "zombie",                       // info
+            true,                           // translate
+            zombieStyle,                    // style
+            ClassMgr_ClassMainHandler,      // callback
+            BtnNextMenu_None,               // NextMenu
+            "");                            // strLinkedMenu
+    
+    // Add human button.
+    MenuLib_AddMenuBtnEx(
+            menu,                           // menu handle
+            "ClassMgr menu select human",   // label
+            "human",                        // info
+            true,                           // translate
+            humanStyle,                     // style
+            ClassMgr_ClassMainHandler,      // callback
+            BtnNextMenu_None,               // NextMenu
+            "");                            // strLinkedMenu
     
     /* Layout
     ---------------------------
@@ -115,4 +199,96 @@ Handle:ClassMgr_CreateMainMenu(client)
     */
     
     return menu;
+}
+
+Handle:ClassMgr_CreateClassListMenu(client, ClassTeam:team)
+{
+    // Build a list of classes in the specified team that the client has access
+    // to.
+    
+    g_ClassMgr_TempClassList[client] = CreateArray();
+    
+    // Setup filter.
+    new filter[ClassFilter];
+    filter[ClassFilter_IgnoreEnabled] = false;
+    filter[ClassFilter_RequireFlags] = 0;
+    filter[ClassFilter_DenyFlags] = CLASS_SPECIALFLAGS;
+    filter[ClassFilter_Client] = client;
+    
+    // Allow admin classes if admin.
+    if (Auth_IsClientAdmin(client))
+    {
+        filter[ClassFilter_DenyFlags] -= CLASS_FLAG_ADMIN_ONLY;
+    }
+    
+    // Get class list.
+    new resultCount = ClassMgr_GetClasses(g_ClassMgr_TempClassList[client], team, filter);
+    
+    if (resultCount == 0)
+    {
+        // No accessible classes. This is a bug because the class validation
+        // makes sure there is at least one accessible class for everyone.
+        LogMgr_Print(g_moduleClassMgr, LogType_Error, "Class select menu", "No accessible classes found. This is a bug, report to developers.");
+        CloseHandle(g_ClassMgr_TempClassList[client]);
+        return INVALID_HANDLE;
+    }
+    
+    // Get name list.
+    g_ClassMgr_TempNameList[client] = ClsGeneric_GetDisplayNames(g_ClassMgr_TempClassList[client], ClassCache_Modified);
+    
+    decl String:prompt[ML_DATA_TITLE];
+    prompt[0] = 0;
+    Format(prompt, sizeof(prompt), "%t", client, (team == ClassTeam_Humans ? "ClassMgr menu select human" : "ClassMgr menu select zombie"));
+    
+    new Handle:menu = DynMenuLib_CreateMenuEx(
+            prompt,                     // prompt
+            DynMenu_String,             // type
+            DynMenu_List,               // mode
+            g_ClassMgr_TempNameList[client],    // entries
+            ClassMgr_ClassSelectHandler,// handler
+            0,                          // lowerLimit (ignored)
+            0,                          // upperLimit (ignored)
+            0,                          // smallStep (ignored)
+            0,                          // largeStep (ignored)
+            INVALID_HANDLE,             // initialValue
+            INVALID_HANDLE);            // fromMenu
+    
+    return menu;
+}
+
+public ClassMgr_ClassMainHandler(Handle:menu, client, slot)
+{
+    // Get team selected in menu.
+    // Build (separate function) and display menu.
+}
+
+public ClassMgr_ClassSelectHandler(Handle:menu, client, DynMenuAction:action, any:value)
+{
+    switch(action)
+    {
+        case DynMenuAction_Select:
+        {
+            new classIndex = GetArrayCell(g_ClassMgr_TempClassList[client], value);
+            
+            // Trigger selection event.
+            static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell};
+            new eventdata[1][2];
+            eventdata[0][0] = client;
+            eventdata[0][1] = classIndex;
+            EventMgr_Forward(g_EvOnClassSelected, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+            
+            ClassMgr_DeleteTempLists(client);
+        }
+        case DynMenuAction_Close:
+        {
+            DynMenuLib_DeleteMenu(menu);
+            ClassMgr_DeleteTempLists(client);
+        }
+    }
+}
+
+stock ClassMgr_DeleteTempLists(client)
+{
+    Util_CloseHandle(g_ClassMgr_TempClassList[client]);
+    Util_CloseHandle(g_ClassMgr_TempNameList[client]);
 }

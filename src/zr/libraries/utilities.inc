@@ -318,9 +318,9 @@ stock Util_ReplyToCommandEx(client, const String:format[], any:...)
 stock Util_TerminateRound(VTeam:team, Float:delay = 3.0)
 {
     new teamIndex = TLib_GetGameTeamIndex(team);
-    new CSRoundEndReason:reason = Util_TeamToReason(teamIndex);
     
     #if defined PROJECT_GAME_CSS
+        new CSRoundEndReason:reason = Util_TeamToReason(teamIndex);
         CS_TerminateRound(delay, reason);
     #endif
     

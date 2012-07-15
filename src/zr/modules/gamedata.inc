@@ -85,7 +85,6 @@ GameData_OnPluginStart()
     
     // Setup pre-defined SDKCalls.
     #if defined PROJECT_GAME_CSS
-        SDKToolsLib_SetupPredefined(g_hGameConfig, SDKLibCall_CSWeaponDrop);
         SDKToolsLib_SetupPredefined(g_hGameConfig, SDKLibCall_FlashlightIsOn);
         SDKToolsLib_SetupPredefined(g_hGameConfig, SDKLibCall_FlashlightTurnOn);
         SDKToolsLib_SetupPredefined(g_hGameConfig, SDKLibCall_FlashlightTurnOff);

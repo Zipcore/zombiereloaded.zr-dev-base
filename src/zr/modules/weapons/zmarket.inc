@@ -936,12 +936,14 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
         {
             // If there is already a weapon in the slot, then force client to drop it.
             if (weapons[slot] != -1)
-                SDKToolsLib_CSWeaponDrop(client, weapons[slot]);
+                 CS_DropWeapon(client, weapons[slot], true);
         }
         #else
         // If there is already a weapon in the slot, then force client to drop it.
         if (weapons[slot] != -1)
-            SDKToolsLib_CSWeaponDrop(client, weapons[slot]);
+            // CS_DropWeapon when not compiling for CS:S?
+            //SDKToolsLib_CSWeaponDrop(client, weapons[slot]);
+            LogMgr_Print(g_moduleZMarket, LogType_Debug, "ZMarket_Equip", "Drop weapon not implemented!");
         #endif
         
         // Give client the weapon.

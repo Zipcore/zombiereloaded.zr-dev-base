@@ -39,7 +39,6 @@ enum SDKLibCalls
 {
     SDKLibCall_Placeholder,         /**  This is here so other games besides CS:S can compile. */
     #if defined PROJECT_GAME_CSS
-    SDKLibCall_CSWeaponDrop,        /** Force client to drop weapon. */
     SDKLibCall_FlashlightIsOn,      /** Check is a client's flashlight is on. */
     SDKLibCall_FlashlightTurnOn,    /** Turn a client's flashlight on. */
     SDKLibCall_FlashlightTurnOff,   /** Turn a client's flashlight off. */
@@ -58,8 +57,7 @@ stock String:g_strSDKCallName[SDKLibCalls][] =
 {
     "Placeholder"
     #if defined PROJECT_GAME_CSS
-   ,"CSWeaponDrop",
-    "FlashlightIsOn",
+   ,"FlashlightIsOn",
     "FlashlightTurnOn",
     "FlashlightTurnOff"
     #endif
@@ -72,8 +70,7 @@ stock String:g_strSDKCallClass[SDKLibCalls][] =
 {
     "Placeholder"
     #if defined PROJECT_GAME_CSS
-   ,"CBasePlayer",
-    "CCSPlayer",
+   ,"CCSPlayer",
     "CCSPlayer",
     "CCSPlayer"
     #endif
@@ -108,15 +105,6 @@ stock Handle:SDKToolsLib_SetupPredefined(Handle:gameconfig, SDKLibCalls:sdkcall)
     switch(sdkcall)
     {
         #if defined PROJECT_GAME_CSS
-        case SDKLibCall_CSWeaponDrop:
-        {
-            StartPrepSDKCall(SDKCall_Player);
-            PrepSDKCall_SetFromConf(gameconfig, SDKConf_Signature, g_strSDKCallName[sdkcall]);
-            PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
-            PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
-            PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
-            g_hSDKCall[sdkcall] = EndPrepSDKCall();
-        }
         case SDKLibCall_FlashlightIsOn:
         {
             StartPrepSDKCall(SDKCall_Player);
@@ -150,17 +138,6 @@ stock Handle:SDKToolsLib_SetupPredefined(Handle:gameconfig, SDKLibCalls:sdkcall)
 }
 
 #if defined PROJECT_GAME_CSS
-
-/**
- * Forces client to drop a weapon. (CS:S)
- * 
- * @param client    The client index.
- * @param weapon    The weapon entity index to force client to drop.
- */
-stock SDKToolsLib_CSWeaponDrop(client, weapon)
-{
-    SDKCall(Handle:g_hSDKCall[SDKLibCall_CSWeaponDrop], client, weapon, true, false);
-}
 
 /**
  * Check if the client's flashlight is turned on. (CS:S)

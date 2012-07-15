@@ -78,6 +78,7 @@
 #define TF_DEATHFLAG_DEADRINGER         (1 << 5)
 #define TF_DEATHFLAG_INTERRUPTED        (1 << 6)
 #define TF_DEATHFLAG_GIBBED             (1 << 7)
+#define TF_DEATHFLAG_PURGATORY          (1 << 8)
 
 // Custom kill identifiers for the customkill property on the player_death event
 enum {
@@ -95,8 +96,8 @@ enum {
 	TF_CUSTOM_PENETRATE_ALL_PLAYERS,
 	TF_CUSTOM_TAUNT_FENCING,
 	TF_CUSTOM_PENETRATE_HEADSHOT,
-	TF_CUSTOM_TELEFRAG,
 	TF_CUSTOM_TAUNT_ARROW_STAB,
+	TF_CUSTOM_TELEFRAG,
 	TF_CUSTOM_BURNING_ARROW,
 	TF_CUSTOM_FLYINGBURN,
 	TF_CUSTOM_PUMPKIN_BOMB,
@@ -125,7 +126,13 @@ enum {
 	TF_CUSTOM_STICKBOMB_EXPLOSION,
 	TF_CUSTOM_AEGIS_ROUND,
 	TF_CUSTOM_FLARE_EXPLOSION,
-	TF_CUSTOM_BOOTS_STOP,
+	TF_CUSTOM_BOOTS_STOMP,
+	TF_CUSTOM_PLASMA,
+	TF_CUSTOM_PLASMA_CHARGED,
+	TF_CUSTOM_PLASMA_GIB,
+	TF_CUSTOM_PRACTICE_STICKY,
+	TF_CUSTOM_EYEBALL_ROCKET,
+	TF_CUSTOM_HEADSHOT_DECAPITATION,
 };
 
 // Weapon codes as used in some events, such as player_death
@@ -209,6 +216,14 @@ enum {
 	TF_WEAPON_HANDGUN_SCOUT_SEC,
 	TF_WEAPON_SODA_POPPER,
 	TF_WEAPON_SNIPERRIFLE_DECAP,
+	TF_WEAPON_RAYGUN,
+	TF_WEAPON_PARTICLE_CANNON,
+	TF_WEAPON_MECHANICAL_ARM,
+	TF_WEAPON_DRG_POMSON,
+	TF_WEAPON_BAT_GIFTWRAP,
+	TF_WEAPON_GRENADE_ORNAMENT,
+	TF_WEAPON_RAYGUN_REVENGE,
+	TF_WEAPON_PEP_BRAWLER_BLASTER,
 };
 
 // TF2 Weapon Slots for GetPlayerWeaponSlot
@@ -297,15 +312,15 @@ stock TFClassType:TF2_GetPlayerClass(client)
  * @param client		Player's index.
  * @param class			TFClassType class symbol.
  * @param weapons		This paramater is ignored.
- * @param persistant	If true changes the players desired class so the change stays after death.
+ * @param persistent	If true changes the players desired class so the change stays after death.
  * @noreturn
  * @error				Invalid client index.
  */
-stock TF2_SetPlayerClass(client, TFClassType:class, bool:weapons=true, bool:persistant=true)
+stock TF2_SetPlayerClass(client, TFClassType:class, bool:weapons=true, bool:persistent=true)
 {
 	SetEntProp(client, Prop_Send, "m_iClass", _:class);
 	
-	if (persistant)
+	if (persistent)
 	{
 		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:class);
 	}
@@ -432,10 +447,10 @@ stock TF2_GetPlayerConditionFlags(client)
  */
 stock bool:TF2_IsPlayerInCondition(client, TFCond:cond)
 {
-	// Conditions are stored in a uint64 now. We need to check each 32-bit segment.
+	// Conditions are stored across two netprops now, one for each 32-bit segment.
 	if (_:cond < 32)
 	{
-		new bit = (1 << (_:cond - 32));
+		new bit = 1 << _:cond;
 		if ((GetEntProp(client, Prop_Send, "m_nPlayerCond") & bit) == bit)
 		{
 			return true;
@@ -448,15 +463,8 @@ stock bool:TF2_IsPlayerInCondition(client, TFCond:cond)
 	}
 	else
 	{
-		new bit = 1 << _:cond;		
-		new offset = FindSendPropInfo("CTFPlayer", "m_nPlayerCond");
-		
-		if (offset <= 0)
-		{
-			ThrowError("Could not find m_nPlayerCond offset from CTFPlayer");
-		}
-		
-		if ((GetEntData(client, (offset+4)) & bit) == bit)
+		new bit = (1 << (_:cond - 32));
+		if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx") & bit) == bit)
 		{
 			return true;
 		}

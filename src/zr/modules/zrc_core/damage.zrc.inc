@@ -107,6 +107,10 @@ ZRCDmg_OnPluginStart()
  */
 public Action:ZRCDmg_TraceAttack(victim, &attacker, &Float:damage, &damagetype)
 {
+    // Check if the victim and attacker are valid clients.
+    if (!Util_IsClientInGame(victim) || !Util_IsClientInGame(attacker))
+        return Plugin_Continue;
+    
     #if defined PROJECT_GAME_CSS || defined PROJECT_GAME_TF2
     // If FF is enabled then don't do anything.
     if (!GetConVarBool(g_hCvarMPFF))
@@ -133,6 +137,8 @@ public Action:ZRCDmg_TraceAttack(victim, &attacker, &Float:damage, &damagetype)
  */
 public Action:ZRCDmg_OnTakeDamage(victim, &attacker, &Float:damage, &damagetype)
 {
+    PrintToServer("ZRCDmg_OnTakeDamage: victim: %d, attacker: %d", victim, attacker);
+    
     // Check if the victim and attacker are valid clients.
     if (!Util_IsClientInGame(victim) || !Util_IsClientInGame(attacker))
         return Plugin_Continue;
@@ -140,6 +146,8 @@ public Action:ZRCDmg_OnTakeDamage(victim, &attacker, &Float:damage, &damagetype)
     // Check if a zombie is attacking a human.
     if (TLib_IsClientZombie(attacker) && TLib_IsClientHuman(victim))
     {
+        PrintToServer("ZRCDmg_OnTakeDamage: zombie attacking human. damagetype: %d", damagetype);
+        
         // Knifing is included in DMG_BULLET in CS:S.
         // They couldn't just use DMG_SLASH because that would make sense.
         if (damagetype & UTILS_DMG_BULLET)

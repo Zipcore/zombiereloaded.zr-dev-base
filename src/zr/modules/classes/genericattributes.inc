@@ -666,7 +666,7 @@ public Handle:ClsGeneric_GetDisplayNames(Handle:sourceList, ClassCacheType:cache
     {
         new classIndex = GetArrayCell(sourceList, i);
         
-        decl className[CLASS_NAME_LEN];
+        decl String:className[CLASS_NAME_LEN];
         className[0] = 0;
         
         ClsGeneric_GetDisplayName(classIndex, className, sizeof(className), cache);

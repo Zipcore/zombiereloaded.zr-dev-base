@@ -39,7 +39,6 @@ enum SDKLibCalls
 {
     SDKLibCall_Placeholder,         /**  This is here so other games besides CS:S can compile. */
     #if defined PROJECT_GAME_CSS
-    SDKLibCall_TerminateRound,      /** Terminate the round with a given reason. */
     SDKLibCall_CSWeaponDrop,        /** Force client to drop weapon. */
     SDKLibCall_FlashlightIsOn,      /** Check is a client's flashlight is on. */
     SDKLibCall_FlashlightTurnOn,    /** Turn a client's flashlight on. */
@@ -59,8 +58,7 @@ stock String:g_strSDKCallName[SDKLibCalls][] =
 {
     "Placeholder"
     #if defined PROJECT_GAME_CSS
-   ,"TerminateRound",
-    "CSWeaponDrop",
+   ,"CSWeaponDrop",
     "FlashlightIsOn",
     "FlashlightTurnOn",
     "FlashlightTurnOff"
@@ -74,8 +72,7 @@ stock String:g_strSDKCallClass[SDKLibCalls][] =
 {
     "Placeholder"
     #if defined PROJECT_GAME_CSS
-   ,"CGameRules",
-    "CBasePlayer",
+   ,"CBasePlayer",
     "CCSPlayer",
     "CCSPlayer",
     "CCSPlayer"
@@ -111,14 +108,6 @@ stock Handle:SDKToolsLib_SetupPredefined(Handle:gameconfig, SDKLibCalls:sdkcall)
     switch(sdkcall)
     {
         #if defined PROJECT_GAME_CSS
-        case SDKLibCall_TerminateRound:
-        {
-            StartPrepSDKCall(SDKCall_GameRules);
-            PrepSDKCall_SetFromConf(gameconfig, SDKConf_Signature, g_strSDKCallName[sdkcall]);
-            PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
-            PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-            g_hSDKCall[sdkcall] = EndPrepSDKCall();
-        }
         case SDKLibCall_CSWeaponDrop:
         {
             StartPrepSDKCall(SDKCall_Player);
@@ -161,42 +150,6 @@ stock Handle:SDKToolsLib_SetupPredefined(Handle:gameconfig, SDKLibCalls:sdkcall)
 }
 
 #if defined PROJECT_GAME_CSS
-
-/**
- * All round end reasons.
- * Used an enum instead of defines so the include order doesn't matter.
- */
-enum RoundEndReasons
-{
-    ROUNDEND_TARGET_BOMBED = 0,         /** Target Successfully Bombed! */
-    ROUNDEND_VIP_ESCAPED,               /** The VIP has escaped! */
-    ROUNDEND_VIP_ASSASSINATED,          /** VIP has been assassinated! */
-    ROUNDEND_TERRORISTS_ESCAPED,        /** The terrorists have escaped! */
-    ROUNDEND_CTS_PREVENTESCAPE,         /** The CT's have prevented most of the terrorists from escaping! */
-    ROUNDEND_ESC_TS_NEUTRALIZED,        /** Escaping terrorists have all been neutralized! */
-    ROUNDEND_BOMB_DEFUSED,              /** The bomb has been defused! */
-    ROUNDEND_CTS_WIN,                   /** Counter-Terrorists Win! */
-    ROUNDEND_TERRORISTS_WIN,            /** Terrorists Win! */
-    ROUNDEND_ROUND_DRAW,                /** Round Draw! */
-    ROUNDEND_ALL_HOSTAGES_RESCUED,      /** All Hostages have been rescued! */
-    ROUNDEND_TARGET_SAVED,              /** Target has been saved! */
-    ROUNDEND_HOSTAGES_NOT_RESCUED,      /** Hostages have not been rescued! */
-    ROUNDEND_TERRORISTS_NOT_ESCAPED,    /** Terrorists have not escaped! */
-    ROUNDEND_VIP_NOT_ESCAPED,           /** VIP has not escaped! */
-    ROUNDEND_GAME_COMMENCING            /** Game Commencing! */
-}
-
-/**
- * Terminates the round. (CS:S)
- * 
- * @param delay     Time to wait before new round starts.
- * @param reason    Round end reason.  See enum RoundEndReasons.
- */
-stock SDKToolsLib_TerminateRound(Float:delay, RoundEndReasons:reason)
-{
-    // Compiler bug?
-    SDKCall(Handle:g_hSDKCall[SDKLibCall_TerminateRound], delay, _:reason);
-}
 
 /**
  * Forces client to drop a weapon. (CS:S)

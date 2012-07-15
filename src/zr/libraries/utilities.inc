@@ -308,6 +308,27 @@ stock Util_ReplyToCommandEx(client, const String:format[], any:...)
     }
 }
 
+/**
+ * Terminates the round.
+ *
+ * @param team      Winning team.
+ * @param delay     Optional, CS:S only. Delay before new round starts.
+ *                  Default is 3 seconds.
+ */
+stock Util_TerminateRound(VTeam:team, Float:delay = 3.0)
+{
+    new teamIndex = TLib_GetGameTeamIndex(team);
+    new CSRoundEndReason:reason = Util_TeamToReason(teamIndex);
+    
+    #if defined PROJECT_GAME_CSS
+        CS_TerminateRound(delay, reason);
+    #endif
+    
+    #if defined PROJECT_GAME_TF2
+        TF2_TerminateRound(teamIndex);
+    #endif
+}
+
 #if defined PROJECT_GAME_CSS
 
 /**
@@ -316,17 +337,17 @@ stock Util_ReplyToCommandEx(client, const String:format[], any:...)
  * 
  * @param teamindex     The team index that won the round.
  * 
- * @return              The round end reason.  ROUNDEND_GAME_COMMENCING if invalid teamindex.
+ * @return              The round end reason.  CSRoundEnd_GameStart if invalid teamindex.
  */
-stock RoundEndReasons:Util_TeamToReason(teamindex)
+stock CSRoundEndReason:Util_TeamToReason(teamindex)
 {
     if (teamindex == TEAM_2)
-        return ROUNDEND_TERRORISTS_WIN;
+        return CSRoundEnd_TerroristWin;
     
     else if (teamindex == TEAM_3)
-        return ROUNDEND_CTS_WIN;
+        return CSRoundEnd_CTWin;
     
-    return ROUNDEND_GAME_COMMENCING;
+    return CSRoundEnd_GameStart;
 }
 
 #endif

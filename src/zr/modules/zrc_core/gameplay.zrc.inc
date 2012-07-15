@@ -181,16 +181,7 @@ public ZRCGPlay_OnClientDisconnect(client)
     {
         if (TLib_CountTeam(VTeam_Human, true) <= 1)
         {
-            new team = TLib_GetGameTeamIndex(VTeam_Zombie);
-            new reason = _:Util_TeamToReason(team);
-            
-            #if defined PROJECT_GAME_CSS
-                SDKToolsLib_TerminateRound(3.0, RoundEndReasons:reason);
-            #endif
-            
-            #if defined PROJECT_GAME_TF2
-                TF2_TerminateRound(reason);
-            #endif
+            Util_TerminateRound(VTeam_Zombie);
         }
     }
 }
@@ -212,16 +203,7 @@ public ZRCGPlay_OnClientInfected(client, attacker, bool:mzombie)
     // If there are no more humans then zombies win.
     if (TLib_CountTeam(VTeam_Human, true) == 0)
     {
-        new team = TLib_GetGameTeamIndex(VTeam_Zombie);
-        new reason = _:Util_TeamToReason(team);
-        
-        #if defined PROJECT_GAME_CSS
-            SDKToolsLib_TerminateRound(3.0, RoundEndReasons:reason);
-        #endif
-        
-        #if defined PROJECT_GAME_TF2
-            TF2_TerminateRound(reason);
-        #endif
+        Util_TerminateRound(VTeam_Zombie);
     }
 }
 
@@ -235,16 +217,7 @@ public ZRCGPlay_OnClientHuman(client)
     // If there are no more zombies then humans win.
     if (TLib_CountTeam(VTeam_Zombie, true) == 0)
     {
-        new team = TLib_GetGameTeamIndex(VTeam_Human);
-        new reason = _:Util_TeamToReason(team);
-        
-        #if defined PROJECT_GAME_CSS
-            SDKToolsLib_TerminateRound(3.0, RoundEndReasons:reason);
-        #endif
-        
-        #if defined PROJECT_GAME_TF2
-            TF2_TerminateRound(reason);
-        #endif
+        Util_TerminateRound(VTeam_Human);
     }
 }
 
@@ -289,16 +262,7 @@ public Action:ZRCGPlay_RoundEndTimer(Handle:timer)
     g_hZRCRoundTimer = INVALID_HANDLE;
     
     // Humans held out against the zombies, they win!
-    new team = TLib_GetGameTeamIndex(VTeam_Human);
-    new reason = _:Util_TeamToReason(team);
-    
-    #if defined PROJECT_GAME_CSS
-        SDKToolsLib_TerminateRound(3.0, RoundEndReasons:reason);
-    #endif
-    
-    #if defined PROJECT_GAME_TF2
-        TF2_TerminateRound(reason);
-    #endif
+    Util_TerminateRound(VTeam_Human);
 }
 
 /**
@@ -331,8 +295,8 @@ public ZRCGPlay_CvarHookMPRGame(Handle:convar, const String:oldValue[], const St
         return;
     
     #if defined PROJECT_GAME_CSS
-        // End round with "Game commencing"
-        SDKToolsLib_TerminateRound(float(time), ROUNDEND_GAME_COMMENCING);
+        // End round with CSRoundEnd_GameStart ("Game commencing").
+        CS_TerminateRound(float(time), CSRoundEnd_GameStart);
     #endif
     
     #if defined PROJECT_GAME_TF2

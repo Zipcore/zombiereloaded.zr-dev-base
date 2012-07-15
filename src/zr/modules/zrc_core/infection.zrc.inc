@@ -382,7 +382,7 @@ public ZRCInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon
     if (TLib_IsClientZombie(attacker) && TLib_IsClientHuman(victim))
     {
         #if defined PROJECT_GAME_CSS
-            if (StrEqual(weapon, "knife"))
+            if (StrEqual(weapon, "weapon_knife"))
             {
                 ZRCInfect_ClientToZombie(victim, attacker, false);
                 TransMgr_PrintText(victim, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC client to zombie");

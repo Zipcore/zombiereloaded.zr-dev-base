@@ -374,6 +374,8 @@ public Action:ZRCInfect_PlayerSpawnPost(Handle:timer, any:client)
  */
 public ZRCInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon[], dmg_health, dmg_armor, hitgroup)
 {
+    PrintToServer("ZRCInfect_PlayerHurt: victim: %d, attacker: %d", victim, attacker);
+    
     // Check if the victim and attacker are valid clients.
     if (!Util_IsClientInGame(victim) || !Util_IsClientInGame(attacker))
         return;

@@ -299,7 +299,9 @@ public Action:SDKHAdapt_TraceAttack(victim, &attacker, &inflictor, &Float:damage
  *  
  * @return              Hook action.  See include/core.inc.
  */
-public Action:SDKHAdapt_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
+public Action:SDKHAdapt_OnTakeDamage(victim, &attacker, &inflictor,
+        &Float:damage, &damagetype, &weapon, Float:damageForce[3],
+        Float:damagePosition[3], damagecustom)
 {
     // Only forwarding victim, attacker, damage, and damagetype.
     

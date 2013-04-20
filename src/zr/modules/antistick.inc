@@ -75,7 +75,7 @@ AntiStick_OnPluginStart()
 }
 
 /**
- * Called when 2 entity are asking if they should collide. (touching)
+ * Called when 2 entities are asking if they should collide. (touching)
  * 
  * @param entity            Entity asking if it should collide.
  * @param collisiongroup    Collision group flags.  SMLib has them defined in smlib_entities.inc.
@@ -83,13 +83,25 @@ AntiStick_OnPluginStart()
  * 
  * @return                  True to allow collision or false for no colliding.
  */
-public bool:AntiStick_ShouldCollide(entity, collisiongroup, contentsmask, bool:originalResult)
+public Action:AntiStick_ShouldCollide(entity, collisiongroup, contentsmask, bool:originalResult)
 {
     if (!Client_IsValid(entity, false))
-        return true;
+    {
+        // Entity is not a player (should never happen). Collide.
+        LogMgr_Print(g_moduleAntiStick, LogType_Error, "Bug", "Antistick got a non-player entity (%d). ZR only hooks ShouldCollide on players, so this is a bug.", entity);
+        return Plugin_Continue;
+    }
+    
+    new bool:shouldCollide = true;
     
     // Unstick if client is colliding with another client.
-    return !AntiStick_IsClientColliding(entity);
+    if (Collision_Group_t:collisiongroup != COLLISION_GROUP_PLAYER)
+    {
+        shouldCollide = !AntiStick_IsClientColliding(entity);
+    }
+    
+    // Convert result to an Action value.
+    return shouldCollide ? Plugin_Continue : Plugin_Handled;
 }
 
 /**

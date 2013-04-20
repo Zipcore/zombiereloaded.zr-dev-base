@@ -374,8 +374,6 @@ public Action:ZRCInfect_PlayerSpawnPost(Handle:timer, any:client)
  */
 public ZRCInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon[], dmg_health, dmg_armor, hitgroup)
 {
-    PrintToServer("ZRCInfect_PlayerHurt: victim: %d, attacker: %d", victim, attacker);
-    
     // Check if the victim and attacker are valid clients.
     if (!Util_IsClientInGame(victim) || !Util_IsClientInGame(attacker))
         return;
@@ -384,7 +382,7 @@ public ZRCInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon
     if (TLib_IsClientZombie(attacker) && TLib_IsClientHuman(victim))
     {
         #if defined PROJECT_GAME_CSS
-            if (StrEqual(weapon, "weapon_knife"))
+            if (StrEqual(weapon, "knife"))
             {
                 ZRCInfect_ClientToZombie(victim, attacker, false);
                 TransMgr_PrintText(victim, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC client to zombie");

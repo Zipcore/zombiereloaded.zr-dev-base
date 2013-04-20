@@ -127,6 +127,7 @@ public ZRCTM_OnClientPutInServer(client)
  */
 public ZRCTM_OnClientInfected(client, attacker, bool:mzombie)
 {
+    // Move client to zombie team.
     Util_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Zombie));
 }
 
@@ -137,9 +138,12 @@ public ZRCTM_OnClientInfected(client, attacker, bool:mzombie)
  */
 public ZRCTM_OnClientHuman(client)
 {
-    // If there aren't any zombies we don't care what team they're on.
+    // Only move client to another game team if there are zombies present. It
+    // doesnt matter which team they are on when there are no zombies.
     if (g_bZombiesPresent)
+    {
         Util_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Human));
+    }
 }
 
 #if defined PROJECT_GAME_CSS

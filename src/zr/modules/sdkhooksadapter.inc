@@ -405,5 +405,8 @@ public bool:SDKHAdapt_ShouldCollide(entity, collisiongroup, contentsmask, bool:o
     eventdata[2][0] = contentsmask;
     eventdata[3][0] = originalResult;
     
-    return bool:EventMgr_Forward(g_HkShouldCollide, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    new Action:result = EventMgr_Forward(g_HkShouldCollide, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
+    
+    // Plugin_Continue is collision, anything else is no collision.
+    return result == Plugin_Continue;
 }

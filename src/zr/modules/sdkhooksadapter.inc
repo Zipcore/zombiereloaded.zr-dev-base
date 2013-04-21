@@ -270,7 +270,7 @@ public Action:SDKHAdapt_TraceAttack(victim, &attacker, &inflictor, &Float:damage
     
     // Forward event to all modules.
     static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_CellRef, DataType_FloatRef, DataType_CellRef};
-    new any:eventdata[sizeof(eventdatatypes)][32];
+    new any:eventdata[sizeof(eventdatatypes)][1];
     
     eventdata[0][0] = victim;
     eventdata[1][0] = attacker;
@@ -307,7 +307,7 @@ public Action:SDKHAdapt_OnTakeDamage(victim, &attacker, &inflictor,
     
     // Forward event to all modules.
     static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_CellRef, DataType_FloatRef, DataType_CellRef};
-    new any:eventdata[sizeof(eventdatatypes)][32];
+    new any:eventdata[sizeof(eventdatatypes)][1];
     
     eventdata[0][0] = victim;
     eventdata[1][0] = attacker;
@@ -337,7 +337,7 @@ public Action:SDKHAdapt_WeaponCanUse(client, weapon)
 {
     // Forward event to all modules.
     static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell};
-    new any:eventdata[sizeof(eventdatatypes)][32];
+    new any:eventdata[sizeof(eventdatatypes)][1];
     
     eventdata[0][0] = client;
     eventdata[1][0] = weapon;
@@ -357,7 +357,7 @@ public Action:SDKHAdapt_WeaponEquip(client, weapon)
 {
     // Forward event to all modules.
     static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell};
-    new any:eventdata[sizeof(eventdatatypes)][32];
+    new any:eventdata[sizeof(eventdatatypes)][1];
     
     eventdata[0][0] = client;
     eventdata[1][0] = weapon;
@@ -377,7 +377,7 @@ public Action:SDKHAdapt_WeaponDrop(client, weapon)
 {
     // Forward event to all modules.
     static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell};
-    new any:eventdata[sizeof(eventdatatypes)][32];
+    new any:eventdata[sizeof(eventdatatypes)][1];
     
     eventdata[0][0] = client;
     eventdata[1][0] = weapon;
@@ -398,7 +398,7 @@ public bool:SDKHAdapt_ShouldCollide(entity, collisiongroup, contentsmask, bool:o
 {
     // Forward event to all modules.
     static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell, DataType_Cell, DataType_Cell};
-    new any:eventdata[sizeof(eventdatatypes)][32];
+    new any:eventdata[sizeof(eventdatatypes)][1];
     
     eventdata[0][0] = entity;
     eventdata[1][0] = collisiongroup;

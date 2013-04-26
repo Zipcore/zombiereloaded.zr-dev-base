@@ -75,7 +75,7 @@ stock ObjLib_SetAny(Object:object, const String:keyName[], any:value, ObjLib_Err
         return;
     }
     
-    ObjLib_SetAnyAt(object, keyIndex, value);
+    ObjLib_SetAnyAt(object, keyIndex, value, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -101,7 +101,7 @@ stock ObjLib_GetCell(Object:object, const String:keyName[], ObjLib_ErrorHandler:
         return 0;
     }
     
-    return ObjLib_GetCellAt(object, keyIndex);
+    return ObjLib_GetCellAt(object, keyIndex, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -126,7 +126,7 @@ stock ObjLib_SetCell(Object:object, const String:keyName[], any:value, ObjLib_Er
         return;
     }
     
-    ObjLib_SetCellAt(object, keyIndex, value);
+    ObjLib_SetCellAt(object, keyIndex, value, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -152,7 +152,7 @@ stock bool:ObjLib_GetBool(Object:object, const String:keyName[], ObjLib_ErrorHan
         return false;
     }
     
-    return ObjLib_GetBoolAt(object, keyIndex);
+    return ObjLib_GetBoolAt(object, keyIndex, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -177,7 +177,7 @@ stock ObjLib_SetBool(Object:object, const String:keyName[], bool:value, ObjLib_E
         return;
     }
     
-    ObjLib_SetBoolAt(object, keyIndex, value);
+    ObjLib_SetBoolAt(object, keyIndex, value, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -203,7 +203,7 @@ stock Float:ObjLib_GetFloat(Object:object, const String:keyName[], ObjLib_ErrorH
         return 0.0;
     }
     
-    return ObjLib_GetFloatAt(object, keyIndex);
+    return ObjLib_GetFloatAt(object, keyIndex, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -228,7 +228,7 @@ stock ObjLib_SetFloat(Object:object, const String:keyName[], Float:value, ObjLib
         return;
     }
     
-    ObjLib_SetFloatAt(object, keyIndex, value);
+    ObjLib_SetFloatAt(object, keyIndex, value, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -254,7 +254,7 @@ stock Handle:ObjLib_GetHandle(Object:object, const String:keyName[], ObjLib_Erro
         return INVALID_HANDLE;
     }
     
-    return ObjLib_GetHandleAt(object, keyIndex);
+    return ObjLib_GetHandleAt(object, keyIndex, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -279,7 +279,7 @@ stock ObjLib_SetHandle(Object:object, const String:keyName[], Handle:value, ObjL
         return;
     }
     
-    ObjLib_SetHandleAt(object, keyIndex, value);
+    ObjLib_SetHandleAt(object, keyIndex, value, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -305,7 +305,7 @@ stock Function:ObjLib_GetFunction(Object:object, const String:keyName[], ObjLib_
         return INVALID_FUNCTION;
     }
     
-    return ObjLib_GetFunctionAt(object, keyIndex);
+    return ObjLib_GetFunctionAt(object, keyIndex, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -330,7 +330,7 @@ stock ObjLib_SetFunction(Object:object, const String:keyName[], Function:value, 
         return;
     }
     
-    ObjLib_SetFunctionAt(object, keyIndex, value);
+    ObjLib_SetFunctionAt(object, keyIndex, value, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -358,7 +358,7 @@ stock ObjLib_GetArray(Object:object, const String:keyName[], any:buffer[], maxle
         return 0;
     }
     
-    return ObjLib_GetArrayAt(object, keyIndex, buffer, maxlen);
+    return ObjLib_GetArrayAt(object, keyIndex, buffer, maxlen, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -386,7 +386,7 @@ stock ObjLib_SetArray(Object:object, const String:keyName[], const any:values[],
         return 0;
     }
     
-    return ObjLib_SetArrayAt(object, keyIndex, values, maxlen);
+    return ObjLib_SetArrayAt(object, keyIndex, values, maxlen, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -414,7 +414,7 @@ stock ObjLib_GetString(Object:object, const String:keyName[], String:buffer[], m
         return 0;
     }
     
-    return ObjLib_GetStringAt(object, keyIndex, buffer, maxlen);
+    return ObjLib_GetStringAt(object, keyIndex, buffer, maxlen, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -441,7 +441,7 @@ stock ObjLib_SetString(Object:object, const String:keyName[], const String:value
         return 0;
     }
     
-    return ObjLib_SetStringAt(object, keyIndex, value);
+    return ObjLib_SetStringAt(object, keyIndex, value, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -467,7 +467,7 @@ stock Object:ObjLib_GetObject(Object:object, const String:keyName[], ObjLib_Erro
         return INVALID_OBJECT;
     }
     
-    return ObjLib_GetObjectAt(object, keyIndex);
+    return ObjLib_GetObjectAt(object, keyIndex, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -492,7 +492,7 @@ stock ObjLib_SetObject(Object:object, const String:keyName[], Object:value, ObjL
         return;
     }
     
-    ObjLib_SetObjectAt(object, keyIndex, value);
+    ObjLib_SetObjectAt(object, keyIndex, value, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -518,7 +518,7 @@ stock ObjectType:ObjLib_GetObjectType(Object:object, const String:keyName[], Obj
         return INVALID_OBJECT_TYPE;
     }
     
-    return ObjLib_GetObjectTypeAt(object, keyIndex);
+    return ObjLib_GetObjectTypeAt(object, keyIndex, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -543,7 +543,7 @@ stock ObjLib_SetObjectType(Object:object, const String:keyName[], ObjectType:val
         return;
     }
     
-    ObjLib_SetObjectTypeAt(object, keyIndex, value);
+    ObjLib_SetObjectTypeAt(object, keyIndex, value, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -610,16 +610,8 @@ stock ObjLib_SetAnyAt(Object:object, index, any:value, ObjLib_ErrorHandler:error
         return;
     }
     
-    // Handle constraints.
-    if (!ObjLib_HandleValueConstraints(object, typeDescriptor, index, value, errorHandler))
-    {
-        return;
-    }
-    
-    // Set value.
-    new Handle:data = ObjLib_GetObjectData(object);
-    SetArrayCell(data, index, value);
-    ObjLib_SetKeyNull(object, index, false);
+    // Handle constraints, sets value if valid and not overridden.
+    ObjLib_ApplyValueConstraints(object, typeDescriptor, index, value, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -686,16 +678,8 @@ stock ObjLib_SetCellAt(Object:object, index, value, ObjLib_ErrorHandler:errorHan
         return;
     }
     
-    // Handle constraints.
-    if (!ObjLib_HandleValueConstraints(object, typeDescriptor, index, value, errorHandler))
-    {
-        return;
-    }
-    
-    // Set value.
-    new Handle:data = ObjLib_GetObjectData(object);
-    SetArrayCell(data, index, value);
-    ObjLib_SetKeyNull(object, index, false);
+    // Handle constraints, sets value if valid and not overridden.
+    ObjLib_ApplyValueConstraints(object, typeDescriptor, index, value, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -762,16 +746,8 @@ stock ObjLib_SetBoolAt(Object:object, index, bool:value, ObjLib_ErrorHandler:err
         return;
     }
     
-    // Handle constraints.
-    if (!ObjLib_HandleValueConstraints(object, typeDescriptor, index, value, errorHandler))
-    {
-        return;
-    }
-    
-    // Set value.
-    new Handle:data = ObjLib_GetObjectData(object);
-    SetArrayCell(data, index, value);
-    ObjLib_SetKeyNull(object, index, false);
+    // Handle constraints, sets value if valid and not overridden.
+    ObjLib_ApplyValueConstraints(object, typeDescriptor, index, value, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -838,16 +814,8 @@ stock ObjLib_SetFloatAt(Object:object, index, Float:value, ObjLib_ErrorHandler:e
         return;
     }
     
-    // Handle constraints.
-    if (!ObjLib_HandleValueConstraints(object, typeDescriptor, index, value, errorHandler))
-    {
-        return;
-    }
-    
-    // Set value.
-    new Handle:data = ObjLib_GetObjectData(object);
-    SetArrayCell(data, index, value);
-    ObjLib_SetKeyNull(object, index, false);
+    // Handle constraints, sets value if valid and not overridden.
+    ObjLib_ApplyValueConstraints(object, typeDescriptor, index, value, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -914,16 +882,8 @@ stock ObjLib_SetHandleAt(Object:object, index, Handle:value, ObjLib_ErrorHandler
         return;
     }
     
-    // Handle constraints.
-    if (!ObjLib_HandleValueConstraints(object, typeDescriptor, index, value, errorHandler))
-    {
-        return;
-    }
-    
-    // Set value.
-    new Handle:data = ObjLib_GetObjectData(object);
-    SetArrayCell(data, index, value);
-    ObjLib_SetKeyNull(object, index, false);
+    // Handle constraints, sets value if valid and not overridden.
+    ObjLib_ApplyValueConstraints(object, typeDescriptor, index, value, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -990,16 +950,8 @@ stock ObjLib_SetFunctionAt(Object:object, index, Function:value, ObjLib_ErrorHan
         return;
     }
     
-    // Handle constraints.
-    if (!ObjLib_HandleValueConstraints(object, typeDescriptor, index, value, errorHandler))
-    {
-        return;
-    }
-    
-    // Set value.
-    new Handle:data = ObjLib_GetObjectData(object);
-    SetArrayCell(data, index, value);
-    ObjLib_SetKeyNull(object, index, false);
+    // Handle constraints, sets value if valid and not overridden.
+    ObjLib_ApplyValueConstraints(object, typeDescriptor, index, value, errorHandler);
 }
 
 /*____________________________________________________________________________*/
@@ -1054,7 +1006,7 @@ stock ObjLib_GetArrayAt(Object:object, index, any:buffer[], maxlen, ObjLib_Error
  * @param errorHandler  Custom error handler. Overrides any other error handler
  *                      if specified.
  *
- * @return              Number of cells copied.
+ * @return              Number of cells copied, 0 on constraint violation.
  *
  * @error               Invalid object, key index or key type mismatch.
  */
@@ -1072,15 +1024,35 @@ stock ObjLib_SetArrayAt(Object:object, index, const any:values[], size, ObjLib_E
     }
     
     // Handle constraints.
-    if (!ObjLib_HandleArrayConstraints(object, typeDescriptor, index, values, size, errorHandler))
+    switch (ObjLib_HandleArrayConstraints(object, typeDescriptor, index, values, size, errorHandler))
     {
-        return 0;
+        case ObjConstraintResult_Invalid:
+        {
+            return 0;
+        }
+        case ObjConstraintResult_Overridden:
+        {
+            // We should never receive "overridden" here. Something is wrong if
+            // it does.
+            ThrowError("[BUG] Lookup constraints is only supported by SetString. This is a bug in objectlib.");
+            return -1;
+        }
+        case ObjConstraintResult_Valid:
+        {
+            // Set value.
+            new Handle:data = ObjLib_GetObjectData(object);
+            ObjLib_SetKeyNull(object, index, false);
+            return SetArrayArray(data, index, values, size);
+        }
+        default:
+        {
+            ThrowError("[BUG] Unexpected constraint result. This is a bug in objectlib.");
+            return 0;
+        }
     }
     
-    // Set value.
-    new Handle:data = ObjLib_GetObjectData(object);
-    ObjLib_SetKeyNull(object, index, false);
-    return SetArrayArray(data, index, values, size);
+    // To satisfy compiler (even though the swich statement has a default case.)
+    return 0;
 }
 
 /*____________________________________________________________________________*/
@@ -1134,7 +1106,8 @@ stock ObjLib_GetStringAt(Object:object, index, String:buffer[], maxlen, ObjLib_E
  * @param errorHandler  Custom error handler. Overrides any other error handler
  *                      if specified.
  *
- * @return              Number of characters copied.
+ * @return              Number of characters copied, 0 on constraint violation,
+ *                      or -1 if value was overridden.
  *
  * @error               Invalid object, key index or key type mismatch.
  */
@@ -1145,22 +1118,57 @@ stock ObjLib_SetStringAt(Object:object, index, const String:value[], ObjLib_Erro
     
     new ObjectType:typeDescriptor = ObjLib_GetTypeDescriptor(object);
     
-    // Validate type.
-    if (!ObjLib_KeyTypeCheck(typeDescriptor, object, index, ObjDataType_String, errorHandler))
+    new bool:isLookup = false;
+    
+    // Special check fo lookup constraints. Get constraints, if any.
+    new Object:constraints = ObjLib_GetTypeConstraintsAt(typeDescriptor, index);
+    if (constraints != INVALID_OBJECT
+        && !ObjLib_InLookupHandler)
     {
-        return 0;
+        new ObjectType:constraintsType = ObjLib_GetTypeDescriptor(constraints);
+        if (constraintsType == ObjLib_LookupConstraints)
+        {
+            // Set lookup flag for constraint handler. Skip type check.
+            isLookup = true;
+        }
+    }
+    else
+    {
+        // Not using lookup constraints or already in lookup handler. Validate
+        // type.
+        if (!ObjLib_KeyTypeCheck(typeDescriptor, object, index, ObjDataType_String, errorHandler))
+        {
+            return 0;
+        }
     }
     
     // Handle constraints.
-    if (!ObjLib_HandleArrayConstraints(object, typeDescriptor, index, value, -1, errorHandler))
+    switch (ObjLib_HandleArrayConstraints(object, typeDescriptor, index, value, strlen(value), errorHandler, isLookup))
     {
-        return 0;
+        case ObjConstraintResult_Invalid:
+        {
+            return 0;
+        }
+        case ObjConstraintResult_Overridden:
+        {
+            return -1;
+        }
+        case ObjConstraintResult_Valid:
+        {
+            // Set value.
+            new Handle:data = ObjLib_GetObjectData(object);
+            ObjLib_SetKeyNull(object, index, false);
+            return SetArrayString(data, index, value);
+        }
+        default:
+        {
+            ThrowError("[BUG] Unexpected constraint result. This is a bug in objectlib.");
+            return 0;
+        }
     }
     
-    // Set value.
-    new Handle:data = ObjLib_GetObjectData(object);
-    ObjLib_SetKeyNull(object, index, false);
-    return SetArrayString(data, index, value);
+    // To satisfy compiler (even though the swich statement has a default case.)
+    return 0;
 }
 
 /*____________________________________________________________________________*/

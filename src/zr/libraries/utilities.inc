@@ -46,6 +46,17 @@
 #define UTILS_FILTER_HUMAN        (1 << 5)    /** Only allow humans. */
 #define UTILS_FILTER_CANTARGET    (1 << 6)    /** Only list clients that the menu recipient can target.  Needs target client!*/
 
+/**
+ * Type of boolean string.
+ */
+enum Util_BoolStringType
+{
+    BoolType_Any,           /** Includes numeric strings. Any number but zero is considered true. */
+    BoolType_TrueFalse,
+    BoolType_OnOff,
+    BoolType_YesNo
+}
+
 // Include libraries.
 #include "zr/libraries/teamlib"
 

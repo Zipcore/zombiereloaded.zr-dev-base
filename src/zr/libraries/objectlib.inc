@@ -34,8 +34,8 @@
 
 #include <sourcemod>
 
-#include "libraries/arrays.inc"
-#include "libraries/utilities.inc"
+#include "zr/libraries/arrays.inc"
+#include "zr/libraries/utilities.inc"
 
 /*____________________________________________________________________________*/
 
@@ -355,15 +355,15 @@ stock Handle:ObjLib_CloneTrie(Handle:trie, Handle:keys, keySize)
 /*____________________________________________________________________________*/
 
 // Object library core modules.
-#include "libraries/objectlib/objecttype"
-#include "libraries/objectlib/object"
-#include "libraries/objectlib/constraints"
-#include "libraries/objectlib/constrainthandler"
-#include "libraries/objectlib/errorhandler"
-#include "libraries/objectlib/accessors"
+#include "zr/libraries/objectlib/objecttype"
+#include "zr/libraries/objectlib/object"
+#include "zr/libraries/objectlib/constraints"
+#include "zr/libraries/objectlib/constrainthandler"
+#include "zr/libraries/objectlib/errorhandler"
+#include "zr/libraries/objectlib/accessors"
 
 // Parser modules.
-#include "libraries/objectlib/kvparser"
+#include "zr/libraries/objectlib/kvparser"
 
 // Inspector tool modules.
-#include "libraries/objectlib/inspector"
+#include "zr/libraries/objectlib/inspector"

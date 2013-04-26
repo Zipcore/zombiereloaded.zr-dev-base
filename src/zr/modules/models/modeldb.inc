@@ -54,31 +54,6 @@
 #define MODEL_MAX_ENTRIES 16
 
 /**
- * Model access settings.
- */
-enum ModelAuthMode
-{
-    ModelAuth_Invalid = -1, /* Invalid authorization mode. */
-    ModelAuth_Disabled,     /* No authorization. */
-    ModelAuth_Flag,         /* Require flag. */
-    ModelAuth_Group,        /* Require group. */
-    ModelAuth_Either,       /* Require flag or group. */
-    ModelAuth_Both,         /* Require flag and group. */
-    ModelAuth_All,          /* Require all flags and all groups. */
-}
-
-/**
- * Avaliable teams for models. It's a mirror of ClassTeam to avoid dependency on
- * the class manager.
- */
-enum ModelTeam
-{
-    ModelTeam_Invalid = -1,
-    ModelTeam_Zombies,
-    ModelTeam_Humans
-}
-
-/**
  * Model settings structure.
  */
 enum ModelAttributes

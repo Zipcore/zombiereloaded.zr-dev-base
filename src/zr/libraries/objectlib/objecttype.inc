@@ -66,13 +66,14 @@ stock ObjectType:ObjLib_CreateType(blockSize = 1, keySzie = 8, ObjLib_ErrorHandl
     ObjLib_SetTypeConstraints(typeDescriptor,   constraintList);
     ObjLib_SetTypeErrorHandler(typeDescriptor,  errorHandler);
     
+    ObjectTypeCount++;
     return typeDescriptor;
 }
 
 /*____________________________________________________________________________*/
 
 /**
- * Deletes an object type descriptor.
+ * Deletes an object type descriptor, and constraint objects attached to it.
  *
  * Warning: If there are objects refering to this type descriptor they may
  *          trigger an error when trying to use it. Delete objects first.
@@ -80,10 +81,12 @@ stock ObjectType:ObjLib_CreateType(blockSize = 1, keySzie = 8, ObjLib_ErrorHandl
  * @param typeDescriptor    Type descriptor to delete.
  * @param resetReference    (Optional) Reset typeDescriptor to
  *                          INVALID_OBJECT_TYPE when deleted. Default is true.
+ * @param deleteConstraints (Optional) Delete constraint objects attached to
+ *                          keys. Default is true.
  *
  * @error                   Invalid object type.
  */
-stock ObjLib_DeleteType(&ObjectType:typeDescriptor, bool:resetReference = true)
+stock ObjLib_DeleteType(&ObjectType:typeDescriptor, bool:resetReference = true, bool:deleteConstraints = true)
 {
     // Validate.
     ObjLib_ValidateObjectType(typeDescriptor);
@@ -102,13 +105,18 @@ stock ObjLib_DeleteType(&ObjectType:typeDescriptor, bool:resetReference = true)
     new Handle:constraintList = ObjLib_GetTypeConstraints(typeDescriptor);
     new len = GetArraySize(constraintList);
     
-    // Delete constraint objects, if any.
-    for (new i = 0; i < len; i++)
+    // Delete constraint objects, if enabled and they exist.
+    if (deleteConstraints)
     {
-        new Object:constraintObject = Object:GetArrayCell(constraintList, i);
-        if (constraintObject != INVALID_OBJECT)
+        for (new i = 0; i < len; i++)
         {
-            ObjLib_DeleteObject(constraintObject);
+            new Object:constraintObject = Object:GetArrayCell(constraintList, i);
+            if (constraintObject != INVALID_OBJECT)
+            {
+                // Delete constraint. Also close handles stored in keys. Some
+                // constraints store handles to stuff no longer in use.
+                ObjLib_DeleteObject(constraintObject, true, true);
+            }
         }
     }
     
@@ -123,6 +131,8 @@ stock ObjLib_DeleteType(&ObjectType:typeDescriptor, bool:resetReference = true)
     {
         typeDescriptor = INVALID_OBJECT_TYPE;
     }
+    
+    ObjectTypeCount--;
 }
 
 /*____________________________________________________________________________*/
@@ -204,6 +214,7 @@ stock ObjectType:ObjLib_CloneType(ObjectType:typeDescriptor, bool:locked = false
     ObjLib_SetTypeConstraints(newType,  constraintList);
     ObjLib_SetTypeErrorHandler(newType, newErrorHandler);
     
+    ObjectTypeCount++;
     return newType;
 }
 
@@ -304,14 +315,14 @@ stock bool:ObjLib_RemoveKey(ObjectType:typeDescriptor, const String:keyName[], b
     
     // Check if not mutable.
     if (!ObjLib_IsTypeMutable(typeDescriptor)
-        && ObjLib_HandleError(typeDescriptor, parent, ObjLibError_Immutable, _, "This object type descriptor is immutable (%x).", typeDescriptor))
+        && ObjLib_HandleError(typeDescriptor, parent, ObjLibError_Immutable, _, _, _, "This object type descriptor is immutable (%x).", typeDescriptor))
     {
         return;
     }
     
     // Check if key doesn't exist.
     if (!ObjLib_KeyExist(typeDescriptor, keyName)
-        && ObjLib_HandleError(typeDescriptor, parent, ObjLibError_InvalidKey, _, "Key doesn't exist (\"%s\").", keyName))
+        && ObjLib_HandleError(typeDescriptor, parent, ObjLibError_InvalidKey, _, _, _, "Key doesn't exist (\"%s\").", keyName))
     {
         return;
     }

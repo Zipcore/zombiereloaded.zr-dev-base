@@ -96,6 +96,7 @@ stock Object:ObjLib_CreateObject(ObjectType:typeTemplate, bool:mutableObject = f
     ObjLib_SetObjectNullKey(object,     nullKey);
     ObjLib_SetTypeDescriptor(object,    type);
     
+    ObjectCount++;
     return object;
 }
 
@@ -150,15 +151,42 @@ stock Object:ObjLib_CreateObjectEx(ObjectType:primaryType = INVALID_OBJECT_TYPE,
  * @param object            Object to delete.
  * @param resetReference    (Optional) Reset object to INVALID_OBJECT when
  *                          deleted. Default is true.
+ * @param closeHandles      (Optional) Close handles stored in keys of handle
+ *                          data type. Default is false.
  *
  * @error                   Invalid object.
  */
-stock ObjLib_DeleteObject(&Object:object, resetReference = true)
+stock ObjLib_DeleteObject(&Object:object, bool:resetReference = true, bool:closeHandles = false)
 {
     // Validate.
     ObjLib_ValidateObject(object);
     
     new ObjectType:typeDescriptor = ObjLib_GetTypeDescriptor(object);
+    new Handle:data = ObjLib_GetObjectData(object);
+    new Handle:nullKey = ObjLib_GetObjectNullKey(object);
+    
+    // Close handles in keys if enabled.
+    if (closeHandles)
+    {
+        new numKeys = GetArraySize(data);
+        new Handle:keyTypes = ObjLib_GetTypeDataTypes(typeDescriptor);
+        
+        // Loop through keys.
+        for (new key = 0; key < numKeys; key++)
+        {
+            // Check if key is a handle.
+            if (ObjectDataType:GetArrayCell(keyTypes, key) == ObjDataType_Handle)
+            {
+                // Close handle if nonzero.
+                new Handle:value = Handle:GetArrayCell(data, key);
+                if (value != INVALID_HANDLE)
+                {
+                    CloseHandle(value);
+                }
+            }
+        }
+    }
+    
     new Object:parent = ObjLib_GetTypeParentObject(typeDescriptor);
     if (parent != INVALID_OBJECT)
     {
@@ -175,8 +203,9 @@ stock ObjLib_DeleteObject(&Object:object, resetReference = true)
         ObjLib_DeleteType(typeDescriptor);
     }
     
-    // Delete data array.
-    CloseHandle(ObjLib_GetObjectData(object));
+    // Delete data arrays.
+    CloseHandle(data);
+    CloseHandle(nullKey);
     
     // Delete object.
     CloseHandle(Handle:object);
@@ -186,6 +215,8 @@ stock ObjLib_DeleteObject(&Object:object, resetReference = true)
     {
         object = INVALID_OBJECT;
     }
+    
+    ObjectCount--;
 }
 
 /*____________________________________________________________________________*/
@@ -298,6 +329,7 @@ stock Object:ObjLib_CloneObject(Object:objectTemplate, bool:mutableObject = true
         }
     }
     
+    ObjectCount++;
     return object;
 }
 

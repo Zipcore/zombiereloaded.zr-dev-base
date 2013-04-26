@@ -53,7 +53,11 @@ stock Module:ModelMgr_GetIdentifier() { return g_moduleModelMgr; }
 new ModelCfgIndex;
 new ModelCollectionCfgIndex;
 
+// Library dependencies.
+#include "zr/libraries/objectlib"
+
 // Module components.
+#include "zr/modules/models/model"
 #include "zr/modules/models/modeldb"
 #include "zr/modules/models/modelcollections"
 #include "zr/modules/models/modelfilter"

@@ -69,7 +69,7 @@ new ProjectEvent:g_EvOnClientPostAdminCheck;
 // Custom project events.
 new ProjectEvent:g_EvOnClientReady;
 
-// CS:S events.
+// CS:S events. (TODO: Move these to zr_core module.)
 #if defined PROJECT_GAME_CSS
 new ProjectEvent:g_EvRoundStart;
 new ProjectEvent:g_EvRoundFreezeEnd;
@@ -77,7 +77,7 @@ new ProjectEvent:g_EvRoundEnd;
 new ProjectEvent:g_EvPlayerTeamPre;
 new ProjectEvent:g_EvPlayerTeam;
 new ProjectEvent:g_EvPlayerSpawn;
-new ProjectEvent:g_EvPlayerSpawnPost;
+new ProjectEvent:g_EvPlayerSpawnPost;   // Keep this one here, needed in OnGameFrame.
 new ProjectEvent:g_EvPlayerHurt;
 new ProjectEvent:g_EvPlayerDeath;
 new ProjectEvent:g_EvPlayerJump;
@@ -252,9 +252,7 @@ public OnGameFrame()
         /*************************
          *   OnPlayerSpawnPost   *
          *************************/
-        #if defined PROJECT_GAME_CSS
-        
-        // Forward spawn post event if flag is set.
+        // Forward spawn post event if flag for this client is set.
         if (g_SendPostSpawnEvent[client]
             && gameTime - PROJECT_SPAWN_POST_DELAY >= g_fPlayerSpawnTime[client])
         {
@@ -262,11 +260,9 @@ public OnGameFrame()
             eventdata2[0][0] = client;
             EventMgr_Forward(g_EvPlayerSpawnPost, eventdata2, sizeof(eventdata2), sizeof(eventdata2[]), g_CommonDataType2);
             
-            // Reset event flag.
+            // Reset event flag for this client.
             g_SendPostSpawnEvent[client] = false;
         }
-        
-        #endif
     }
 }
 
@@ -440,19 +436,19 @@ stock EventMgr_CreateEvents()
     // Custom project events.
     g_EvOnClientReady =             EventMgr_CreateEvent("Event_OnClientReady");            /** Client is connected, admin checked and cookies are loaded. */
     
-    // CS:S events.
+    // CS:S events. (Moved to zr_core module.)
     #if defined PROJECT_GAME_CSS
-        g_EvRoundStart =            EventMgr_CreateEvent("Event_RoundStart");               /** Round has started. */
-        g_EvRoundFreezeEnd =        EventMgr_CreateEvent("Event_RoundFreezeEnd");           /** Pre-round freezetime has finished. */
-        g_EvRoundEnd =              EventMgr_CreateEvent("Event_RoundEnd");                 /** Round has ended. */
-        g_EvPlayerTeamPre =         EventMgr_CreateEvent("Event_PlayerTeamPre");            /** Client has joined a team. (pre) */
-        g_EvPlayerTeam =            EventMgr_CreateEvent("Event_PlayerTeam");               /** Client has joined a team. */
-        g_EvPlayerSpawn =           EventMgr_CreateEvent("Event_PlayerSpawn");              /** Client has spawned. */
-        g_EvPlayerSpawnPost =       EventMgr_CreateEvent("Event_PlayerSpawnPost");          /** Client has spawned (delayed event). */
-        g_EvPlayerHurt =            EventMgr_CreateEvent("Event_PlayerHurt");               /** Client has been damaged. */
-        g_EvPlayerDeath =           EventMgr_CreateEvent("Event_PlayerDeath");              /** Client has been killed. */
-        g_EvPlayerJump =            EventMgr_CreateEvent("Event_PlayerJump");               /** Client has jumped. */
-        g_EvWeaponFire =            EventMgr_CreateEvent("Event_WeaponFire");               /** Client has fired a weapon. */
+        //g_EvRoundStart =            EventMgr_CreateEvent("Event_RoundStart");               /** Round has started. */
+        //g_EvRoundFreezeEnd =        EventMgr_CreateEvent("Event_RoundFreezeEnd");           /** Pre-round freezetime has finished. */
+        //g_EvRoundEnd =              EventMgr_CreateEvent("Event_RoundEnd");                 /** Round has ended. */
+        //g_EvPlayerTeamPre =         EventMgr_CreateEvent("Event_PlayerTeamPre");            /** Client has joined a team. (pre) */
+        //g_EvPlayerTeam =            EventMgr_CreateEvent("Event_PlayerTeam");               /** Client has joined a team. */
+        //g_EvPlayerSpawn =           EventMgr_CreateEvent("Event_PlayerSpawn");              /** Client has spawned. */
+        //g_EvPlayerSpawnPost =       EventMgr_CreateEvent("Event_PlayerSpawnPost");          /** Client has spawned (delayed event). */
+        //g_EvPlayerHurt =            EventMgr_CreateEvent("Event_PlayerHurt");               /** Client has been damaged. */
+        //g_EvPlayerDeath =           EventMgr_CreateEvent("Event_PlayerDeath");              /** Client has been killed. */
+        //g_EvPlayerJump =            EventMgr_CreateEvent("Event_PlayerJump");               /** Client has jumped. */
+        //g_EvWeaponFire =            EventMgr_CreateEvent("Event_WeaponFire");               /** Client has fired a weapon. */
         //g_EvWeaponEntityFire =      EventMgr_CreateEvent("Event_WeaponEntityFire");         /** Client has fired a weapon. (returns weapon entity index) */
     #endif
     
@@ -492,8 +488,19 @@ stock EventMgr_HookEvents()
 {
     // Hook events to manage and forward to modules.
     
-    // CS:S events.
-    #if defined PROJECT_GAME_CSS
+    // TODO: All mod specific events hooks and callbacks should be moved to its
+    //       own mod adapter modules. Otherwise this file will be messed up with
+    //       lots of different mod specific callbacks for the same event. For
+    //       instance player_hurt, which is slightly different between games.
+    //
+    //       It's better to keep mod specific stuff in their own files and use
+    //       abstracted events created in the zr_core module.
+    //
+    //       Then we can also properly unhook events so ZR can be disabled
+    //       gracefully mid-round.
+    
+    // CS:S events. (Moved to cssadapter module.)
+    /*#if defined PROJECT_GAME_CSS
         HookEvent("round_start", GameEvent_RoundStart);
         HookEvent("round_freeze_end", GameEvent_RoundFreezeEnd);
         HookEvent("round_end", GameEvent_RoundEnd);
@@ -504,7 +511,7 @@ stock EventMgr_HookEvents()
         HookEvent("player_death", GameEvent_PlayerDeath);
         HookEvent("player_jump", GameEvent_PlayerJump);
         HookEvent("weapon_fire", GameEvent_WeaponFire);
-    #endif
+    #endif*/
     
     // HL2DM events.
     #if defined PROJECT_GAME_HL2DM
@@ -534,239 +541,4 @@ stock EventMgr_HookEvents()
 //           CS:S Game Event Callbacks
 // **********************************************
 
-#if defined PROJECT_GAME_CSS
-
-/**
- * Round has started.
- *
- * @param event			Handle to event. This could be INVALID_HANDLE if every plugin hooking 
- *						this event has set the hook mode EventHookMode_PostNoCopy.
- * @param name			String containing the name of the event.
- * @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
- */
-public GameEvent_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    // Forward event to all modules.
-    EventMgr_Forward(g_EvRoundStart, g_CommonEventData1, 0, 0, g_CommonDataType1);
-}
-
-/**
- * Pre-round freezetime has finished.
- *
- * @param event			Handle to event. This could be INVALID_HANDLE if every plugin hooking 
- *						this event has set the hook mode EventHookMode_PostNoCopy.
- * @param name			String containing the name of the event.
- * @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
- */
-public GameEvent_RoundFreezeEnd(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    // Forward event to all modules.
-    EventMgr_Forward(g_EvRoundFreezeEnd, g_CommonEventData1, 0, 0, g_CommonDataType1);
-}
-
-/**
- * Round has ended.
- *
- * @param event			Handle to event. This could be INVALID_HANDLE if every plugin hooking 
- *						this event has set the hook mode EventHookMode_PostNoCopy.
- * @param name			String containing the name of the event.
- * @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
- */
-public GameEvent_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    // Forward event to all modules.
-    new any:eventdata[1][1];
-    eventdata[0][0] = GetEventInt(event, "winner");
-    
-    EventMgr_Forward(g_EvRoundEnd, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
-}
-
-/**
- * Client has joined a team. (pre)
- * 
- * @param event			Handle to event. This could be INVALID_HANDLE if every plugin hooking 
- *						this event has set the hook mode EventHookMode_PostNoCopy.
- * @param name			String containing the name of the event.
- * @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
- */
-public GameEvent_PlayerTeamPre(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    // Forward event to all modules.
-    static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell, DataType_Cell, DataType_Cell};
-    new any:eventdata[sizeof(eventdatatypes)][1];
-    
-    eventdata[0][0] = GetClientOfUserId(GetEventInt(event, "userid"));
-    eventdata[1][0] = GetEventInt(event, "team");
-    eventdata[2][0] = GetEventInt(event, "oldteam");
-    eventdata[3][0] = GetEventBool(event, "disconnect");
-    
-    new Action:result = EventMgr_Forward(g_EvPlayerTeamPre, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
-    
-    // If a module returns Plugin_Handled then stop the event from broadcasting to clients.
-    if (result == Plugin_Handled)
-        SetEventBroadcast(event, true);
-}
-
-/**
- * Client has joined a team.
- *
- * @param event			Handle to event. This could be INVALID_HANDLE if every plugin hooking 
- *						this event has set the hook mode EventHookMode_PostNoCopy.
- * @param name			String containing the name of the event.
- * @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
- */
-public GameEvent_PlayerTeam(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    // Forward event to all modules.
-    static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell, DataType_Cell, DataType_Cell};
-    new any:eventdata[sizeof(eventdatatypes)][1];
-    
-    eventdata[0][0] = GetClientOfUserId(GetEventInt(event, "userid"));
-    eventdata[1][0] = GetEventInt(event, "team");
-    eventdata[2][0] = GetEventInt(event, "oldteam");
-    eventdata[3][0] = GetEventBool(event, "disconnect");
-    
-    EventMgr_Forward(g_EvPlayerTeam, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
-}
-
-/**
- * Client has spawned.
- *
- * @param event			Handle to event. This could be INVALID_HANDLE if every plugin hooking 
- *						this event has set the hook mode EventHookMode_PostNoCopy.
- * @param name			String containing the name of the event.
- * @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
- */
-public GameEvent_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    new client = GetClientOfUserId(GetEventInt(event, "userid"));
-    
-    // Forward event to all modules.
-    new any:eventdata[1][1];
-    eventdata[0][0] = client;
-    
-    EventMgr_Forward(g_EvPlayerSpawn, eventdata, sizeof(eventdata), sizeof(eventdata[]), g_CommonDataType2);
-    
-    // Prepare post spawn data. Used in OnGameFrame.
-    g_fPlayerSpawnTime[client] = GetGameTime();
-    g_SendPostSpawnEvent[client] = true;
-}
-
-/**
- * Client has been damaged.
- *
- * @param event			Handle to event. This could be INVALID_HANDLE if every plugin hooking 
- *						this event has set the hook mode EventHookMode_PostNoCopy.
- * @param name			String containing the name of the event.
- * @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
- */
-public GameEvent_PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    // Forward event to all modules.
-    static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell, DataType_Cell, DataType_Cell, DataType_String, DataType_Cell, DataType_Cell, DataType_Cell};
-    new any:eventdata[sizeof(eventdatatypes)][32];
-    
-    eventdata[0][0] = GetClientOfUserId(GetEventInt(event, "userid"));
-    eventdata[1][0] = GetClientOfUserId(GetEventInt(event, "attacker"));
-    eventdata[2][0] = GetEventInt(event, "health");
-    eventdata[3][0] = GetEventInt(event, "armor");
-    GetEventString(event, "weapon", eventdata[4], sizeof(eventdata[]));
-    eventdata[5][0] = GetEventInt(event, "dmg_health");
-    eventdata[6][0] = GetEventInt(event, "dmg_armor");
-    eventdata[7][0] = GetEventInt(event, "hitgroup");
-    
-    EventMgr_Forward(g_EvPlayerHurt, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
-}
-
-/**
- * Client has been killed.
- *
- * @param event			Handle to event. This could be INVALID_HANDLE if every plugin hooking 
- *						this event has set the hook mode EventHookMode_PostNoCopy.
- * @param name			String containing the name of the event.
- * @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
- */
-public GameEvent_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    // Forward event to all modules.
-    static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_Cell, DataType_String, DataType_Cell};
-    new any:eventdata[sizeof(eventdatatypes)][32];
-    
-    eventdata[0][0] = GetClientOfUserId(GetEventInt(event, "userid"));
-    eventdata[1][0] = GetClientOfUserId(GetEventInt(event, "attacker"));
-    GetEventString(event, "weapon", eventdata[2], sizeof(eventdata[]));
-    eventdata[3][0] = GetEventInt(event, "headshot");
-    
-    EventMgr_Forward(g_EvPlayerDeath, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
-}
-
-/**
- * Client has jumped.
- *
- * @param event			Handle to event. This could be INVALID_HANDLE if every plugin hooking 
- *						this event has set the hook mode EventHookMode_PostNoCopy.
- * @param name			String containing the name of the event.
- * @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
- */
-public GameEvent_PlayerJump(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    // Forward event to all modules.
-    new any:eventdata[1][1];
-    eventdata[0][0] = GetClientOfUserId(GetEventInt(event, "userid"));
-    
-    EventMgr_Forward(g_EvPlayerJump, eventdata, 1, 1, g_CommonDataType2);
-}
-
-/**
- * Client has fired a weapon.
- *
- * @param event			Handle to event. This could be INVALID_HANDLE if every plugin hooking 
- *						this event has set the hook mode EventHookMode_PostNoCopy.
- * @param name			String containing the name of the event.
- * @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
- */
-public GameEvent_WeaponFire(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    // Forward event to all modules. (WeaponFire)
-    static EventDataTypes:eventdatatypes[] = {DataType_Cell, DataType_String};
-    new any:eventdata[sizeof(eventdatatypes)][32];
-    
-    eventdata[0][0] = GetClientOfUserId(GetEventInt(event, "userid"));
-    GetEventString(event, "weapon", eventdata[1], sizeof(eventdata[]));
-    
-    EventMgr_Forward(g_EvWeaponFire, eventdata, sizeof(eventdata), sizeof(eventdata[]), eventdatatypes);
-    
-    /*
-    // Forward event to all modules. (WeaponEntityFire)
-    new eventdata2[sizeof(eventdatatypes)][1];
-    static EventDataTypes:eventdatatypes2[] = {DataType_Cell, DataType_Cell};
-    
-    decl String:classname[32];
-    new weaponentity;
-    
-    // Loop through all entities.
-    new maxentities = GetMaxEntities();
-    for (new entity = MaxClients; entity < maxentities; entity++)
-    {
-        if (!IsValidEntity(entity))
-            continue;
-        
-        GetEdictClassname(entity, classname, sizeof(classname));
-        if (StrContains(classname, eventdata[1], false) == -1)
-            continue;
-        
-        if (eventdata[0][0] == GetEntPropEnt(entity, Prop_Data, "m_hOwner"))
-        {
-            weaponentity = entity;
-            break;
-        }
-    }
-    
-    eventdata2[0][0] = eventdata[0][0];
-    eventdata2[1][0] = weaponentity;
-    
-    EventMgr_Forward(g_EvWeaponEntityFire, eventdata2, sizeof(eventdata2), sizeof(eventdata2[]), eventdatatypes2);
-    */
-}
-
-#endif
+// (Moved to cssadapter module.)

@@ -31,6 +31,7 @@
 #define _interfaces_included
 
 // Include all interfaces.
+#include "zr/interfaces/game.interface"
 #include "zr/interfaces/infection.interface"
 #include "zr/interfaces/soundprofiles.interface"
 
@@ -61,4 +62,15 @@ stock Interface_Implement(&Function:funcvar, Function:func)
 stock Interface_Release(&Function:funcvar)
 {
     funcvar = INVALID_FUNCTION;
+}
+
+/**
+ * Validates the specified function. Throws an error if not implemented.
+ */
+stock Interface_ValidateOrFail(Function:func)
+{
+    if (func == INVALID_FUNCTION)
+    {
+        ThrowError("This function is not implemented!");
+    }
 }

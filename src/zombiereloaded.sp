@@ -29,7 +29,6 @@
 #pragma semicolon 1
 
 #include <sourcemod>
-#include <sdkhooks>
 #include <smlib>
 #include <clientprefs>
 
@@ -71,6 +70,7 @@
     #include "zr/modules/models/modelmgr"   // Must be included before class manager.  
     // This isn't good.  Why isn't the model attribute its own module?  To avoid dependency on include order just wrap everything in functions and use an interface.
     // This is definitely something we want to avoid at all costs, it goes against the philosophy of ZR's structure.
+    // TODO: Yes, this should be made more independent. Maybe with a model managing interface.
 #endif
 
 #include "zr/modules/classes/classmanager"  // Model attribute module depends on model manager.
@@ -94,6 +94,9 @@
     #include "zr/modules/zspawn"
     #include "zr/modules/napalm"
 #endif
+
+// Game adapter modules
+#include "zr/modules/cssadapter"
 
 /**
  * Record plugin info.

@@ -40,12 +40,13 @@
 #include <adminmenu>
 #include <regex>
 #include <clientprefs>
-#include <sdkhooks>
 
+// TODO: Remove this when cssadapter is implemented and modules updated.
 #if defined PROJECT_GAME_CSS
   #include <cstrike>
 #endif
 
+// TODO: Remove this when tf2adapter is implemented and modules updated.
 #if defined PROJECT_GAME_TF2
   #include <tf2>
 #endif

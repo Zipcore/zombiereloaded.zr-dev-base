@@ -53,15 +53,16 @@
 
 /**
  * Virtual teams.
+ * Moved to game.interface.inc.
  */
-enum VTeam
-{
-    VTeam_Invalid = -1,     /** Invalid team. */
-    VTeam_Unassigned = 0,   /** Client isn't on a team. */
-    VTeam_Spectator,        /** Client is a spectator. */
-    VTeam_Zombie,           /** Client is a zombie. */
-    VTeam_Human             /** Client is a human. */
-}
+//enum VTeam
+//{
+//    VTeam_Invalid = -1,     /** Invalid team. */
+//    VTeam_Unassigned = 0,   /** Client isn't on a team. */
+//    VTeam_Spectator,        /** Client is a spectator. */
+//    VTeam_Zombie,           /** Client is a zombie. */
+//    VTeam_Human             /** Client is a human. */
+//}
 
 /**
  * A string representation of the virtual teams.  Think cvar values or settings that specify a virtual team.

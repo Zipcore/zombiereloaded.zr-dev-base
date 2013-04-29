@@ -118,7 +118,7 @@ public Action:ZRCDmg_TraceAttack(victim, &attacker, &Float:damage, &damagetype)
     // Ex: Terrorist human will not be able to shoot Counter-Terrorist human.
     if (!GetConVarBool(g_hCvarMPFF))
     {
-        if (TLib_GetClientTeam(victim) == TLib_GetClientTeam(attacker))
+        if (TeamMgr_GetClientTeam(victim) == TeamMgr_GetClientTeam(attacker))
         {
             return Plugin_Handled;
         }
@@ -145,7 +145,7 @@ public Action:ZRCDmg_OnTakeDamage(victim, &attacker, &Float:damage, &damagetype)
         return Plugin_Continue;
     
     // Check if a zombie is attacking a human.
-    if (TLib_IsClientZombie(attacker) && TLib_IsClientHuman(victim))
+    if (TeamMgr_IsClientZombie(attacker) && TeamMgr_IsClientHuman(victim))
     {
         // Knifing is included in DMG_BULLET in CS:S.
         // They couldn't just use DMG_SLASH because that would make sense.

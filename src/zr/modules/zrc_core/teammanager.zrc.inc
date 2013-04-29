@@ -72,15 +72,11 @@ public ZRCTM_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnConfigsExecuted",            "ZRCTM_OnConfigsExecuted");
     EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnClientPutInServer",          "ZRCTM_OnClientPutInServer");
     
-    #if defined PROJECT_GAME_CSS
-    
     EventMgr_RegisterEvent(g_moduleZRCTM, "Event_RoundStart",                   "ZRCTM_RoundStart");
     EventMgr_RegisterEvent(g_moduleZRCTM, "Event_RoundEnd",                     "ZRCTM_RoundEnd");
     EventMgr_RegisterEvent(g_moduleZRCTM, "Event_PlayerTeamPre",                "ZRCTM_PlayerTeamPre");
     EventMgr_RegisterEvent(g_moduleZRCTM, "Event_PlayerTeam",                   "ZRCTM_PlayerTeam");
     EventMgr_RegisterEvent(g_moduleZRCTM, "Event_PlayerSpawn",                  "ZRCTM_PlayerSpawn");
-    
-    #endif
     
     // Register custom events.
     EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnClientInfected",          "ZRCTM_OnClientInfected");
@@ -104,7 +100,7 @@ ZRCTM_OnPluginStart()
  */
 public ZRCTM_OnConfigsExecuted()
 {
-    ZRCTM_UpdateZombieTeam();
+    TeamMgr_UpdateZombieTeam(g_hCvarZRCZombieTeam);
 }
 
 /**
@@ -115,7 +111,7 @@ public ZRCTM_OnConfigsExecuted()
 public ZRCTM_OnClientPutInServer(client)
 {
     // Initialize the client's team.
-    TLib_SetClientTeam(client, VTeam_Unassigned);
+    TeamMgr_SetClientTeam(client, VTeam_Unassigned);
 }
 
 /**
@@ -128,7 +124,7 @@ public ZRCTM_OnClientPutInServer(client)
 public ZRCTM_OnClientInfected(client, attacker, bool:mzombie)
 {
     // Move client to zombie team.
-    Util_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Zombie));
+    IGame_SwitchTeam(client, VTeam_Zombie);
 }
 
 /**
@@ -139,88 +135,104 @@ public ZRCTM_OnClientInfected(client, attacker, bool:mzombie)
 public ZRCTM_OnClientHuman(client)
 {
     // Only move client to another game team if there are zombies present. It
-    // doesnt matter which team they are on when there are no zombies.
+    // doesn't matter which team they are on when there are no zombies.
     if (g_bZombiesPresent)
     {
-        Util_SwitchTeam(client, TLib_GetGameTeamIndex(VTeam_Human));
+        IGame_SwitchTeam(client, VTeam_Human);
     }
 }
 
-#if defined PROJECT_GAME_CSS
-
 /**
- * Round has started.
+ * Called when round has started.
  */
 public ZRCTM_RoundStart()
 {
-    // Update the zombie team every round start.
-    // This shouldn't be updated real-time with the cvar, or else zombies would be on both teams during the round.
-    ZRCTM_UpdateZombieTeam();
+    // Update the zombie team every round start. This shouldn't be updated
+    // real-time with the cvar, or else zombies would be on both teams during
+    // the round.
+    TeamMgr_UpdateZombieTeam(g_hCvarZRCZombieTeam);
 }
 
 /**
- * Round has ended.
- * 
- * @param winner    The index of the winning team.
+ * Called when round has ended.
+ *
+ * @param winner        Winner team.
  */
-public ZRCTM_RoundEnd(winner)
+public ZRCTM_RoundEnd(VTeam:winner)
 {
     ZRCTM_BalanceTeams();
 }
 
 /**
- * Client has joined a team. (pre)
- * 
- * @param client        The client index.
- * @param team          The client's new team.
- * @param oldteam       The team the client is switching from.
- * @param disconnect    True if the client is disconnecting, false if switching to a team.
- * 
- * @return              Plugin_Handled to stop the event from being broadcasted to clients.  Plugin_Continue to let it continue like normal.  
+ * Called when player is about to join a team.
+ *
+ * @param client        Client index.
+ * @param team          Team client is about to join.
+ * @param oldTeam       Old team before changing team.
+ * @param disconnect    Team change because player disconnects.
+ *
+ * @return              Plugin_Handled to block event (and team change).
+ *                      Plugin_Continue to allow event.
  */
-public Action:ZRCTM_PlayerTeamPre(client, team, oldteam, bool:disconnect)
+public Action:ZRCTM_PlayerTeamPre(client, VTeam:team, VTeam:oldTeam, bool:disconnect)
 {
-    // Prevent this from being broadcasted to clients.
-    if (!disconnect && team > TEAM_1)
+    // Prevent the join message from being broadcasted to clients.
+    if (!disconnect && IGame_IsPlayerTeam(team))
+    {
         return Plugin_Handled;
+    }
+    
     return Plugin_Continue;
 }
 
 /**
- * Client has joined a team.
- * 
- * @param client        The client index.
- * @param team          The client's new team.
- * @param oldteam       The team the client is switching from.
- * @param disconnect    True if the client is disconnecting, false if switching to a team.
+ * Called when player has joined a team.
+ *
+ * @param client        Client index.
+ * @param team          Team client joined.
+ * @param oldTeam       Old team before changing team.
+ * @param disconnect    Team change because player disconnects.
  */
-public ZRCTM_PlayerTeam(client, team, oldteam, bool:disconnect)
+public ZRCTM_PlayerTeam(client, VTeam:team, VTeam:oldTeam, bool:disconnect)
 {
+    // Update player team in common team manager.
+    
+    if (team == VTeam_Zombie)
+    {
+        // Players can't change to the zombie team. The player most likely
+        // changed team to terrorists (or similar on other mods) before the
+        // first zombie spawned. Stay on the human team.
+        TeamMgr_SetClientTeam(client, VTeam_Human);
+    }
+    
+    // Other teams are directly mapped (spectator, unassigned).
+    TeamMgr_SetClientTeam(client, team);
+    
+    // Old code, in case the logic above is incorrect.
+    /*
     if (team == TEAM_1)
         TLib_SetClientTeam(client, VTeam_Spectator);
     // If client isn't already in the game, then assign them to human by default.
     else if (team > TEAM_1 && !TLib_IsClientPlaying(client))
         TLib_SetClientTeam(client, VTeam_Human);
+    */
 }
 
 /**
- * Client has spawned.
- * 
- * @param client    The client index.
- * 
+ * Player has spawned.
+ *
+ * Note: This event is NOT called when client is spawning in the game (the first
+ *       time they see the map, before selecting a team).
+ *
+ * @param client        Client index.
  */
 public ZRCTM_PlayerSpawn(client)
 {
-    // player_spawn is fired during the connection process, this is how we filter it out.
-    if (!Util_IsClientOnTeam(client))
-        return;
-    
     // Move client the right team for their virtual team if there are zombies present.
     if (g_bZombiesPresent)
-        TLib_UpdateClientTeam(client);
+        TeamMgr_MoveClientToTeam(client);
 }
 
-#endif
 
 /**
  * Randomly put an equal amount of clients on both teams.
@@ -234,40 +246,14 @@ static stock ZRCTM_BalanceTeams()
         if (!IsClientInGame(client))
             continue;
         
-        if (!TLib_IsClientPlaying(client))
+        if (!TeamMgr_IsClientOnPlayerTeam(client))
             continue;
         
-        #if defined PROJECT_GAME_CSS
-            if (team1)
-                Util_SwitchTeam(client, TEAM_2);
-            else
-                Util_SwitchTeam(client, TEAM_3);
-        #endif
+        if (team1)
+            IGame_SwitchTeam(client, VTeam_Zombie);
+        else
+            IGame_SwitchTeam(client, VTeam_Human);
         
         team1 = !team1;
-    }
-}
-
-/**
- * Update the game teams associated with the virtual teams, as set by cvar.
- */
-static stock ZRCTM_UpdateZombieTeam()
-{
-    decl String:strZombieTeam[32];
-    GetConVarString(g_hCvarZRCZombieTeam, strZombieTeam, sizeof(strZombieTeam));
-    new iZombieTeamIndex = TLib_GTeamStringToIndex(strZombieTeam);
-    if (iZombieTeamIndex > 1)
-    {
-        // Associate the zombie virtual team with the given value.
-        TLib_SetGameTeamIndex(VTeam_Zombie, iZombieTeamIndex);
-        
-        // For humans, use the opposite team as the one given for zombies.
-        TLib_SetGameTeamIndex(VTeam_Human, (iZombieTeamIndex == 2) ? 3 : 2);
-    }
-    else
-    {
-        LogMgr_Print(g_moduleZRCTM, LogType_Error, "Cvar Validation", "Invalid team name (%s) in cvar \"zr_zombie_team\".  Check the description in zombiereloaded.cfg.  Assuming zombies are terrorist team.", strZombieTeam);
-        TLib_SetGameTeamIndex(VTeam_Zombie, 2);
-        TLib_SetGameTeamIndex(VTeam_Human, 3);
     }
 }

@@ -76,11 +76,7 @@ public ZRiotInfect_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZRiotInfect, "Event_OnMyCoreActivate",       "ZRiotInfect_OnMyCoreActivate");
     EventMgr_RegisterEvent(g_moduleZRiotInfect, "Event_OnMyCoreShutdown",       "ZRiotInfect_OnMyCoreShutdown");
     
-    #if defined PROJECT_GAME_CSS
-    
     EventMgr_RegisterEvent(g_moduleZRiotInfect, "Event_PlayerSpawn",            "ZRiotInfect_PlayerSpawn");
-    
-    #endif
 }
 
 /**
@@ -122,20 +118,16 @@ public ZRiotInfect_OnMyCoreActivate(Module:module)
     }
 }
 
-#if defined PROJECT_GAME_CSS
-
 /**
- * Client has spawned.
- * 
- * @param client    The client index.
- * 
+ * Player has spawned.
+ *
+ * Note: This event is NOT called when client is spawning in the game (the first
+ *       time they see the map, before selecting a team).
+ *
+ * @param client        Client index.
  */
 public ZRiotInfect_PlayerSpawn(client)
 {
-    // player_spawn is fired during the connection process, this is how we filter it out.
-    if (!Util_IsClientOnTeam(client))
-        return;
-    
     CreateTimer(0.1, ZRiotInfect_PlayerSpawnPost, 0, client);
 }
 
@@ -148,13 +140,11 @@ public ZRiotInfect_PlayerSpawn(client)
 public Action:ZRiotInfect_PlayerSpawnPost(Handle:timer, any:client)
 {
     // Automatically turn a client into a zombie or human depending on their virtual team.
-    if (TLib_IsClientZombie(client))
+    if (TeamMgr_IsClientZombie(client))
         ZRiotInfect_ClientToZombie(client);
-    else if (TLib_IsClientHuman(client))
+    else if (TeamMgr_IsClientHuman(client))
         ZRiotInfect_ClientToHuman(client);
 }
-
-#endif
 
 /**
  * Turn a human into a zombie.

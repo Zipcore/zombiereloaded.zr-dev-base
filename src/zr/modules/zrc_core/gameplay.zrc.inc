@@ -177,11 +177,11 @@ public ZRCGPlay_OnMapStart()
 public ZRCGPlay_OnClientDisconnect(client)
 {
     // End the round if the last human leaves.
-    if (TLib_IsClientHuman(client))
+    if (TeamMgr_IsClientHuman(client))
     {
-        if (TLib_CountTeam(VTeam_Human, true) <= 1)
+        if (TeamMgr_CountTeam(VTeam_Human, true) <= 1)
         {
-            Util_TerminateRound(VTeam_Zombie);
+            IGame_TerminateRound(VTeam_Zombie);
         }
     }
 }
@@ -201,9 +201,9 @@ public ZRCGPlay_OnClientInfected(client, attacker, bool:mzombie)
         return;
     
     // If there are no more humans then zombies win.
-    if (TLib_CountTeam(VTeam_Human, true) == 0)
+    if (TeamMgr_CountTeam(VTeam_Human, true) == 0)
     {
-        Util_TerminateRound(VTeam_Zombie);
+        IGame_TerminateRound(VTeam_Zombie);
     }
 }
 
@@ -215,9 +215,9 @@ public ZRCGPlay_OnClientInfected(client, attacker, bool:mzombie)
 public ZRCGPlay_OnClientHuman(client)
 {
     // If there are no more zombies then humans win.
-    if (TLib_CountTeam(VTeam_Zombie, true) == 0)
+    if (TeamMgr_CountTeam(VTeam_Zombie, true) == 0)
     {
-        Util_TerminateRound(VTeam_Human);
+        IGame_TerminateRound(VTeam_Human);
     }
 }
 
@@ -262,7 +262,7 @@ public Action:ZRCGPlay_RoundEndTimer(Handle:timer)
     g_hZRCRoundTimer = INVALID_HANDLE;
     
     // Humans held out against the zombies, they win!
-    Util_TerminateRound(VTeam_Human);
+    IGame_TerminateRound(VTeam_Human);
 }
 
 /**
@@ -294,7 +294,10 @@ public ZRCGPlay_CvarHookMPRGame(Handle:convar, const String:oldValue[], const St
     if (time == 0)
         return;
     
-    #if defined PROJECT_GAME_CSS
+    // Terminate round, without a winner.
+    IGame_TerminateRound(VTeam_Invalid, float(time));
+    
+    /*#if defined PROJECT_GAME_CSS
         // End round with CSRoundEnd_GameStart ("Game commencing").
         CS_TerminateRound(float(time), CSRoundEnd_GameStart);
     #endif
@@ -302,7 +305,7 @@ public ZRCGPlay_CvarHookMPRGame(Handle:convar, const String:oldValue[], const St
     #if defined PROJECT_GAME_TF2
         // End in stalemate.
         TF2_TerminateRound(ROUNDEND_STALEMATE);
-    #endif
+    #endif*/
     
     // This basically makes mp_restartgame useless.
     SetConVarInt(convar, 0);

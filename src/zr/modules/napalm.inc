@@ -160,7 +160,7 @@ public Napalm_PlayerHurt(victim, attacker, health, armor, const String:weapon[],
         return;
     
     // Check friendlyfire rules.
-    if (!GetConVarBool(g_hCvarNapalmFF) && !TLib_IsClientZombie(victim))
+    if (!GetConVarBool(g_hCvarNapalmFF) && !TeamMgr_IsClientZombie(victim))
         return;
     
     // If napalm time is invalid or 0, then stop.

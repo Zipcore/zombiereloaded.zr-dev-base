@@ -137,14 +137,10 @@ public Respawn_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleRespawn, "Event_OnClientPutInServer",        "Respawn_OnClientPutInServer");
     EventMgr_RegisterEvent(g_moduleRespawn, "Event_OnClientDisconnect",         "Respawn_OnClientDisconnect");
     
-    #if defined PROJECT_GAME_CSS
-    
     EventMgr_RegisterEvent(g_moduleRespawn, "Event_RoundStart",                 "Respawn_RoundStart");
     EventMgr_RegisterEvent(g_moduleRespawn, "Event_RoundEnd",                   "Respawn_RoundEnd");
     EventMgr_RegisterEvent(g_moduleRespawn, "Event_PlayerSpawn",                "Respawn_PlayerSpawn");
     EventMgr_RegisterEvent(g_moduleRespawn, "Event_PlayerDeath",                "Respawn_PlayerDeath");
-    
-    #endif
 }
 
 /**
@@ -272,8 +268,6 @@ public Respawn_OnClientDisconnect(client)
     Util_CloseHandle(g_hRespawnCountdownTimer[client]);
 }
 
-#if defined PROJECT_GAME_CSS
-
 /**
  * Round has started.
  */
@@ -337,7 +331,7 @@ public Respawn_PlayerDeath(victim, attacker, const String:weapon[], bool:headsho
             return;
     }
     
-    if (TLib_IsClientZombie(victim))
+    if (TeamMgr_IsClientZombie(victim))
         g_bDeathBySuicide[victim] = (attacker < 0 || attacker > MaxClients);
     
     // Stop the timer just in case it's running. (it never should at this point.)
@@ -368,8 +362,6 @@ public Respawn_PlayerDeath(victim, attacker, const String:weapon[], bool:headsho
     }
 }
 
-#endif
-
 /**
  * Respawn a client on a given team or their current team.
  * 
@@ -385,11 +377,11 @@ stock bool:Respawn_Client(client, VTeam:team)
     if (team == VTeam_Zombie || team == VTeam_Human)
         respawnteam = team;
     else
-        respawnteam = TLib_GetClientTeam(client);
+        respawnteam = TeamMgr_GetClientTeam(client);
     
     if (respawnteam == VTeam_Zombie || respawnteam == VTeam_Human)
     {
-        TLib_SpawnOnTeam(client, respawnteam);
+        TeamMgr_SpawnOnTeam(client, respawnteam);
         return true;
     }
     return false;
@@ -411,18 +403,18 @@ public Action:Respawn_Timer(Handle:timer, any:client)
     if (IsPlayerAlive(client))
         return;
     
-    if (!TLib_IsClientPlaying(client))
+    if (!TeamMgr_IsClientOnPlayerTeam(client))
         return;
     
     // If the client suicided and the cvar is enabled, they will be respawned as zombie.
     if (GetConVarBool(g_hCvarRespawnZombieIfSuicide) && g_bDeathBySuicide[client])
-        TLib_SpawnOnTeam(client, VTeam_Zombie);
+        TeamMgr_SpawnOnTeam(client, VTeam_Zombie);
     else
     {
         // Update the client's virtual team with the one defined in this cvar.
         decl String:respawn_team[32];
         GetConVarString(g_hCvarRespawnTeam, respawn_team, sizeof(respawn_team));
-        new VTeam:team = TLib_VTeamStringToIndex(respawn_team);
+        new VTeam:team = IGame_VTeamStringToTeam(respawn_team);
         Respawn_Client(client, team);
         
         // Log an error if client was respawned on their current team.
@@ -461,7 +453,7 @@ public Action:Respawn_Countdown(Handle:timer, Handle:hCountdownData)
         return Plugin_Stop;
     }
     
-    if (!TLib_IsClientPlaying(client))
+    if (!TeamMgr_IsClientOnPlayerTeam(client))
     {
         g_hRespawnCountdownTimer[client] = INVALID_HANDLE;
         return Plugin_Stop;
@@ -542,7 +534,7 @@ public Action:Respawn_Command(client, argc)
     new VTeam:team = VTeam_Invalid;
     if (strTeam[0])
     {
-        team = VTeam:TLib_VTeamStringToIndex(strTeam);
+        team = VTeam:IGame_VTeamStringToTeam(strTeam);
         if (team == VTeam_Invalid)
         {
             TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "Respawn command invalid team");
@@ -586,7 +578,7 @@ stock Respawn_MenuRespawnClient(client, RespawnMenuTeam:menu_team)
         {
             decl String:respawn_team[32];
             GetConVarString(g_hCvarRespawnTeam, respawn_team, sizeof(respawn_team));
-            new VTeam:team = TLib_VTeamStringToIndex(respawn_team);
+            new VTeam:team = IGame_VTeamStringToTeam(respawn_team);
             Respawn_Client(client, team);
             if (team == VTeam_Invalid)
                 LogMgr_Print(g_moduleRespawn, LogType_Error, "Cvar zr_respawn_team", "Invalid value (%s) set in cvar, spawning player on their current team instead.", respawn_team);
@@ -667,9 +659,9 @@ public Action:Respawn_ClientMenuFilter(Handle:menu, client, String:buttontxt[], 
     }
     else
     {
-        PrintToChatAll("TLib_GetClientTeam %d", TLib_GetClientTeam(client));
-        if (TLib_IsClientZombie(client))        Format(buttontxt, 256, "%s (%T)", buttontxt, "ZR team zombie", client);
-        else if (TLib_IsClientHuman(client))    Format(buttontxt, 256, "%s (%T)", buttontxt, "ZR team human", client);
+        PrintToChatAll("TLib_GetClientTeam %d", TeamMgr_GetClientTeam(client));
+        if (TeamMgr_IsClientZombie(client))     Format(buttontxt, 256, "%s (%T)", buttontxt, "ZR team zombie", client);
+        else if (TeamMgr_IsClientHuman(client)) Format(buttontxt, 256, "%s (%T)", buttontxt, "ZR team human", client);
     }
     return Plugin_Changed;
 }

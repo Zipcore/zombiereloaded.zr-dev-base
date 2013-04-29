@@ -202,14 +202,14 @@ public Action:SuiciIntcpt_Listener(client, const String:command[], argc)
     // Must pass all of these conditions to allow suicide.
     
     // Allow zombie suicide OR client is not a zombie.
-    if (!GetConVarBool(g_hCvarSuicideBlockZombies) || !TLib_IsClientZombie(client))
+    if (!GetConVarBool(g_hCvarSuicideBlockZombies) || !TeamMgr_IsClientZombie(client))
     {
         // Allow mother zombie suicide OR client is not a mother zombie.
         if (!GetConVarBool(g_hCvarSuicideBlockMZombies) || !IInfection_IsClientMZombie(client))
         {
             // Allow pre-outbreak AND game is pre-outbreak OR Allow post-outbreak AND game is post-outbreak OR client is not a human.
             new bool:zombiespresent = IInfection_AreZombiesPresent();
-            if ((!GetConVarBool(g_hCvarSuicideBlockPreOutbreak) && !zombiespresent) || (!GetConVarBool(g_hCvarSuicideBlockPostOutbreak) && zombiespresent) || !TLib_IsClientHuman(client))
+            if ((!GetConVarBool(g_hCvarSuicideBlockPreOutbreak) && !zombiespresent) || (!GetConVarBool(g_hCvarSuicideBlockPostOutbreak) && zombiespresent) || !TeamMgr_IsClientHuman(client))
                 return Plugin_Continue;
         }
     }

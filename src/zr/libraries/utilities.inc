@@ -106,7 +106,8 @@ stock Util_BuildClientList(&Handle:adtClients, filters, targetclient = 0)
                 continue;
         }
         
-        if (TLib_IsClientZombie(client))
+        // TODO: Extend function to use a callback for custom filters.
+        /*if (TLib_IsClientZombie(client))
         {
             // The client is a zombie, so check if the filter is asking only for humans.
             if (filters & UTILS_FILTER_HUMAN)
@@ -117,7 +118,7 @@ stock Util_BuildClientList(&Handle:adtClients, filters, targetclient = 0)
             // The client is a human, so check if the filter is asking only for zombies.
             if (filters & UTILS_FILTER_ZOMBIE)
                 continue;
-        }
+        }*/
         
         // Check if the menu recipient can target this client, if not then don't add to the menu.
         if (Util_IsClientInGame(targetclient) && (filters & UTILS_FILTER_CANTARGET && !CanUserTarget(targetclient, client)))
@@ -177,7 +178,7 @@ stock Util_RemovePlayerItem(client, weaponindex)
  * @param client    The client to switch.
  * @param team      The team index to switch client to.
  */
-stock Util_SwitchTeam(client, team)
+/*stock Util_SwitchTeam(client, team)
 {
     if (GetClientTeam(client) != team)
     {
@@ -185,7 +186,7 @@ stock Util_SwitchTeam(client, team)
             CS_SwitchTeam(client, team);
         #endif
     }
-}
+}*/
 
 /**
  * Closes a handle and sets it to invalid handle.
@@ -326,7 +327,7 @@ stock Util_ReplyToCommandEx(client, const String:format[], any:...)
  * @param delay     Optional, CS:S only. Delay before new round starts.
  *                  Default is 3 seconds.
  */
-stock Util_TerminateRound(VTeam:team, Float:delay = 3.0)
+/*stock Util_TerminateRound(VTeam:team, Float:delay = 3.0)
 {
     new teamIndex = TLib_GetGameTeamIndex(team);
     
@@ -338,7 +339,7 @@ stock Util_TerminateRound(VTeam:team, Float:delay = 3.0)
     #if defined PROJECT_GAME_TF2
         TF2_TerminateRound(teamIndex);
     #endif
-}
+}*/
 
 #if defined PROJECT_GAME_CSS
 

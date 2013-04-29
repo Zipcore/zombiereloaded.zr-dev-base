@@ -72,14 +72,10 @@ public ZRiotTM_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_OnConfigsExecuted",          "ZRiotTM_OnConfigsExecuted");
     EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_OnClientPutInServer",        "ZRiotTM_OnClientPutInServer");
     
-    #if defined PROJECT_GAME_CSS
-    
     EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_RoundEnd",                   "ZRiotTM_RoundEnd");
     EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_PlayerTeamPre",              "ZRiotTM_PlayerTeamPre");
     EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_PlayerTeam",                 "ZRiotTM_PlayerTeam");
     EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_PlayerSpawn",                "ZRiotTM_PlayerSpawn");
-    
-    #endif
     
     // Register custom events.
     EventMgr_RegisterEvent(g_moduleZRiotTM, "Event_OnClientInfected",           "ZRiotTM_OnClientInfected");
@@ -103,7 +99,7 @@ ZRiotTM_OnPluginStart()
  */
 public ZRiotTM_OnConfigsExecuted()
 {
-    ZRiotTM_UpdateZombieTeam();
+    TeamMgr_UpdateZombieTeam(g_hCvarZRiotZombieTeam);
 }
 
 /**
@@ -114,7 +110,7 @@ public ZRiotTM_OnConfigsExecuted()
 public ZRiotTM_OnClientPutInServer(client)
 {
     // Initialize the client's team.
-    TLib_SetClientTeam(client, VTeam_Unassigned);
+    TeamMgr_SetClientTeam(client, VTeam_Unassigned);
 }
 
 /**
@@ -137,69 +133,65 @@ public ZRiotTM_OnClientHuman(client)
 {
 }
 
-#if defined PROJECT_GAME_CSS
-
 /**
- * Round has ended.
- * 
- * @param winner    The index of the winning team.
+ * Called when round has ended.
+ *
+ * @param winner        Winner team.
  */
-public ZRiotTM_RoundEnd(winner)
+public ZRiotTM_RoundEnd(VTeam:winner)
 {
     // Update the zombie team every round start.
     // This shouldn't be updated real-time with the cvar, or else zombies would be on both teams during the round.
-    ZRiotTM_UpdateZombieTeam();
-    TLib_UpdateClientTeams();
+    TeamMgr_UpdateZombieTeam(g_hCvarZRiotZombieTeam);
+    TeamMgr_UpdateClientTeams();
 }
 
 
 /**
- * Client has joined a team. (pre)
- * 
- * @param client        The client index.
- * @param team          The client's new team.
- * @param oldteam       The team the client is switching from.
- * @param disconnect    True if the client is disconnecting, false if switching to a team.
- * 
- * @return              Plugin_Handled to stop the event from being broadcasted to clients.  Plugin_Continue to let it continue like normal.  
+ * Called when player is about to join a team.
+ *
+ * @param client        Client index.
+ * @param team          Team client is about to join.
+ * @param oldTeam       Old team before changing team.
+ * @param disconnect    Team change because player disconnects.
+ *
+ * @return              Plugin_Handled to block event (and team change).
+ *                      Plugin_Continue to allow event.
  */
-public Action:ZRiotTM_PlayerTeamPre(client, team, oldteam, bool:disconnect)
+public Action:ZRiotTM_PlayerTeamPre(client, VTeam:team, VTeam:oldTeam, bool:disconnect)
 {
-    // Prevent this from being broadcasted to clients.
-    if (!disconnect && team > TEAM_1)
+    // Prevent the join message from being broadcasted to clients.
+    if (!disconnect && IGame_IsPlayerTeam(team))
         return Plugin_Handled;
+    
     return Plugin_Continue;
 }
 
 /**
- * Client has joined a team.
- * 
- * @param client        The client index.
- * @param team          The client's new team.
- * @param oldteam       The team the client is switching from.
- * @param disconnect    True if the client is disconnecting, false if switching to a team.
+ * Called when player has joined a team.
+ *
+ * @param client        Client index.
+ * @param team          Team client joined.
+ * @param oldTeam       Old team before changing team.
+ * @param disconnect    Team change because player disconnects.
  */
-public ZRiotTM_PlayerTeam(client, team, oldteam, bool:disconnect)
+public ZRiotTM_PlayerTeam(client, VTeam:team, VTeam:oldTeam, bool:disconnect)
 {
     // Set the client's virtual team to the proper virtual team.
     if (!disconnect)
     {
-        if (team == 0)
-            TLib_SetClientTeam(client, VTeam_Unassigned);
-        else if (team == 1)
-            TLib_SetClientTeam(client, VTeam_Spectator);
-        else if (team == TLib_GetGameTeamIndex(VTeam_Zombie))
+        // Print a formatted message when joining a team.
+        if (team == VTeam_Zombie)
         {
-            TLib_SetClientTeam(client, VTeam_Zombie);
             TransMgr_PrintTextAll(false, false, MsgFormat_None, MsgType_Chat, INVALID_MODULE, false, "ZRiot join team zombies", client);
         }
-        else if (team == TLib_GetGameTeamIndex(VTeam_Human))
+        else if (team == VTeam_Human)
         {
-            TLib_SetClientTeam(client, VTeam_Human);
             TransMgr_PrintTextAll(false, false, MsgFormat_None, MsgType_Chat, INVALID_MODULE, false, "ZRiot join team humans", client);
         }
-        else
-            TLib_SetClientTeam(client, VTeam_Invalid);
+        
+        // Set team (directly mapped, including unassigned and spectator).
+        TeamMgr_SetClientTeam(client, team);
     }
 }
 
@@ -215,10 +207,10 @@ public ZRiotTM_PlayerSpawn(client)
     if (!Util_IsClientOnTeam(client))
         return;
     
-    TLib_UpdateClientTeam(client);
+    // Move client to the virtual team it's assigned to.
+    TeamMgr_MoveClientToTeam(client);
 }
 
-#endif
 
 /**
  * Update the game teams associated with the virtual teams, as set by cvar.

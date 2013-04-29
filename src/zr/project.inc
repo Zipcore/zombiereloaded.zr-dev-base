@@ -80,6 +80,7 @@ stock ForwardOnPluginStart()
     ZTele_OnPluginStart();
     Flashlight_OnPluginStart();
     StripObj_OnPluginStart();
+    TeamMgr_OnPluginStart();
     
     
     #if defined PROJECT_GAME_CSS

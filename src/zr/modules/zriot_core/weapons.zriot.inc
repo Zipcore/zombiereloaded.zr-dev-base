@@ -81,12 +81,8 @@ public ZRiotWeps_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnMyModuleEnable",      "ZRiotWeps_OnMyModuleEnable");
     EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnMyModuleDisable",     "ZRiotWeps_OnMyModuleDisable");
     
-    #if defined PROJECT_GAME_CSS
-    
     EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_RoundEnd",                 "ZRiotWeps_RoundEnd");
     EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_PlayerSpawn",              "ZRiotWeps_PlayerSpawn");
-    
-    #endif
     
     // Register custom events.
     EventMgr_RegisterEvent(g_moduleZRiotWeapons, "Event_OnClientInfected",         "ZRiotWeps_OnClientInfected");
@@ -183,8 +179,6 @@ public ZRiotWeps_OnClientInfected(client, attacker, bool:motherzombie)
     #endif
 }
 
-#if defined PROJECT_GAME_CSS
-
 /**
  * Round has ended.
  * Note: This needs to be BEFORE the event that sets all clients back to human. 
@@ -201,7 +195,7 @@ public ZRiotWeps_RoundEnd(winner)
         if (!IsClientInGame(client))
             continue;
         
-        if (TLib_IsClientZombie(client))
+        if (TeamMgr_IsClientZombie(client))
             g_bZRiotWeaponsBlockWeapon[client] = true;
     }
 }
@@ -221,8 +215,6 @@ public ZRiotWeps_PlayerSpawn(client)
     g_bZRiotWeaponsBlockWeapon[client] = false;
 }
 
-#endif
-
 /**
  * Called when a client is trying to pick up a weapon.
  * 
@@ -239,6 +231,8 @@ public Action:ZRiotWeps_CanUse(client, weapon)
     GetEdictClassname(weapon, weaponentity, sizeof(weaponentity));
     
     // Knife should never be restricted.
+    // TODO: This should probably be specifyed in a config file, with individual
+    //       settings for humans and zombies.
     if (StrEqual(weaponentity, "weapon_knife"))
         return Plugin_Continue;
     
@@ -249,7 +243,7 @@ public Action:ZRiotWeps_CanUse(client, weapon)
         return Plugin_Handled;
     
     // Only humans can pick up weapons.
-    if (!TLib_IsClientHuman(client))
+    if (!TeamMgr_IsClientHuman(client))
         return Plugin_Handled;
     
     return Plugin_Continue;
@@ -272,7 +266,7 @@ public Action:ZRiotWeps_BuyListener(client, const String:command[], argc)
         return Plugin_Continue;
     
     // Only humans can buy weapons.
-    if (!TLib_IsClientHuman(client))
+    if (!TeamMgr_IsClientHuman(client))
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRiot weapons zombie cant use weapon");
         return Plugin_Handled;

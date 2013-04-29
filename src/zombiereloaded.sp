@@ -53,6 +53,11 @@
  ******************/
 #include "zr/interfaces/interfaces"
 
+/***************************
+ *   Common Core Modules   *
+ ***************************/
+#include "zr/modules/common/teammanager"
+
 
 /***********************
  *   Module includes   *

@@ -81,13 +81,9 @@ public ZRiotGPlay_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnClientDisconnect",      "ZRiotGPlay_OnClientDisconnect");
     EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_OnClientInfected",        "ZRiotGPlay_OnClientInfected");
     
-    #if defined PROJECT_GAME_CSS
-    
     EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_RoundStart",              "ZRiotGPlay_RoundStart");
     EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_RoundFreezeEnd",          "ZRiotGPlay_RoundFreezeEnd");
     EventMgr_RegisterEvent(g_moduleZRiotGPlay, "Event_RoundEnd",                "ZRiotGPlay_RoundEnd");
-    
-    #endif
 }
 
 /**
@@ -183,11 +179,11 @@ public ZRiotGPlay_OnMapStart()
 public ZRiotGPlay_OnClientDisconnect(client)
 {
     // End the round if the last human leaves.
-    if (TLib_IsClientHuman(client))
+    if (TeamMgr_IsClientHuman(client))
     {
-        if (TLib_CountTeam(VTeam_Human, true) <= 1)
+        if (TeamMgr_CountTeam(VTeam_Human, true) <= 1)
         {
-            Util_TerminateRound(VTeam_Zombie);
+            IGame_TerminateRound(VTeam_Zombie);
         }
     }
 }
@@ -202,9 +198,9 @@ public ZRiotGPlay_OnClientDisconnect(client)
 public ZRiotGPlay_OnClientInfected(client, attacker, bool:mzombie)
 {
     // If there are no more humans then zombies win.
-    if (TLib_CountTeam(VTeam_Human, true) == 0)
+    if (TeamMgr_CountTeam(VTeam_Human, true) == 0)
     {
-        Util_TerminateRound(VTeam_Zombie);
+        IGame_TerminateRound(VTeam_Zombie);
     }
 }
 
@@ -216,9 +212,9 @@ public ZRiotGPlay_OnClientInfected(client, attacker, bool:mzombie)
 public ZRiotGPlay_OnClientHuman(client)
 {
     // If there are no more humans then humans win.
-    if (TLib_CountTeam(VTeam_Zombie, true) == 0)
+    if (TeamMgr_CountTeam(VTeam_Zombie, true) == 0)
     {
-        Util_TerminateRound(VTeam_Human);
+        IGame_TerminateRound(VTeam_Human);
     }
 }
 
@@ -267,7 +263,7 @@ public Action:ZRiotGPlay_RoundEndTimer(Handle:timer)
     g_hZRiotRoundTimer = INVALID_HANDLE;
     
     // Humans held out against the zombies, they win!
-    Util_TerminateRound(VTeam_Human);
+    IGame_TerminateRound(VTeam_Human);
 }
 
 /**
@@ -299,15 +295,8 @@ public ZRiotGPlay_CvarHookMPRGame(Handle:convar, const String:oldValue[], const 
     if (time == 0)
         return;
     
-    #if defined PROJECT_GAME_CSS
-        // End round with CSRoundEnd_GameStart ("Game commencing").
-        CS_TerminateRound(float(time), CSRoundEnd_GameStart);
-    #endif
-    
-    #if defined PROJECT_GAME_TF2
-        // End in stalemate.
-        TF2_TerminateRound(ROUNDEND_STALEMATE);
-    #endif
+    // Terminate round, without a winner.
+    IGame_TerminateRound(VTeam_Invalid, float(time));
     
     // This basically makes mp_restartgame useless.
     SetConVarInt(convar, 0);

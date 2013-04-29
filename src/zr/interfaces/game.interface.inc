@@ -65,26 +65,19 @@ enum VTeam
     VTeam_Unassigned = 0,   /** Client isn't on a team. */
     VTeam_Spectator,        /** Client is a spectator. */
     VTeam_Zombie,           /** Client is a zombie. */
-    VTeam_Human             /** Client is a human. */
+    VTeam_Human,            /** Client is a human. */
+    
+    /**
+     * Client is a a special spectator that can walk on the map as a regular
+     * player, but doesn't affect the game (invisible, no-block, no weapons).
+     */
+    VTeam_Ghost
 }
 
 /*____________________________________________________________________________*/
 
 /*
 TODO - Remaining mod specific stuff that must be abstracted:
-
-Events (created by gameadapter module, fired by mod specific adapter module):
-* player_death
-* player_hurt
-* player_spawn
-* player_team
-* round_start
-* round_end
-* round_freeze_end
-* player_jump
-* weapon_fire
-
-They are slightly different between mods (or doesn't exist at all and need to be faked).
 
 Cvars. Mod adapter modules should probably handle these. If other modules need
 to read values we can provide get-functions in this interface:
@@ -108,6 +101,12 @@ Others:
 /**
  * Interface function ID cache.
  */
+new Function:g_IGameStringToTeamIndex = INVALID_FUNCTION;
+new Function:g_IGameTeamIndexToString = INVALID_FUNCTION;
+new Function:g_IGameIsPlayerTeamIndex = INVALID_FUNCTION;
+new Function:g_IGameGetDefaultIndexFor = INVALID_FUNCTION;
+new Function:g_IGameGetOpposingPlayerTeam = INVALID_FUNCTION;
+
 new Function:g_IGameRespawnPlayer = INVALID_FUNCTION;
 new Function:g_IGameSwitchTeam = INVALID_FUNCTION;
 new Function:g_IGameTerminateRound = INVALID_FUNCTION;
@@ -115,6 +114,177 @@ new Function:g_IGameDropWeapon = INVALID_FUNCTION;
 new Function:g_IGameFlashlightIsOn = INVALID_FUNCTION;
 new Function:g_IGameFlashlightOn = INVALID_FUNCTION;
 new Function:g_IGameFlashlightOff = INVALID_FUNCTION;
+new Function:g_IGameWeaponIsZombieClaws = INVALID_FUNCTION;
+
+/*____________________________________________________________________________*/
+
+/**
+ * Converts a mod specific team name to a mod specific team index.
+ *
+ * @param teamName      Mod specific team name to convert.
+ *
+ * @return              Mod specific team index, or -1 if invalid.
+ */
+stock IGame_StringToTeamIndex(const String:teamName[])
+{
+    Interface_ValidateOrFail(g_IGameStringToTeamIndex);
+    
+    new result;
+    
+    Call_StartFunction(GetMyHandle(), g_IGameStringToTeamIndex);
+    Call_PushString(teamName);
+    if (Call_Finish(result) == SP_ERROR_NONE)
+    {
+        return result;
+    }
+    
+    return -1;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Converts a mod specific team index to a mod specific team name.
+ *
+ * @param team          Team index to convert.
+ * @param buffer        (Output) Buffer to store mod specific team name in.
+ * @param maxlen        Size of buffer.
+ *
+ * @return              Number of cells written.
+ */
+stock IGame_TeamIndexToString(teamIndex, String:buffer[], maxlen)
+{
+    Interface_ValidateOrFail(g_IGameTeamIndexToString);
+    
+    new result;
+    
+    Call_StartFunction(GetMyHandle(), g_IGameTeamIndexToString);
+    Call_PushCell(teamIndex);
+    Call_PushStringEx(buffer, maxlen, SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+    Call_PushCell(maxlen);
+    Call_Finish(result);
+    
+    return result;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Converts a virtual team name string to a virtual team.
+ *
+ * @param teamName      Virtual team name to convert.
+ *
+ * @return              Virtual team, or VTeam_Invalid if invalid.
+ */
+stock VTeam:IGame_VTeamStringToTeam(const String:teamName[])
+{
+    if (StrEqual(teamName, "zombie", false))
+    {
+        return VTeam_Zombie;
+    }
+    else if (StrEqual(teamName, "human", false))
+    {
+        return VTeam_Human;
+    }
+    else if (StrEqual(teamName, "ghost", false))
+    {
+        return VTeam_Ghost;
+    }
+    
+    return VTeam_Invalid;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Returns whether the specified team is a team for players.
+ *
+ * @param team          Team to check.
+ *
+ * @return              True if team is zombie or human, false otherwise.
+ */
+stock bool:IGame_IsPlayerTeam(VTeam:team)
+{
+    if (team == VTeam_Zombie || team == VTeam_Human)
+    {
+        return true;
+    }
+    
+    return false;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Returns whether the mod specific team index is a player team (not spectator
+ * or unassigned).
+ *
+ * @param team          Player team index check.
+ *
+ * @return              True if it's a player team, false otherwise.
+ */
+stock bool:IGame_IsPlayerTeamIndex(teamIndex)
+{
+    Interface_ValidateOrFail(g_IGameIsPlayerTeamIndex);
+    
+    new bool:result;
+    
+    Call_StartFunction(GetMyHandle(), g_IGameIsPlayerTeamIndex);
+    Call_PushCell(teamIndex);
+    Call_Finish(result);
+    
+    return result;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Gets default mod specific team index for the virtual team.
+ *
+ * @param team          Virtual team to get default index for.
+ *
+ * @return              Team index, or -1 on error.
+ */
+stock IGame_GetDefaultIndexFor(VTeam:team)
+{
+    Interface_ValidateOrFail(g_IGameGetDefaultIndexFor);
+    
+    new result;
+    
+    Call_StartFunction(GetMyHandle(), g_IGameGetDefaultIndexFor);
+    Call_PushCell(team);
+    if (Call_Finish(result) == SP_ERROR_NONE)
+    {
+        return result;
+    }
+    
+    return -1;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Gets the opposing player team index.
+ *
+ * @param team          Player team index to invert.
+ *
+ * @return              Opposing team index, -1 on error.
+ */
+stock IGame_GetOpposingPlayerTeam(teamIndex)
+{
+    Interface_ValidateOrFail(g_IGameGetOpposingPlayerTeam);
+    
+    new result;
+    
+    Call_StartFunction(GetMyHandle(), g_IGameGetOpposingPlayerTeam);
+    Call_PushCell(teamIndex);
+    if (Call_Finish(result) == SP_ERROR_NONE)
+    {
+        return result;
+    }
+    
+    return -1;
+}
 
 /*____________________________________________________________________________*/
 
@@ -155,8 +325,7 @@ stock IGame_SwitchTeam(client, VTeam:team)
 /**
  * Forces round to end.
  *
- * @param winner        The winning team (virtual team).
- *                      TODO: It could be possible to allow VTeam_Invalid to
+ * @param winner        The winning team (virtual team). Use VTeam_Invalid to
  *                      terminate the round without a winner (round draw, etc).
  * @param               (Optional) Delay in seconds before terminating round.
  *                      Default is 3 seconds.
@@ -252,4 +421,24 @@ stock IGame_FlashlightOff(client)
     Call_StartFunction(GetMyHandle(), g_IGameFlashlightOff);
     Call_PushCell(client);
     Call_Finish();
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Returns whether the specified weapon class is used as zombie claws.
+ *
+ * @param weaponClass       Weapon class name (without "weapon_" prefix).
+ */
+stock bool:IGame_WeaponIsZombieClaws(const String:weaponClass[])
+{
+    Interface_ValidateOrFail(g_IGameWeaponIsZombieClaws);
+    
+    new bool:result;
+    
+    Call_StartFunction(GetMyHandle(), g_IGameWeaponIsZombieClaws);
+    Call_PushString(weaponClass);
+    Call_Finish(result);
+    
+    return result;
 }

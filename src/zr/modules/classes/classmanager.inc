@@ -1304,8 +1304,9 @@ stock ClassMgr_GetActiveIndex(client)
     }
     
     // Check if player is human or zombie.
+    // TODO: Handle ghost team.
     new ClassTeam:team;
-    if (TLib_IsClientHuman(client))
+    if (TeamMgr_IsClientHuman(client))
     {
         team = ClassTeam_Humans;
     }

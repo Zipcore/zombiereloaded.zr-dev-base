@@ -185,7 +185,7 @@ public Action:ZMarket_PostPlayerSpawn(Handle:timer, any:client)
         CookieLib_SetBool(client, g_hZMarketAutoRebuyCookie, false);
     }
     
-    if (!TLib_IsClientHuman(client))
+    if (!TeamMgr_IsClientHuman(client))
         return Plugin_Continue;
     
     // If auto-rebuy is enabled, then force client to rebuy weapons.
@@ -821,7 +821,7 @@ stock bool:ZMarket_Equip(client, windex, bool:rebuy = false, bool:autorebuy = fa
     Weapons_ReadString(windex, WepConfig_Entity, weaponentity, sizeof(weaponentity));
     
     // Check if the client is not a human or not in a buyzone.
-    if (!TLib_IsClientHuman(client) || (!autorebuy && GetConVarBool(g_hCvarZMarketBuyzone) && !WepLib_InBuyZone(client)))
+    if (!TeamMgr_IsClientHuman(client) || (!autorebuy && GetConVarBool(g_hCvarZMarketBuyzone) && !WepLib_InBuyZone(client)))
     {
         // Update cookie with new weapon.
         if (slot != Slot_Projectile || !ZMarket_IsGrenadeCountMaxedEx(client, weaponentity))
@@ -1004,7 +1004,7 @@ stock bool:ZMarket_SaveCurrentSetup(client)
         return false;
     }
     
-    if (TLib_GetClientTeam(client) != VTeam_Human)
+    if (TeamMgr_GetClientTeam(client) != VTeam_Human)
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Must be human");
         return false;
@@ -1199,7 +1199,7 @@ stock ZMarket_RebuySavedSetup(client, bool:autorebuy = false)
         return;
     }
     
-    if (!TLib_IsClientHuman(client))
+    if (!TeamMgr_IsClientHuman(client))
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, g_moduleZMarket, false, "Must be human");
         return;

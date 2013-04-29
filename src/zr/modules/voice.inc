@@ -71,12 +71,8 @@ public Voice_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleVoice, "Event_OnClientInfected",             "Voice_OnClientInfected");
     EventMgr_RegisterEvent(g_moduleVoice, "Event_OnClientHuman",                "Voice_OnClientHuman");
     
-    #if defined PROJECT_GAME_CSS
-    
     EventMgr_RegisterEvent(g_moduleVoice, "Event_PlayerTeam",                   "Voice_PlayerTeam");
     EventMgr_RegisterEvent(g_moduleVoice, "Event_RoundEnd",                     "Voice_RoundEnd");
-    
-    #endif
 }
 
 /**
@@ -143,17 +139,17 @@ public Voice_OnClientHuman(client)
 }
 
 /**
- * Client has joined a team.
- * 
- * @param client        The client index.
- * @param team          The client's new team.
- * @param oldteam       The team the client is switching from.
- * @param disconnect    True if the client is disconnecting, false if switching to a team.
+ * Called when player has joined a team.
+ *
+ * @param client        Client index.
+ * @param team          Team client joined.
+ * @param oldTeam       Old team before changing team.
+ * @param disconnect    Team change because player disconnects.
  */
-public Voice_PlayerTeam(client, team, oldteam, bool:disconnect)
+public Voice_PlayerTeam(client, VTeam:team, VTeam:oldTeam, bool:disconnect)
 {
     // Undo overrides if they aren't playing on a team.
-    if (team == TEAM_1)
+    if (team == VTeam_Spectator || team == VTeam_Ghost)
     {
         Voice_ReleaseClientOverrides(client);
     }
@@ -217,14 +213,16 @@ Voice_ReleaseAllOverrides()
  */
 Voice_UpdateCommunication(client)
 {
-    new VTeam:team = TLib_GetClientTeam(client);
+    new VTeam:team = TeamMgr_GetClientTeam(client);
     new VTeam:team2;
     for (new client2 = 1; client2 <= MaxClients; client2++)
     {
         if (!IsClientInGame(client2))
             continue;
         
-        team2 = TLib_GetClientTeam(client2);
+        // TODO: Handle ghost team, they are treated as spectators.
+        
+        team2 = TeamMgr_GetClientTeam(client2);
         if (team == team2)
             Voice_OverrideCommunication(client, client2, Listen_Yes);
         else if (team2 > VTeam_Spectator) // Don't override people not in the game.

@@ -120,15 +120,11 @@ public ZRCInfect_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnClientPutInServer",      "ZRCInfect_OnClientPutInServer");
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_OnClientDisconnect",       "ZRCInfect_OnClientDisconnect");
     
-    #if defined PROJECT_GAME_CSS
-    
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_RoundStart",               "ZRCInfect_RoundStart");
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_RoundFreezeEnd",           "ZRCInfect_RoundFreezeEnd");
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_RoundEnd",                 "ZRCInfect_RoundEnd");
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_PlayerSpawn",              "ZRCInfect_PlayerSpawn");
     EventMgr_RegisterEvent(g_moduleZRCInfect, "Event_PlayerHurt",               "ZRCInfect_PlayerHurt");
-    
-    #endif
 }
 
 /**
@@ -223,10 +219,10 @@ public ZRCInfect_OnClientPutInServer(client)
 public ZRCInfect_OnClientDisconnect(client)
 {
     // Infect a new zombie if the last one leaves.
-    if (TLib_IsClientZombie(client))
+    if (TeamMgr_IsClientZombie(client))
     {
         // If there are no more zombies then pick a new one.
-        if (TLib_CountTeam(VTeam_Zombie, true) <= 1)
+        if (TeamMgr_CountTeam(VTeam_Zombie, true) <= 1)
         {
             new newzombie = ZRCInfect_MotherZombie(1);
             if (newzombie != -1)
@@ -302,9 +298,9 @@ public ZRCInfect_RoundEnd(winner)
         if (!IsClientInGame(client))
             continue;
         
-        // Only reset clients that are in the game to human.  Ignore unassigned/spectators.
-        if (TLib_IsClientPlaying(client))
-            TLib_SetClientTeam(client, VTeam_Human);
+        // Only reset clients that are playing to human team.  Ignore unassigned/spectators.
+        if (TeamMgr_IsClientOnPlayerTeam(client))
+            TeamMgr_SetClientTeam(client, VTeam_Human);
         
         // Keep track of who was mother zombie this round for next round.
         g_bWasMotherZombie[client] = g_bMotherZombie[client];
@@ -339,7 +335,7 @@ public ZRCInfect_PlayerSpawn(client)
 public Action:ZRCInfect_PlayerSpawnPost(Handle:timer, any:client)
 {
     // Automatically turn a client into a zombie or human depending on their virtual team.
-    if (TLib_IsClientZombie(client))
+    if (TeamMgr_IsClientZombie(client))
     {
         if (g_bZombiesPresent)
         {
@@ -353,7 +349,7 @@ public Action:ZRCInfect_PlayerSpawnPost(Handle:timer, any:client)
         }
     }
     
-    if (TLib_IsClientHuman(client))
+    if (TeamMgr_IsClientHuman(client))
     {
         ZRCInfect_ClientToHuman(client);
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC spawn as human");
@@ -379,15 +375,14 @@ public ZRCInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon
         return;
     
     // Check if a zombie is attacking a human.
-    if (TLib_IsClientZombie(attacker) && TLib_IsClientHuman(victim))
+    if (TeamMgr_IsClientZombie(attacker) && TeamMgr_IsClientHuman(victim))
     {
-        #if defined PROJECT_GAME_CSS
-            if (StrEqual(weapon, "knife"))
-            {
-                ZRCInfect_ClientToZombie(victim, attacker, false);
-                TransMgr_PrintText(victim, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC client to zombie");
-            }
-        #endif
+        //if (StrEqual(weapon, "knife"))
+        if (IGame_WeaponIsZombieClaws(weapon))
+        {
+            ZRCInfect_ClientToZombie(victim, attacker, false);
+            TransMgr_PrintText(victim, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC client to zombie");
+        }
     }
 }
 
@@ -402,11 +397,11 @@ public ZRCInfect_ClientToZombie(client, attacker, bool:mzombie)
 {
     PrintToChatAll("%N infected %N (hp to 500)", attacker, client);
     SetEntityHealth(client, 500);
-    TLib_SetClientTeam(client, VTeam_Zombie);
+    TeamMgr_SetClientTeam(client, VTeam_Zombie);
     
     // If this is the first zombie of the round then everyone needs to be placed on the right team.
     if (!g_bZombiesPresent)
-        TLib_UpdateClientTeams();
+        TeamMgr_UpdateClientTeams();
     
     g_bZombiesPresent = true;
     
@@ -446,7 +441,7 @@ public ZRCInfect_ClientToZombie(client, attacker, bool:mzombie)
  */
 public ZRCInfect_ClientToHuman(client)
 {
-    TLib_SetClientTeam(client, VTeam_Human);
+    TeamMgr_SetClientTeam(client, VTeam_Human);
     
     // Forward event to all modules.
     new any:eventdata[1][1];
@@ -507,7 +502,7 @@ ZRCInfect_MotherZombie(override_count = 0)
         new ratio = GetConVarInt(g_hCvarMZombieRatio);
         
         // Count living clients on the human team.
-        new humancount = TLib_CountTeam(VTeam_Human, true);
+        new humancount = TeamMgr_CountTeam(VTeam_Human, true);
         
         // Calculate mother zombie count.
         mzombiecount = (ratio > 0) ? RoundToNearest(float(humancount) / float(ratio)) : 1;
@@ -523,7 +518,7 @@ ZRCInfect_MotherZombie(override_count = 0)
     for (new cindex = 0; cindex < mzombiecount; cindex++)
     {
         // Should always leave at least one human and stop if there are no more clients left.
-        if (TLib_CountTeam(VTeam_Human, true) <= 1 || count <= 0)
+        if (TeamMgr_CountTeam(VTeam_Human, true) <= 1 || count <= 0)
             break;
         
         // Get a random client from the array, infect, and remove from list.
@@ -644,14 +639,15 @@ public Action:ZRCInfect_InfectCommand(client, argc)
     }
     
     // Check optional parameter.
-    decl String:strRespawn[4];
-    GetCmdArg(2, strRespawn, sizeof(strRespawn));
-    new bool:bRespawn = bool:StringToInt(strRespawn);
+    // TODO: Teleport player to spawn if enabled (and ztele module available).
+    //decl String:strRespawn[4];
+    //GetCmdArg(2, strRespawn, sizeof(strRespawn));
+    //new bool:bRespawn = bool:StringToInt(strRespawn);
     
     for (new tindex = 0; tindex < result; tindex++)
     {
         // Can't infect a zombie.
-        if (TLib_IsClientHuman(targets[tindex]))
+        if (TeamMgr_IsClientHuman(targets[tindex]))
         {
             // If a human is infected, cancel the timer that infects a mother zombie.
             if (g_bZombiesPresent)
@@ -730,18 +726,20 @@ public Action:ZRCInfect_HumanCommand(client, argc)
     }
     
     // Check optional parameters.
-    decl String:strRespawn[4];
-    GetCmdArg(2, strRespawn, sizeof(strRespawn));
-    new bool:bRespawn = bool:StringToInt(strRespawn);
+    // TODO: Teleport to spawn if enabled (and ztele module is available).
+    //decl String:strRespawn[4];
+    //GetCmdArg(2, strRespawn, sizeof(strRespawn));
+    //new bool:bRespawn = bool:StringToInt(strRespawn);
     
-    decl String:strProtect[4];
-    GetCmdArg(3, strProtect, sizeof(strProtect));
-    new bool:bProtect = bool:StringToInt(strProtect);
+    // TODO: Set spawn protection if enabled.
+    //decl String:strProtect[4];
+    //GetCmdArg(3, strProtect, sizeof(strProtect));
+    //new bool:bProtect = bool:StringToInt(strProtect);
     
     for (new tindex = 0; tindex < result; tindex++)
     {
         // Can't infect a zombie.
-        if (TLib_IsClientZombie(targets[tindex]))
+        if (TeamMgr_IsClientZombie(targets[tindex]))
         {
             ZRCInfect_ClientToHuman(targets[tindex]);
             TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC zombie to human");

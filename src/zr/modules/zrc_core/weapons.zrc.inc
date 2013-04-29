@@ -81,11 +81,7 @@ public ZRCWeps_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnMyModuleEnable",           "ZRCWeps_OnMyModuleEnable");
     EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnMyModuleDisable",          "ZRCWeps_OnMyModuleDisable");
     
-    #if defined PROJECT_GAME_CSS
-    
     EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_RoundEnd",                   "ZRCWeps_RoundEnd");
-    
-    #endif
     
     // Register custom events.
     EventMgr_RegisterEvent(g_moduleZRCWeps, "Event_OnClientInfected",           "ZRCWeps_OnClientInfected");
@@ -183,15 +179,14 @@ public ZRCWeps_OnClientInfected(client, attacker, bool:motherzombie)
     #endif
 }
 
-#if defined PROJECT_GAME_CSS
-
 /**
- * Round has ended.
+ * Called when round has ended.
+ *
  * Note: This needs to be BEFORE the event that sets all clients back to human.
- * 
- * @param winner    The index of the winning team.
+ *
+ * @param winner        Winner team.
  */
-public ZRCWeps_RoundEnd(winner)
+public ZRCWeps_RoundEnd(VTeam:winner)
 {
     if (!GetConVarBool(g_hCvarZRCWepsEndEquip))
         return;
@@ -201,12 +196,10 @@ public ZRCWeps_RoundEnd(winner)
         if (!IsClientInGame(client))
             continue;
         
-        if (TLib_IsClientZombie(client))
+        if (TeamMgr_IsClientZombie(client))
             g_bZRCWepsBlockWeapon[client] = true;
     }
 }
-
-#endif
 
 /**
  * Called BEFORE a client spawns, as opposed to the event which is after.
@@ -250,7 +243,7 @@ public Action:ZRCWeps_CanUse(client, weapon)
         return Plugin_Handled;
     
     // Only humans can pick up weapons.
-    if (!TLib_IsClientHuman(client))
+    if (!TeamMgr_IsClientHuman(client))
         return Plugin_Handled;
     
     return Plugin_Continue;
@@ -273,7 +266,7 @@ public Action:ZRCWeps_BuyListener(client, const String:command[], argc)
         return Plugin_Continue;
     
     // Only humans can buy weapons.
-    if (!TLib_IsClientHuman(client))
+    if (!TeamMgr_IsClientHuman(client))
     {
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC weapons zombie cant use weapon");
         return Plugin_Handled;

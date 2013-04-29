@@ -437,8 +437,8 @@ bool:ZTele_Client(client)
         return false;
     }
     
-    new bool:zombie = TLib_IsClientZombie(client);
-    new bool:human = TLib_IsClientHuman(client);
+    new bool:zombie = TeamMgr_IsClientZombie(client);
+    new bool:human = TeamMgr_IsClientHuman(client);
     
     // If zombie cvar is disabled and the client is a zombie, then stop.
     new bool:ztelezombie = GetConVarBool(g_hCvarZTeleZombie);
@@ -514,7 +514,7 @@ ZTele_StartTeleport(client, time)
     {
         ZTele_TeleportClient(client);
         
-        new ztelemax = TLib_IsClientZombie(client) ? GetConVarInt(g_hCvarZTeleMaxZombie) : GetConVarInt(g_hCvarZTeleMaxHuman);
+        new ztelemax = TeamMgr_IsClientZombie(client) ? GetConVarInt(g_hCvarZTeleMaxZombie) : GetConVarInt(g_hCvarZTeleMaxHuman);
         TransMgr_PrintText(client, MsgFormat_None, MsgType_Center, INVALID_MODULE, false, "ZTele countdown end", g_iZTeleCount[client], ztelemax);
     }
 }
@@ -597,7 +597,7 @@ public Action:ZTele_Timer(Handle:timer, any:client)
         ZTele_TeleportClient(client);
         g_iZTeleCount[client]++;
         
-        new ztelemax = TLib_IsClientZombie(client) ? GetConVarInt(g_hCvarZTeleMaxZombie) : GetConVarInt(g_hCvarZTeleMaxHuman);
+        new ztelemax = TeamMgr_IsClientZombie(client) ? GetConVarInt(g_hCvarZTeleMaxZombie) : GetConVarInt(g_hCvarZTeleMaxHuman);
         TransMgr_PrintText(client, MsgFormat_None, MsgType_Center, INVALID_MODULE, false, "ZTele countdown end", g_iZTeleCount[client], ztelemax);
         
         // Stop repeating timer.

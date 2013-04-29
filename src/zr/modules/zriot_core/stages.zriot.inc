@@ -139,13 +139,9 @@ public ZRiotStages_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_OnMyModuleDisable",      "ZRiotStages_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_OnMapStart",             "ZRiotStages_OnMapStart");
     
-    #if defined PROJECT_GAME_CSS
-    
     EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_RoundStart",              "ZRiotStages_RoundStart");
     //EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_RoundFreezeEnd",          "ZRiotStages_RoundFreezeEnd");
     EventMgr_RegisterEvent(g_moduleZRiotStages, "Event_RoundEnd",                "ZRiotStages_RoundEnd");
-    
-    #endif
 }
 
 /**
@@ -445,8 +441,6 @@ stock ZRiotStages_GetDataString(stageindex, ZRiotStage:data, String:output[], ma
 //              Events
 // ---------------------------------
 
-#if defined PROJECT_GAME_CSS
-
 /**
  * Round has started.
  */
@@ -465,15 +459,13 @@ public ZRiotStages_RoundStart()
 }
 
 /**
- * Round has ended.
- * 
- * @param winner    The index of the winning team.
+ * Called when round has ended.
+ *
+ * @param winner        Winner team.
  */
-public ZRiotStages_RoundEnd(winner)
+public ZRiotStages_RoundEnd(VTeam:winner)
 {
-    new zteam = TLib_GetGameTeamIndex(VTeam_Zombie);
-    new hteam = TLib_GetGameTeamIndex(VTeam_Human);
-    if (winner == zteam) // Zombies win
+    if (winner == VTeam_Zombie) // Zombies win
     {
         // Print round win message(s).
         ZRiotStages_PrintStageMessage(STAGE_MSGS_GLOBAL_ZWIN);
@@ -484,7 +476,7 @@ public ZRiotStages_RoundEnd(winner)
         if (GetConVarBool(g_hCvarZRiotStagesRegress))
             if (g_iCurStageIndex > 0) g_iCurStageIndex--;
     }
-    else if (winner == hteam) // Humans win
+    else if (winner == VTeam_Human) // Humans win
     {
         // Print round win message(s).
         ZRiotStages_PrintStageMessage(STAGE_MSGS_GLOBAL_HWIN);
@@ -500,8 +492,6 @@ public ZRiotStages_RoundEnd(winner)
         }
     }
 }
-
-#endif
 
 // ---------------------------------
 //            Utilities
@@ -529,7 +519,7 @@ static stock ZRiotStages_PrintStageMessage(index)
         {
             for(new client = 1; client <= MaxClients; client++)
             {
-                if (IsClientInGame(client) && TLib_GetClientTeam(client) == VTeam_Zombie)
+                if (IsClientInGame(client) && TeamMgr_GetClientTeam(client) == VTeam_Zombie)
                     TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, true, message);
             }
         }
@@ -537,7 +527,7 @@ static stock ZRiotStages_PrintStageMessage(index)
         {
             for(new client = 1; client <= MaxClients; client++)
             {
-                if (IsClientInGame(client) && TLib_GetClientTeam(client) == VTeam_Human)
+                if (IsClientInGame(client) && TeamMgr_GetClientTeam(client) == VTeam_Human)
                     TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, true, message);
             }
         }

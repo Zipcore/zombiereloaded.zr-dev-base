@@ -40,6 +40,13 @@ new Module:g_moduleCSSAdapter;
  */
 stock Module:CSSAdapter_GetIdentifier() { return g_moduleCSSAdapter; }
 
+/**
+ * Default teams to use if not specified in configuration file.
+ */
+#define CSS_ADAPTER_DEFAULT_ZOMBIE_TEAM     CS_TEAM_T
+#define CSS_ADAPTER_DEFAULT_HUMAN_TEAM      CS_TEAM_CT
+#define CSS_ADAPTER_DEFAULT_GHOST_TEAM      CS_TEAM_CT
+
 /*____________________________________________________________________________*/
 
 /**
@@ -130,6 +137,12 @@ CSSAdapter_Disable()
  */
 CSSAdapter_ImplementInterface()
 {
+    Interface_Implement(g_IGameStringToTeamIndex, CSSAdapter_StringToTeamIndex);
+    Interface_Implement(g_IGameTeamIndexToString, CSSAdapter_TeamIndexToString);
+    Interface_Implement(g_IGameIsPlayerTeamIndex, CSSAdapter_IsPlayerTeamIndex);
+    Interface_Implement(g_IGameGetDefaultIndexFor, CSSAdapter_GetDefaultIndexFor);
+    Interface_Implement(g_IGameGetOpposingPlayerTeam, CSSAdapter_GetOpposingPlayerTeam);
+    
     Interface_Implement(g_IGameRespawnPlayer, CSSAdapter_RespawnPlayer);
     Interface_Implement(g_IGameSwitchTeam, CSSAdapter_SwitchTeam);
     Interface_Implement(g_IGameTerminateRound, CSSAdapter_TerminateRound);
@@ -137,6 +150,7 @@ CSSAdapter_ImplementInterface()
     Interface_Implement(g_IGameFlashlightIsOn, CSSAdapter_FlashlightIsOn);
     Interface_Implement(g_IGameFlashlightOn, CSSAdapter_FlashlightOn);
     Interface_Implement(g_IGameFlashlightOff, CSSAdapter_FlashlightOff);
+    Interface_Implement(g_IGameWeaponIsZombieClaws, CSSAdapter_WeaponIsZombieClaws);
 }
 
 /*____________________________________________________________________________*/
@@ -146,6 +160,12 @@ CSSAdapter_ImplementInterface()
  */
 stock CSSAdapter_ReleaseInterface()
 {
+    Interface_Release(g_IGameStringToTeamIndex);
+    Interface_Release(g_IGameTeamIndexToString);
+    Interface_Release(g_IGameIsPlayerTeamIndex);
+    Interface_Release(g_IGameGetDefaultIndexFor);
+    Interface_Release(g_IGameGetOpposingPlayerTeam);
+    
     Interface_Release(g_IGameRespawnPlayer);
     Interface_Release(g_IGameSwitchTeam);
     Interface_Release(g_IGameTerminateRound);
@@ -153,6 +173,7 @@ stock CSSAdapter_ReleaseInterface()
     Interface_Release(g_IGameFlashlightIsOn);
     Interface_Release(g_IGameFlashlightOn);
     Interface_Release(g_IGameFlashlightOff);
+    Interface_Release(g_IGameWeaponIsZombieClaws);
 }
 
 /*____________________________________________________________________________*/
@@ -233,6 +254,168 @@ public Action:CSSAdapter_OnMyModuleDisable(String:refusalmsg[], maxlen)
 /************************************************
  *           Game Interface Functions           *
  ************************************************/
+
+/**
+ * Converts a CS:S specific team name to a mod specific team index.
+ *
+ * @param teamName      CS:S team name to convert.
+ *
+ * @return              CS:S team index, or -1 if invalid.
+ */
+CSSAdapter_StringToTeamIndex(const String:teamName[])
+{
+    if (StrEqual(teamName, "t", false)
+        || StrEqual(teamName, "terrorists", false))
+    {
+        return CS_TEAM_T;
+    }
+    else if (StrEqual(teamName, "ct", false)
+        || StrEqual(teamName, "counter-terrorists", false))
+    {
+        return CS_TEAM_CT;
+    }
+    else if (StrEqual(teamName, "spec", false)
+        || StrEqual(teamName, "spectators", false))
+    {
+        return CS_TEAM_SPECTATOR;
+    }
+    
+    return -1;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Converts a CS:S team index to a CS:S team name.
+ *
+ * @param team          Team index to convert.
+ * @param buffer        (Output) Buffer to store CS:S team name in.
+ * @param maxlen        Size of buffer.
+ *
+ * @return              Number of cells written.
+ */
+CSSAdapter_TeamIndexToString(teamIndex, String:buffer[], maxlen)
+{
+    switch (teamIndex)
+    {
+        case CS_TEAM_NONE:
+        {
+            return strcopy(buffer, maxlen, "Unassigned");
+        }
+        case CS_TEAM_SPECTATOR:
+        {
+            return strcopy(buffer, maxlen, "Spectators");
+        }
+        case CS_TEAM_T:
+        {
+            return strcopy(buffer, maxlen, "Terrorists");
+        }
+        case CS_TEAM_CT:
+        {
+            return strcopy(buffer, maxlen, "Counter-Terrorists");
+        }
+    }
+    
+    return 0;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Returns whether the CS:S team index is a player team (not spectator or
+ * unassigned).
+ *
+ * @param team          Player team index check.
+ *
+ * @return              True if it's a player team, false otherwise.
+ */
+bool:CSSAdapter_IsPlayerTeamIndex(teamIndex)
+{
+    switch (teamIndex)
+    {
+        case CS_TEAM_NONE:
+        {
+            return false;
+        }
+        case CS_TEAM_SPECTATOR:
+        {
+            return false;
+        }
+        case CS_TEAM_T:
+        {
+            return true;
+        }
+        case CS_TEAM_CT:
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Gets default CS:S team index for the specified virtual team.
+ *
+ * @param team          Virtual team to get default index for.
+ *
+ * @return              CS:S team index, or -1 on error.
+ */
+stock CSSAdapter_GetDefaultIndexFor(VTeam:team)
+{
+    switch (team)
+    {
+        case VTeam_Unassigned:
+        {
+            return CS_TEAM_NONE;
+        }
+        case VTeam_Spectator:
+        {
+            return CS_TEAM_SPECTATOR;
+        }
+        case VTeam_Zombie:
+        {
+            return CSS_ADAPTER_DEFAULT_ZOMBIE_TEAM;
+        }
+        case VTeam_Human:
+        {
+            return CSS_ADAPTER_DEFAULT_HUMAN_TEAM;
+        }
+        case VTeam_Ghost:
+        {
+            return CSS_ADAPTER_DEFAULT_GHOST_TEAM;
+        }
+    }
+    
+    return -1;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Gets the opposing player team index.
+ *
+ * @param team          Player team index to invert.
+ *
+ * @return              Opposing team index, -1 on error.
+ */
+CSSAdapter_GetOpposingPlayerTeam(teamIndex)
+{
+    if (teamIndex == CS_TEAM_T)
+    {
+        return CS_TEAM_CT;
+    }
+    else if (teamIndex == CS_TEAM_CT)
+    {
+        return CS_TEAM_T;
+    }
+    
+    return -1;
+}
+
+/*____________________________________________________________________________*/
 
 /**
  * Respawns a client.
@@ -362,6 +545,23 @@ public CSSAdapter_FlashlightOn(client)
 public CSSAdapter_FlashlightOff(client)
 {
     ThrowError("No code implemented!");
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Returns whether the specified weapon class is used as zombie claws.
+ *
+ * @param weaponClass       Weapon class name (without "weapon_" prefix).
+ */
+public bool:CSSAdapter_WeaponIsZombieClaws(const String:weaponClass[])
+{
+    if (StrEqual(weaponClass, "knife", false))
+    {
+        return true;
+    }
+    
+    return false;
 }
 
 

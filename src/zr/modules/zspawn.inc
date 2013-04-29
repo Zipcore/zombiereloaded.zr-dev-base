@@ -340,14 +340,14 @@ ZSpawn_SpawnClient(client)
     new Float:timelimit = GetConVarFloat(g_hCvarZSpawnTimeLimit);
     if (timelimit == 0 || g_hZSpawnTimer != INVALID_HANDLE)
     {
-        new VTeam:team = VTeam:TLib_VTeamStringToIndex(respawnteam);
+        new VTeam:team = IGame_VTeamStringToTeam(respawnteam);
         if (team == VTeam_Invalid)
         {
             LogMgr_Print(g_moduleZSpawn, LogType_Error, "Invalid cvar value", "Invalid team \"%s\" defined in cvar \"%s_zspawn_team\".  Assuming human.", respawnteam, PROJECT_CVAR_PREFIX);
             team = VTeam_Human;
         }
         
-        TLib_SpawnOnTeam(client, team);
+        TeamMgr_SpawnOnTeam(client, team);
     }
     else
     {
@@ -361,11 +361,11 @@ ZSpawn_SpawnClient(client)
             }
             case 0:
             {
-                TLib_SpawnOnTeam(client, VTeam_Zombie);
+                TeamMgr_SpawnOnTeam(client, VTeam_Zombie);
             }
             case 1:
             {
-                TLib_SpawnOnTeam(client, VTeam_Human);
+                TeamMgr_SpawnOnTeam(client, VTeam_Human);
             }
             default:
             {

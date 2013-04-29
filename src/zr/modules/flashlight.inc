@@ -110,7 +110,7 @@ public Action:Flashlight_OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3]
     if (impulse != FLASHLIGHT_IMPULSE)
         return Plugin_Continue;
     
-    if ( (GetConVarBool(g_hCvarFlashlightBlockZombies) && TLib_IsClientZombie(client)) || (GetConVarBool(g_hCvarFlashlightBlockHumans) && TLib_IsClientHuman(client)) )
+    if ( (GetConVarBool(g_hCvarFlashlightBlockZombies) && TeamMgr_IsClientZombie(client)) || (GetConVarBool(g_hCvarFlashlightBlockHumans) && TeamMgr_IsClientHuman(client)) )
         impulse = 0;
     
     return Plugin_Continue;

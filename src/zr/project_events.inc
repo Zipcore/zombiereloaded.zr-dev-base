@@ -69,27 +69,6 @@ new ProjectEvent:g_EvOnClientPostAdminCheck;
 // Custom project events.
 new ProjectEvent:g_EvOnClientReady;
 
-// CS:S events. (TODO: Move these to zr_core module.)
-#if defined PROJECT_GAME_CSS
-new ProjectEvent:g_EvRoundStart;
-new ProjectEvent:g_EvRoundFreezeEnd;
-new ProjectEvent:g_EvRoundEnd;
-new ProjectEvent:g_EvPlayerTeamPre;
-new ProjectEvent:g_EvPlayerTeam;
-new ProjectEvent:g_EvPlayerSpawn;
-new ProjectEvent:g_EvPlayerSpawnPost;   // Keep this one here, needed in OnGameFrame.
-new ProjectEvent:g_EvPlayerHurt;
-new ProjectEvent:g_EvPlayerDeath;
-new ProjectEvent:g_EvPlayerJump;
-new ProjectEvent:g_EvWeaponFire;
-//new ProjectEvent:g_EvWeaponEntityFire;
-#endif
-
-// TF2 events.
-#if defined PROJECT_GAME_TF2
-
-#endif
-
 /**
  * Datatypes that can be passed with each event to modules.
  * Don't touch this!
@@ -435,45 +414,6 @@ stock EventMgr_CreateEvents()
     
     // Custom project events.
     g_EvOnClientReady =             EventMgr_CreateEvent("Event_OnClientReady");            /** Client is connected, admin checked and cookies are loaded. */
-    
-    // CS:S events. (Moved to zr_core module.)
-    #if defined PROJECT_GAME_CSS
-        //g_EvRoundStart =            EventMgr_CreateEvent("Event_RoundStart");               /** Round has started. */
-        //g_EvRoundFreezeEnd =        EventMgr_CreateEvent("Event_RoundFreezeEnd");           /** Pre-round freezetime has finished. */
-        //g_EvRoundEnd =              EventMgr_CreateEvent("Event_RoundEnd");                 /** Round has ended. */
-        //g_EvPlayerTeamPre =         EventMgr_CreateEvent("Event_PlayerTeamPre");            /** Client has joined a team. (pre) */
-        //g_EvPlayerTeam =            EventMgr_CreateEvent("Event_PlayerTeam");               /** Client has joined a team. */
-        //g_EvPlayerSpawn =           EventMgr_CreateEvent("Event_PlayerSpawn");              /** Client has spawned. */
-        //g_EvPlayerSpawnPost =       EventMgr_CreateEvent("Event_PlayerSpawnPost");          /** Client has spawned (delayed event). */
-        //g_EvPlayerHurt =            EventMgr_CreateEvent("Event_PlayerHurt");               /** Client has been damaged. */
-        //g_EvPlayerDeath =           EventMgr_CreateEvent("Event_PlayerDeath");              /** Client has been killed. */
-        //g_EvPlayerJump =            EventMgr_CreateEvent("Event_PlayerJump");               /** Client has jumped. */
-        //g_EvWeaponFire =            EventMgr_CreateEvent("Event_WeaponFire");               /** Client has fired a weapon. */
-        //g_EvWeaponEntityFire =      EventMgr_CreateEvent("Event_WeaponEntityFire");         /** Client has fired a weapon. (returns weapon entity index) */
-    #endif
-    
-    // HL2DM events.
-    #if defined PROJECT_GAME_HL2DM
-    
-    #endif
-    
-    // DOD events.
-    #if defined PROJECT_GAME_DOD
-    
-    #endif
-    
-    // TF2 events.
-    #if defined PROJECT_GAME_TF2
-    
-    #endif
-    
-    // L4D events.
-    #if defined PROJECT_GAME_L4D
-    #endif
-    
-    // L4D2 events.
-    #if defined PROJECT_GAME_L4D2
-    #endif
 }
 
 // **********************************************

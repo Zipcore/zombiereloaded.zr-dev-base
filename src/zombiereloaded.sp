@@ -36,6 +36,12 @@
 #include "zr/base/wrappers"
 
 
+/******************
+ *   Interfaces   *
+ ******************/
+#include "zr/interfaces/interfaces"
+
+
 /*****************************
  *   Base project includes   *
  *****************************/
@@ -47,11 +53,6 @@
 #include "zr/base/eventmanager"
 #include "zr/base/modulemanager"
 
-
-/******************
- *   Interfaces   *
- ******************/
-#include "zr/interfaces/interfaces"
 
 /***************************
  *   Common Core Modules   *

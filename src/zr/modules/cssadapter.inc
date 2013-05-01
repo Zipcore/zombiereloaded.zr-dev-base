@@ -71,7 +71,7 @@ CSSAdapter_Register()
     g_moduleCSSAdapter = ModuleMgr_Register(moduledata);
     
     // Create events.
-    ZRCore_CreateCommonEvents();
+    // (None)
     
     // Register the OnEventsRegister event to register all events in it.
     EventMgr_RegisterEvent(g_moduleCSSAdapter, "Event_OnEventsRegister", "CSSAdapter_OnEventsRegister");
@@ -267,7 +267,7 @@ public Action:CSSAdapter_OnMyModuleDisable(String:refusalmsg[], maxlen)
  *
  * @return              CS:S team index, or -1 if invalid.
  */
-CSSAdapter_StringToTeamIndex(const String:teamName[])
+public CSSAdapter_StringToTeamIndex(const String:teamName[])
 {
     return CSSLib_StringToTeam(teamName);
 }
@@ -283,7 +283,7 @@ CSSAdapter_StringToTeamIndex(const String:teamName[])
  *
  * @return              Number of cells written.
  */
-CSSAdapter_TeamIndexToString(teamIndex, String:buffer[], maxlen)
+public CSSAdapter_TeamIndexToString(teamIndex, String:buffer[], maxlen)
 {
     return CSSLib_TeamToString(teamIndex, buffer, maxlen);
 }
@@ -298,7 +298,7 @@ CSSAdapter_TeamIndexToString(teamIndex, String:buffer[], maxlen)
  *
  * @return              True if it's a player team, false otherwise.
  */
-bool:CSSAdapter_IsPlayerTeamIndex(teamIndex)
+public bool:CSSAdapter_IsPlayerTeamIndex(teamIndex)
 {
     return CSSLib_IsPlayerTeam(teamIndex);
 }
@@ -312,7 +312,7 @@ bool:CSSAdapter_IsPlayerTeamIndex(teamIndex)
  *
  * @return              CS:S team index, or -1 on error.
  */
-stock CSSAdapter_GetDefaultIndexFor(VTeam:team)
+public CSSAdapter_GetDefaultIndexFor(VTeam:team)
 {
     switch (team)
     {
@@ -350,7 +350,7 @@ stock CSSAdapter_GetDefaultIndexFor(VTeam:team)
  *
  * @return              Opposing team index, -1 on error.
  */
-CSSAdapter_GetOpposingPlayerTeam(teamIndex)
+public CSSAdapter_GetOpposingPlayerTeam(teamIndex)
 {
     return CSSLib_GetOpposingPlayerTeam(teamIndex);
 }

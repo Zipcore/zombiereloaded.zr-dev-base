@@ -25,9 +25,6 @@
  * ============================================================================
  */
 
-// Include libraries.
-#include "zr/libraries/teamlib"
-
 /**
  * This module's identifier.
  */

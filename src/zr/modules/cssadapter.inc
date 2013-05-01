@@ -30,6 +30,8 @@
 #include <cstrike>
 #define REQUIRE_EXTENSIONS
 
+#include "zr/libraries/csslib"
+
 /**
  * This module's identifier.
  */
@@ -109,6 +111,9 @@ CSSAdapter_OnPluginStart()
  */
 CSSAdapter_Enable()
 {
+    // Prepare CS:S library.
+    CSSLib_SetupSDKCalls();
+    
     // Implement the game interface.
     CSSAdapter_ImplementInterface();
     
@@ -264,23 +269,7 @@ public Action:CSSAdapter_OnMyModuleDisable(String:refusalmsg[], maxlen)
  */
 CSSAdapter_StringToTeamIndex(const String:teamName[])
 {
-    if (StrEqual(teamName, "t", false)
-        || StrEqual(teamName, "terrorists", false))
-    {
-        return CS_TEAM_T;
-    }
-    else if (StrEqual(teamName, "ct", false)
-        || StrEqual(teamName, "counter-terrorists", false))
-    {
-        return CS_TEAM_CT;
-    }
-    else if (StrEqual(teamName, "spec", false)
-        || StrEqual(teamName, "spectators", false))
-    {
-        return CS_TEAM_SPECTATOR;
-    }
-    
-    return -1;
+    return CSSLib_StringToTeam(teamName);
 }
 
 /*____________________________________________________________________________*/
@@ -296,27 +285,7 @@ CSSAdapter_StringToTeamIndex(const String:teamName[])
  */
 CSSAdapter_TeamIndexToString(teamIndex, String:buffer[], maxlen)
 {
-    switch (teamIndex)
-    {
-        case CS_TEAM_NONE:
-        {
-            return strcopy(buffer, maxlen, "Unassigned");
-        }
-        case CS_TEAM_SPECTATOR:
-        {
-            return strcopy(buffer, maxlen, "Spectators");
-        }
-        case CS_TEAM_T:
-        {
-            return strcopy(buffer, maxlen, "Terrorists");
-        }
-        case CS_TEAM_CT:
-        {
-            return strcopy(buffer, maxlen, "Counter-Terrorists");
-        }
-    }
-    
-    return 0;
+    return CSSLib_TeamToString(teamIndex, buffer, maxlen);
 }
 
 /*____________________________________________________________________________*/
@@ -331,27 +300,7 @@ CSSAdapter_TeamIndexToString(teamIndex, String:buffer[], maxlen)
  */
 bool:CSSAdapter_IsPlayerTeamIndex(teamIndex)
 {
-    switch (teamIndex)
-    {
-        case CS_TEAM_NONE:
-        {
-            return false;
-        }
-        case CS_TEAM_SPECTATOR:
-        {
-            return false;
-        }
-        case CS_TEAM_T:
-        {
-            return true;
-        }
-        case CS_TEAM_CT:
-        {
-            return true;
-        }
-    }
-    
-    return false;
+    return CSSLib_IsPlayerTeam(teamIndex);
 }
 
 /*____________________________________________________________________________*/
@@ -403,16 +352,7 @@ stock CSSAdapter_GetDefaultIndexFor(VTeam:team)
  */
 CSSAdapter_GetOpposingPlayerTeam(teamIndex)
 {
-    if (teamIndex == CS_TEAM_T)
-    {
-        return CS_TEAM_CT;
-    }
-    else if (teamIndex == CS_TEAM_CT)
-    {
-        return CS_TEAM_T;
-    }
-    
-    return -1;
+    return CSSLib_GetOpposingPlayerTeam(teamIndex);
 }
 
 /*____________________________________________________________________________*/
@@ -462,34 +402,9 @@ public CSSAdapter_TerminateRound(VTeam:winner, Float:delay)
 {
     // TODO: Convert winning team to a round end reason for CS:S.
     new teamIndex = _:winner; // = TeamMgr_GetTeamIndex(winner);
-    new CSRoundEndReason:reason = CSSAdapter_TeamToReason(teamIndex);
+    new CSRoundEndReason:reason = CSSLib_TeamToReason(teamIndex);
     
     CS_TerminateRound(delay, reason);
-}
-
-/*____________________________________________________________________________*/
-
-/**
- * Takes a winning team index and returns its corresponding round end reason.
- * Ex: Takes index '2' and returns the Terrorists_Win round end reason.
- * 
- * @param teamindex     The team index that won the round.
- * 
- * @return              The round end reason. CSRoundEnd_GameStart if invalid
- *                      teamindex.
- */
-stock CSRoundEndReason:CSSAdapter_TeamToReason(teamIndex)
-{
-    if (teamIndex == CS_TEAM_T)
-    {
-        return CSRoundEnd_TerroristWin;
-    }
-    else if (teamIndex == CS_TEAM_CT)
-    {
-        return CSRoundEnd_CTWin;
-    }
-    
-    return CSRoundEnd_GameStart;
 }
 
 /*____________________________________________________________________________*/
@@ -518,9 +433,7 @@ public CSSAdapter_DropWeapon(client, weaponIndex, bool:toss)
  */
 public bool:CSSAdapter_FlashlightIsOn(client)
 {
-    ThrowError("No code implemented!");
-    // TODO: Move code from sdktoolslib. Let this module setup and prepare
-    //       flashlight SDK calls.
+    return CSSLib_FlashlightIsOn(client);
 }
 
 /*____________________________________________________________________________*/
@@ -532,7 +445,7 @@ public bool:CSSAdapter_FlashlightIsOn(client)
  */
 public CSSAdapter_FlashlightOn(client)
 {
-    ThrowError("No code implemented!");
+    CSSLib_FlashlightOn(client);
 }
 
 /*____________________________________________________________________________*/
@@ -544,7 +457,7 @@ public CSSAdapter_FlashlightOn(client)
  */
 public CSSAdapter_FlashlightOff(client)
 {
-    ThrowError("No code implemented!");
+    CSSLib_FlashlightOff(client);
 }
 
 /*____________________________________________________________________________*/
@@ -556,6 +469,7 @@ public CSSAdapter_FlashlightOff(client)
  */
 public bool:CSSAdapter_WeaponIsZombieClaws(const String:weaponClass[])
 {
+    // TODO: This could be configurable.
     if (StrEqual(weaponClass, "knife", false))
     {
         return true;

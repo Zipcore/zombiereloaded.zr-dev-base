@@ -27,8 +27,6 @@
 
 // Include libraries.
 #include "zr/libraries/cvarlib"
-#include "zr/libraries/sdktoolslib"
-#include "zr/libraries/teamlib"
 #include "zr/libraries/utilities"
 #include "zr/libraries/weaponlib"
 

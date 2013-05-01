@@ -317,7 +317,7 @@ public bool:ShopListLib_Remove(String:list[], maxlen, const String:item[], const
     new bool:success;
     
     // Put each item in a list.
-    new String:items[maxitems][maxitemlen]; // fuck i don't think SM supports dynamic allocation
+    new String:items[maxitems][maxitemlen];
     ExplodeString(list, token, items, maxitems, maxitemlen);
     
     // x = List index.
@@ -332,7 +332,7 @@ public bool:ShopListLib_Remove(String:list[], maxlen, const String:item[], const
         }
     }
     
-    new String:items_after[maxitems][maxitemlen]; // ^^
+    new String:items_after[maxitems][maxitemlen];
     new count;
     
     // x = List index.

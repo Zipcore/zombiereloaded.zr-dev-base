@@ -315,7 +315,7 @@ public ZTele_PlayerSpawn(client)
     // Check if we should find random spawn points or record the spawn point for a specific client.
     if (GetConVarBool(g_hCvarZTeleRandom))
     {
-        if (Util_IsVecInArray(vecLoc, g_vecZTeleSpawnPoints, g_iZTeleNumSpawnPoints) == -1)
+        if (Array_IsVecInArray(vecLoc, g_vecZTeleSpawnPoints, g_iZTeleNumSpawnPoints) == -1)
         {
             // Don't overflow the array.
             if (g_iZTeleNumSpawnPoints < sizeof(g_vecZTeleSpawnPoints))

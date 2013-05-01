@@ -76,7 +76,7 @@ ZRCore_Register()
     ZRCore_CreateCommonEvents();
     
     // Register the OnEventsRegister event to register all events in it.
-    EventMgr_RegisterEvent(g_moduleZRCore, "Event_OnEventsRegister",            "ZRCore_OnEventsRegister");
+    //EventMgr_RegisterEvent(g_moduleZRCore, "Event_OnEventsRegister",            "ZRCore_OnEventsRegister");
 }
 
 /*____________________________________________________________________________*/
@@ -87,7 +87,7 @@ ZRCore_Register()
 public ZRCore_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    ZRCore_CreateCommonEvents();
+    // (None)
 }
 
 /*____________________________________________________________________________*/

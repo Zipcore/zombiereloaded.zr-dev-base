@@ -437,6 +437,12 @@ stock Action:EventMgr_Forward(ProjectEvent:eventid, any:eventdata[][], numValues
         StartProfiling(profiler);
     #endif
     
+    // Validate event.
+    if (eventid == INVALID_EVENT)
+    {
+        ThrowError("Invalid event ID.");
+    }
+    
     new Function:func;
     new Module:module;
     new Action:result;

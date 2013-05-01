@@ -461,7 +461,7 @@ ZRCInfect_MotherZombie(override_count = 0)
 {
     // Create eligible player list.
     new Handle:adtClients;
-    new count = Util_BuildClientList(adtClients, UTILS_FILTER_TEAM | UTILS_FILTER_ALIVE | UTILS_FILTER_HUMAN);
+    new count = Util_BuildClientList(adtClients, UTILS_FILTER_TEAM | UTILS_FILTER_ALIVE, ZRCInfect_HumanFilter);
     
     // If there are no clients that can become a zombie then stop.
     if (count == 0)
@@ -536,6 +536,26 @@ ZRCInfect_MotherZombie(override_count = 0)
     CloseHandle(adtClients);
     
     return firstinfected;
+}
+
+/**
+ * Human filter callback for mother zombie selection.
+ *
+ * @param client        Client index.
+ * @param filters       General filter flags. See UTILS_FILTER_*.
+ * @param targetClient  Target client that use the filter. Use 0 if no target
+ *                      client.
+ *
+ * @return              True if client pass filter, false otherwise.
+ */
+public bool:ZRCInfect_HumanFilter(client, filters, targetClient)
+{
+    if (!TeamMgr_IsClientHuman(client))
+    {
+        return false;
+    }
+    
+    return true;
 }
 
 /**

@@ -26,11 +26,6 @@
  */
 
 /**
- * Include libraries.
- */
-#include "zr/libraries/teamlib"
-
-/**
  * Cvar handles.
  */
 new Handle:g_hCvarFlashlightBlockZombies;
@@ -128,8 +123,8 @@ public Flashlight_OnClientInfected(client, attacker, bool:mzombie)
     // Turn flashlight off if blocked for this client.
     if (GetConVarBool(g_hCvarFlashlightBlockZombies))
     {
-        if (SDKToolsLib_FlashlightIsOn(client))
-            SDKToolsLib_FlashlightTurnOff(client);
+        if (IGame_FlashlightIsOn(client))
+            IGame_FlashlightOff(client);
     }
 }
 
@@ -143,7 +138,7 @@ public Flashlight_OnClientHuman(client)
     // Turn flashlight off if blocked for this client.
     if (GetConVarBool(g_hCvarFlashlightBlockHumans))
     {
-        if (SDKToolsLib_FlashlightIsOn(client))
-            SDKToolsLib_FlashlightTurnOff(client);
+        if (IGame_FlashlightIsOn(client))
+            IGame_FlashlightOff(client);
     }
 }

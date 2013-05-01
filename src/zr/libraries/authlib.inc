@@ -324,7 +324,7 @@ stock bool:Auth_IsClientAuthorized(client, const String:groupList[], const Strin
  * @param flagList      List of flag names.
  * @param separator     Flag separator.
  *
- * @return              -0 if all valid, or entry index of invalid flag.
+ * @return              -1 if all valid, or entry index of invalid flag.
  */
 stock Auth_ValidateFlags(const String:flagList[], const String:separator[])
 {

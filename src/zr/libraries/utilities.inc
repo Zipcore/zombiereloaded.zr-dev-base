@@ -42,9 +42,7 @@
 #define UTILS_FILTER_UNASSIGNED   (1 << 1)    /** Only allow clients not on a team. */
 #define UTILS_FILTER_ALIVE        (1 << 2)    /** Only allow live clients. */
 #define UTILS_FILTER_DEAD         (1 << 3)    /** Only allow dead clients. */
-#define UTILS_FILTER_ZOMBIE       (1 << 4)    /** Only allow zombies. */
-#define UTILS_FILTER_HUMAN        (1 << 5)    /** Only allow humans. */
-#define UTILS_FILTER_CANTARGET    (1 << 6)    /** Only list clients that the menu recipient can target.  Needs target client!*/
+#define UTILS_FILTER_CANTARGET    (1 << 4)    /** Only list clients that the menu recipient can target.  Needs target client!*/
 
 /**
  * Type of boolean string.
@@ -57,8 +55,17 @@ enum Util_BoolStringType
     BoolType_YesNo
 }
 
-// Include libraries.
-#include "zr/libraries/teamlib"
+/**
+ * General client filter callback.
+ *
+ * @param client        Client index.
+ * @param filters       General filter flags. See UTILS_FILTER_*.
+ * @param targetClient  Target client that use the filter. Use 0 if no target
+ *                      client.
+ *
+ * @return              True if client pass filter, false otherwise.
+ */
+functag public bool:Util_ClientFilter(client, filters, targetClient);
 
 /**
  * Build an array of clients that pass the filters.
@@ -66,11 +73,12 @@ enum Util_BoolStringType
  * @param adtClients    The handle of the array.
  *                      Don't forget to call CloseHandle on it when finished!
  * @param filters       A bit field made up of UTILS_FILTER_* defines.  See top of file.
+ * @prarm customFilter  Optional callback for custom filter conditions.
  * @param targetclient  Creating the list for this client.  Can use filters such as UTILS_FILTER_CANTARGET if valid client is given.*  *                       
  * 
  * @return              Number of eligible clients.
  */
-stock Util_BuildClientList(&Handle:adtClients, filters, targetclient = 0)
+stock Util_BuildClientList(&Handle:adtClients, filters, Util_ClientFilter:customFilter = INVALID_FUNCTION, targetclient = 0)
 {
     adtClients = CreateArray();
     
@@ -106,23 +114,24 @@ stock Util_BuildClientList(&Handle:adtClients, filters, targetclient = 0)
                 continue;
         }
         
-        // TODO: Extend function to use a callback for custom filters.
-        /*if (TLib_IsClientZombie(client))
-        {
-            // The client is a zombie, so check if the filter is asking only for humans.
-            if (filters & UTILS_FILTER_HUMAN)
-                continue;
-        }
-        else
-        {
-            // The client is a human, so check if the filter is asking only for zombies.
-            if (filters & UTILS_FILTER_ZOMBIE)
-                continue;
-        }*/
-        
-        // Check if the menu recipient can target this client, if not then don't add to the menu.
+        // Check if the recipient can target this client, if not then don't add to the list.
         if (Util_IsClientInGame(targetclient) && (filters & UTILS_FILTER_CANTARGET && !CanUserTarget(targetclient, client)))
             continue;
+        
+        // Check custom filter.
+        if (customFilter != INVALID_FUNCTION)
+        {
+            new bool:result;
+            
+            Call_StartFunction(GetMyHandle(), customFilter);
+            Call_PushCell(client);
+            Call_PushCell(filters);
+            Call_PushCell(targetclient);
+            Call_Finish(result);
+            
+            if (result)
+                continue;
+        }
         
         // Add eligible client to array.
         PushArrayCell(adtClients, client);
@@ -173,22 +182,6 @@ stock Util_RemovePlayerItem(client, weaponindex)
 }
 
 /**
- * Switch a clients team only if their current one differs.
- * 
- * @param client    The client to switch.
- * @param team      The team index to switch client to.
- */
-/*stock Util_SwitchTeam(client, team)
-{
-    if (GetClientTeam(client) != team)
-    {
-        #if defined PROJECT_GAME_CSS
-            CS_SwitchTeam(client, team);
-        #endif
-    }
-}*/
-
-/**
  * Closes a handle and sets it to invalid handle.
  * 
  * @param handle    The handle to close.
@@ -203,27 +196,91 @@ stock Util_CloseHandle(&Handle:handle)
 }
 
 /**
- * Checks if a vector exists in a vector array.
- * 
- * @param vec       Vector to search for in array
- * @param vecs      Array to search in.
- * @param numvecs   Number of vectors in the array.
- * 
- * @return          Index in array that the vector is in, -1 if not found.
+ * Swaps the value in two cell variables.
+ *
+ * @param value1    Input/Output. First value.
+ * @param value2    Input/Output. Second value.
  */
-stock Util_IsVecInArray(Float:vec[3], Float:vecs[][3], numvecs)
+stock Util_SwapCell(&any:value1, &any:value2)
 {
-    for (new vindex; vindex < numvecs; vindex++)
-    {
-        if (vec[0] == vecs[vindex][0]
-            && vec[1] == vecs[vindex][1]
-            && vec[2] == vecs[vindex][2])
-        {
-            return vindex;
-        }
-    }
+    new any:temp = value1;
+    value1 = value2;
+    value2 = temp;
+}
+
+/**
+ * (from SMLIB 0.10.2)
+ * 
+ * Returns a random, uniform Integer number in the specified (inclusive) range.
+ * This is safe to use multiple times in a function.
+ * The seed is set automatically for each plugin.
+ * Rewritten by MatthiasVance, thanks.
+ * 
+ * @param min			Min value used as lower border
+ * @param max			Max value used as upper border
+ * @return				Random Integer number between min and max
+ */
+#define SIZE_OF_INT		2147483647		// without 0
+stock Util_GetRandomInt(min, max)
+{
+	new random = GetURandomInt();
+	
+	if (random == 0) {
+		random++;
+	}
+
+	return RoundToCeil(float(random) / (float(SIZE_OF_INT) / float(max - min + 1))) + min - 1;
+}
+
+/**
+ * Source: http://www.sourcemodplugins.org/smlib/
+ *
+ * Checks if the string is numeric.
+ * This correctly handles + - . in the String.
+ *
+ * @param str				String to check.
+ * @return					True if the String is numeric, false otherwise..
+ */
+stock bool:Util_IsNumeric(const String:str[])
+{
+	new x=0;
+	new dotsFound=0;
+	new numbersFound=0;
     
-    return -1;
+	if (str[x] == '+' || str[x] == '-')
+	{
+		x++;
+	}
+    
+	while (str[x] != '\0')
+	{
+		if (IsCharNumeric(str[x]))
+		{
+			numbersFound++;
+		}
+		else if (str[x] == '.')
+		{
+			dotsFound++;
+			
+			if (dotsFound > 1)
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+		
+		x++;
+	}
+	
+	if (!numbersFound)
+	{
+		return false;
+	}
+	
+	return true;
 }
 
 /**
@@ -321,48 +378,135 @@ stock Util_ReplyToCommandEx(client, const String:format[], any:...)
 }
 
 /**
- * Terminates the round.
+ * Converts a string to a boolean value.
  *
- * @param team      Winning team.
- * @param delay     Optional, CS:S only. Delay before new round starts.
- *                  Default is 3 seconds.
+ * @param value             String to convert.
+ * @param type              Type of boolean words.
+ * @param errorCallback     Function to call if a word is invalid. If not
+ *                          specified and type is not BoolType_Any it will throw
+ *                          an error.
+ *
+ * @return                  Boolean value.
+ *
+ * @error                   Invalid boolean word if type is not BoolType_Any.
  */
-/*stock Util_TerminateRound(VTeam:team, Float:delay = 3.0)
+stock bool:Util_StringToBool(const String:value[], Util_BoolStringType:type = BoolType_Any, Function:errorCallback = INVALID_FUNCTION)
 {
-    new teamIndex = TLib_GetGameTeamIndex(team);
+    /*
+    TODO: Make a parameter (by reference) for returning whether the error
+          callback was called or not.
+          
+          or
+          
+          Return 1, 0 or -1, where -1 indicate failure to convert.
+    */
     
-    #if defined PROJECT_GAME_CSS
-        new CSRoundEndReason:reason = Util_TeamToReason(teamIndex);
-        CS_TerminateRound(delay, reason);
-    #endif
+    if (strlen(value) == 0)
+    {
+        Util_CallFunctionOrFail(errorCallback, "Empty string.");
+        return false;
+    }
     
-    #if defined PROJECT_GAME_TF2
-        TF2_TerminateRound(teamIndex);
-    #endif
-}*/
-
-#if defined PROJECT_GAME_CSS
-
-/**
- * Takes a winning team index and returns its corresponding round end reason.
- * Ex: Takes index '2' and returns the Terrorists_Win round end reason.
- * 
- * @param teamindex     The team index that won the round.
- * 
- * @return              The round end reason.  CSRoundEnd_GameStart if invalid teamindex.
- */
-stock CSRoundEndReason:Util_TeamToReason(teamindex)
-{
-    if (teamindex == TEAM_2)
-        return CSRoundEnd_TerroristWin;
+    switch (type)
+    {
+        case BoolType_Any:
+        {
+            // Check if string is numeric.
+            if (!Util_IsNumeric(value))
+            {
+                // Nonzero values are considered true.
+                if (StringToInt(value) != 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            
+            if (StrEqual(value, "true", false)
+                || StrEqual(value, "on", false)
+                || StrEqual(value, "yes", false))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        case BoolType_TrueFalse:
+        {
+            return Util_BoolParserHandler(value, "true", "false", errorCallback);
+        }
+        case BoolType_OnOff:
+        {
+            return Util_BoolParserHandler(value, "on", "off", errorCallback);
+        }
+        case BoolType_YesNo:
+        {
+            return Util_BoolParserHandler(value, "yes", "no", errorCallback);
+        }
+    }
     
-    else if (teamindex == TEAM_3)
-        return CSRoundEnd_CTWin;
-    
-    return CSRoundEnd_GameStart;
+    ThrowError("Invalid type.");
+    return false;
 }
 
-#endif
+/**
+ * Helper parser for Util_StringToBool. Compares a value against two boolean
+ * words and returns the corresponding boolean value.
+ *
+ * Throws an error (or calls the error callback) for unknown words. If an error
+ * occour it will return false or not return at all.
+ *
+ * @param value             Value to check.
+ * @param trueWord          Word that's considered true.
+ * @param falseWord         Word that's considered false.
+ * @param errorCallback     Function to call if there's an error. If not
+ *                          specified it will throw an error instead.
+ */
+stock bool:Util_BoolParserHandler(const String:value[], const String:trueWord[], const String:falseWord[], Function:errorCallback = INVALID_FUNCTION)
+{
+    if (StrEqual(value, trueWord, false))
+    {
+        return true;
+    }
+    else if (StrEqual(value, falseWord, false))
+    {
+        return false;
+    }
+    else
+    {
+        Util_CallFunctionOrFail(errorCallback, "Invalid word.");
+        return false;
+    }
+}
+
+/**
+ * Call a simple function or throw an error.
+ *
+ * @param function      Function to call (no parameters).
+ * @param message       Error message if function is not specified.
+ *
+ * @return              Result of function call if called.
+ */
+stock any:Util_CallFunctionOrFail(Function:function, const String:message[])
+{
+    if (function)
+    {
+        new any:result;
+        Call_StartFunction(GetMyHandle(), function);
+        Call_Finish(result);
+        return result;
+    }
+    else
+    {
+        ThrowError(message);
+        return 0;
+    }
+}
 
 #if defined PROJECT_GAME_TF2
 

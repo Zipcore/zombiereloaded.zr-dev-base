@@ -25,9 +25,6 @@
  * ============================================================================
  */
 
-// Include libraries.
-#include "zr/libraries/sdktoolslib"
-
 /**
  * General module defines.
  */
@@ -41,12 +38,12 @@
 /**
  * Gamedata config handle.
  */
-new Handle:g_hGameConfig;
+//new Handle:g_hGameConfig;
 
 /**
  * Register this module.
  */
-GameData_Register()
+stock GameData_Register()
 {
     // Define all the module's data as layed out by enum ModuleData in project.inc.
     new moduledata[ModuleData];
@@ -71,6 +68,9 @@ GameData_Register()
  */
 GameData_OnPluginStart()
 {
+    // ZR doesn't need it's own gamedata file at the moment.
+    
+    /*
     // Register the module.
     GameData_Register();
     
@@ -82,11 +82,5 @@ GameData_OnPluginStart()
     {
         SetFailState("Can't load game config file (%s) from the \"gamedata\" directory.", GAMEDATA_FILE);
     }
-    
-    // Setup pre-defined SDKCalls.
-    #if defined PROJECT_GAME_CSS
-        SDKToolsLib_SetupPredefined(g_hGameConfig, SDKLibCall_FlashlightIsOn);
-        SDKToolsLib_SetupPredefined(g_hGameConfig, SDKLibCall_FlashlightTurnOn);
-        SDKToolsLib_SetupPredefined(g_hGameConfig, SDKLibCall_FlashlightTurnOff);
-    #endif
+    */
 }

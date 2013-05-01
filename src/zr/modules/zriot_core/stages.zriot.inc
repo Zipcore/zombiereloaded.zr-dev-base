@@ -30,9 +30,6 @@
  */
 #define STAGES_CONFIG_FILE "stages.txt"
 
-// Include libraries.
-#include "zr/libraries/teamlib"
-
 /**
  * This module's identifier.
  */

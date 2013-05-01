@@ -30,9 +30,7 @@
 #include "zr/libraries/functionlib"
 #include "zr/libraries/menulib"
 #include "zr/libraries/offsetlib"
-#include "zr/libraries/sdktoolslib"
 #include "zr/libraries/shoppinglistlib"
-#include "zr/libraries/teamlib"
 #include "zr/libraries/weaponlib"
 
 /**

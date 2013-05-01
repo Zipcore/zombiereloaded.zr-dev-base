@@ -36,7 +36,6 @@
 #include <sdktools>
 
 // Include libraries
-#include "zr/libraries/sdktoolslib"
 #include "zr/libraries/utilities"
 
 /**
@@ -238,7 +237,6 @@ stock WepLib_DropAllWeapons(client, bool:weapons[WEPLIB_SLOT_COUNT] = {true, ...
         weaponindex = GetPlayerWeaponSlot(client, weaponslot);
         if (weaponindex != -1)
         {
-            // TODO: TF2 support?
             CS_DropWeapon(client, weaponindex, true);
         }
     }

@@ -85,6 +85,11 @@ public bool:ZRCInfect_IsClientMZombie(client) { return g_bMotherZombie[client]; 
 new bool:g_bWasMotherZombie[MAXPLAYERS + 1];
 
 /**
+ * Keeps track of the round freeze state.
+ */
+new bool:ZRCInfect_RoundFreeze;
+
+/**
  * Register this module.
  */
 ZRCInfect_Register()
@@ -244,6 +249,9 @@ public ZRCInfect_RoundStart()
     
     // Fresh round, no zombies.
     g_bZombiesPresent = false;
+    
+    // Buy time starting.
+    ZRCInfect_RoundFreeze = true;
 }
 
 /**
@@ -255,31 +263,11 @@ public ZRCInfect_RoundFreezeEnd()
     Util_CloseHandle(g_hMotherInfect);
     Util_CloseHandle(g_hMotherInfectCountdown);
     
-    if (!g_bZombiesPresent)
-    {
-        // Get min and max times and pick a random time inbetween.
-        new Float:mintime = GetConVarFloat(g_hCvarMZombieMinTime);
-        new Float:maxtime = GetConVarFloat(g_hCvarMZombieMaxTime);
-        new randomtime = RoundToNearest(GetRandomFloat(mintime, maxtime));
-        
-        g_hMotherInfect = CreateTimer(float(randomtime), ZRCInfect_OutbreakTimer, false, TIMER_FLAG_NO_MAPCHANGE);
-        
-        // Start countdown if enabled.
-        if (GetConVarBool(g_hCvarMZombieCountdown))
-        {
-            // Create a pack of data to track countdown.
-            new Handle:hCountdownData = CreateDataPack();
-            WritePackCell(hCountdownData, 0);
-            WritePackCell(hCountdownData, randomtime);
-            g_hMotherInfectCountdown = CreateTimer(1.0, ZRCInfect_Countdown, hCountdownData, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
-            
-            // Print first message if the time until infection is below the defined value.
-            if (randomtime <= GetConVarInt(g_hCvarMZombieCountdownStart))
-            {
-                TransMgr_PrintTextAll(false, false, MsgFormat_None, MsgType_Center, g_moduleZRCInfect, false, "ZRC infect countdown", randomtime);
-            }
-        }
-    }
+    // Buy time over.
+    ZRCInfect_RoundFreeze = false;
+    
+    PrintToChatAll("Round freeze end, trigger outbreak timer.");
+    ZRCInfect_StartOutbreakTimer();
 }
 
 /**
@@ -319,11 +307,7 @@ public ZRCInfect_RoundEnd(winner)
  */
 public ZRCInfect_PlayerSpawn(client)
 {
-    // player_spawn is fired during the connection process, this is how we filter it out.
-    if (!Util_IsClientOnTeam(client))
-        return;
-    
-    CreateTimer(0.1, ZRCInfect_PlayerSpawnPost, 0, client);
+    CreateTimer(0.1, ZRCInfect_PlayerSpawnPost, client, 0);
 }
 
 /**
@@ -334,7 +318,8 @@ public ZRCInfect_PlayerSpawn(client)
  */
 public Action:ZRCInfect_PlayerSpawnPost(Handle:timer, any:client)
 {
-    // Automatically turn a client into a zombie or human depending on their virtual team.
+    // Automatically turn a client into a zombie or human depending on their
+    // virtual team.
     if (TeamMgr_IsClientZombie(client))
     {
         if (g_bZombiesPresent)
@@ -354,6 +339,10 @@ public Action:ZRCInfect_PlayerSpawnPost(Handle:timer, any:client)
         ZRCInfect_ClientToHuman(client);
         TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC spawn as human");
     }
+    
+    // Restart outbreak timer if no zombies and not already running (checked in
+    // this function).
+    ZRCInfect_StartOutbreakTimer();
 }
 
 /**
@@ -387,6 +376,54 @@ public ZRCInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon
 }
 
 /**
+ * Starts the mother zombie selection timer, if no zombies present and not
+ * already running.
+ */
+ZRCInfect_StartOutbreakTimer()
+{
+    // Check if outbreak timer is already running.
+    if (g_hMotherInfect != INVALID_HANDLE)
+    {
+        return;
+    }
+    
+    // Check if one or more zombies have already spawned.
+    if (g_bZombiesPresent)
+    {
+        return;
+    }
+    
+    // Check if buy time is in progress.
+    if (ZRCInfect_RoundFreeze)
+    {
+        return;
+    }
+    
+    // Get min and max times and pick a random time inbetween.
+    new Float:mintime = GetConVarFloat(g_hCvarMZombieMinTime);
+    new Float:maxtime = GetConVarFloat(g_hCvarMZombieMaxTime);
+    new randomtime = RoundToNearest(GetRandomFloat(mintime, maxtime));
+    
+    g_hMotherInfect = CreateTimer(float(randomtime), ZRCInfect_OutbreakTimer, false, TIMER_FLAG_NO_MAPCHANGE);
+    
+    // Start countdown if enabled.
+    if (GetConVarBool(g_hCvarMZombieCountdown))
+    {
+        // Create a pack of data to track countdown.
+        new Handle:hCountdownData = CreateDataPack();
+        WritePackCell(hCountdownData, 0);
+        WritePackCell(hCountdownData, randomtime);
+        g_hMotherInfectCountdown = CreateTimer(1.0, ZRCInfect_Countdown, hCountdownData, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE);
+        
+        // Print first message if the time until infection is below the defined value.
+        if (randomtime <= GetConVarInt(g_hCvarMZombieCountdownStart))
+        {
+            TransMgr_PrintTextAll(false, false, MsgFormat_None, MsgType_Center, g_moduleZRCInfect, false, "ZRC infect countdown", randomtime);
+        }
+    }
+}
+
+/**
  * Turn a human into a zombie.
  * 
  * @param client    The client being infected.
@@ -395,8 +432,8 @@ public ZRCInfect_PlayerHurt(victim, attacker, health, armor, const String:weapon
  */
 public ZRCInfect_ClientToZombie(client, attacker, bool:mzombie)
 {
-    PrintToChatAll("%N infected %N (hp to 500)", attacker, client);
-    SetEntityHealth(client, 500);
+    PrintToChatAll("%N infected %N (hp to 1000)", attacker, client);
+    SetEntityHealth(client, 1000);
     TeamMgr_SetClientTeam(client, VTeam_Zombie);
     
     // If this is the first zombie of the round then everyone needs to be placed on the right team.
@@ -414,6 +451,7 @@ public ZRCInfect_ClientToZombie(client, attacker, bool:mzombie)
         // Only fire the event if there is an attacker.
         if (attacker != 0)
         {
+            // TODO: Make an abstract death notification function in game interface.
             new Handle:hEventPlayerDeath = CreateEvent("player_death", true);
             SetEventInt(hEventPlayerDeath, "userid", GetClientUserId(client));
             SetEventInt(hEventPlayerDeath, "attacker", GetClientUserId(attacker));
@@ -463,7 +501,8 @@ ZRCInfect_MotherZombie(override_count = 0)
     new Handle:adtClients;
     new count = Util_BuildClientList(adtClients, UTILS_FILTER_TEAM | UTILS_FILTER_ALIVE, ZRCInfect_HumanFilter);
     
-    // If there are no clients that can become a zombie then stop.
+    // If there are no clients that can become a zombie then stop, wait for more
+    // players to connect.
     if (count == 0)
     {
         CloseHandle(adtClients);
@@ -486,7 +525,9 @@ ZRCInfect_MotherZombie(override_count = 0)
         if (blockconsinfect && g_bWasMotherZombie[client])
         {
             // Prune, subtract 1 from count, and backtrack one index.
-            RemoveFromArray(adtClients, cindex); count--; cindex--;
+            RemoveFromArray(adtClients, cindex);
+            count--;
+            cindex--;
         }
     }
     
@@ -569,7 +610,11 @@ public Action:ZRCInfect_OutbreakTimer(Handle:timer)
     g_hMotherInfect = INVALID_HANDLE;
     
     // Pick a random mother zombie.
-    ZRCInfect_MotherZombie();
+    if (ZRCInfect_MotherZombie() < 0)
+    {
+        // Not enough players to select a mother zombie. Waiting for more players.
+        TransMgr_PrintTextAll(false, false, MsgFormat_Plugin, MsgType_Chat, INVALID_MODULE, false, "ZRC infect waiting for players");
+    }
 }
 
 /**

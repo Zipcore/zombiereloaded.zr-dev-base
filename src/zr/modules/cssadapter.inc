@@ -610,6 +610,13 @@ public CSSAdapter_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroa
 {
     new client = GetClientOfUserId(GetEventInt(event, "userid"));
     
+    // Skip clients not on a team. These are clients who just connected and
+    // spawned as unassigned spectators.
+    if (!Util_IsClientOnTeam(client))
+    {
+        return;
+    }
+    
     // Forward event to all modules.
     new any:eventdata[1][1];
     eventdata[0][0] = client;

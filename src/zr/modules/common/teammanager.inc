@@ -388,7 +388,6 @@ TeamMgr_UpdateZombieTeam(Handle:zombieTeamCvar)
         
         new String:defaultZombieTeam[32];
         IGame_TeamIndexToString(zombieTeamIndex, defaultZombieTeam, sizeof(defaultZombieTeam));
-        //IGame_TeamToModTeamString(VTeam_Zombie, defaultZombieTeam, sizeof(defaultZombieTeam));
         
         LogMgr_Print(g_moduleTeamManager, LogType_Error, "Cvar Validation", "Invalid team name (%s) in cvar \"zr_zombie_team\".  Check the description in zombiereloaded.cfg.  Assigning zombies to: %s", zombieTeamName, defaultZombieTeam);
         

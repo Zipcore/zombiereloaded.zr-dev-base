@@ -5,7 +5,7 @@
 	// **********************************************
 
 
-	//                  Gameplay		       //
+	//                  Gameplay                   //
 	/////////////////////////////////////////////////
 
 	"ZRC gameplay round objective"
@@ -13,7 +13,7 @@
 		"en"		"The game is {green}Humans vs. Zombies{default}, the goal for zombies is to infect all humans by knifing them."
 	}
 
-	//                  Infection		       //
+	//                  Infection                  //
 	/////////////////////////////////////////////////
 
 	"ZRC client to mother zombie"
@@ -44,6 +44,11 @@
 	"ZRC infect disconnect"
 	{
 		"en"		"The last zombie left the game so the outbreak is restarting with you!"
+	}
+
+	"ZRC infect waiting for players"
+	{
+		"en"		"There's not enough players to choose a mother zombie. Waiting for more players to connect..."
 	}
 
 	// Center text

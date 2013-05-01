@@ -52,125 +52,6 @@ new Game:g_Game = Game_Unknown;
 new ProjectEvent:g_EvOnClientInfected;
 new ProjectEvent:g_EvOnClientHuman;
 
-// Enable when migration from project_events.inc is complete. Write nice event
-//   documentation for each event.
-
-/**
- * Called when round has started.
- */
-// public OnRoundStart()
-//new ProjectEvent:g_EvRoundStart;
-
-/**
- * Called when pre-round freeze time has finished.
- */
-// public OnRoundFreezeEnd()
-//new ProjectEvent:g_EvRoundFreezeEnd;
-
-/**
- * Called when round has ended.
- *
- * @param winner        Winner team.
- */
-// public OnRoundEnd(VTeam:winner)
-//new ProjectEvent:g_EvRoundEnd;
-
-/**
- * Called when player is about to join a team.
- *
- * @param client        Client index.
- * @param team          Team client is about to join.
- * @param oldTeam       Old team before changing team.
- * @param disconnect    Team change because player disconnects.
- *
- * @return              Plugin_Handled to block event (and team change).
- *                      Plugin_Continue to allow event.
- */
-// public Action:OnPlayerTeamPre(client, VTeam:team, VTeam:oldTeam, bool:disconnect)
-//new ProjectEvent:g_EvPlayerTeamPre;
-
-/**
- * Called when player has joined a team.
- *
- * @param client        Client index.
- * @param team          Team client joined.
- * @param oldTeam       Old team before changing team.
- * @param disconnect    Team change because player disconnects.
- */
-// public OnPlayerTeam(client, VTeam:team, VTeam:oldTeam, bool:disconnect)
-//new ProjectEvent:g_EvPlayerTeam;
-
-/**
- * Player has spawned.
- *
- * Note: This event is NOT called when client is spawning in the game (the first
- *       time they see the map, before selecting a team).
- *
- * @param client        Client index.
- */
-// public OnPlayerSpawn(client)
-//new ProjectEvent:g_EvPlayerSpawn;
-
-/**
- * Player has spawned. Delayed post event. Delay defined in
- * PROJECT_SPAWN_POST_DELAY in project_events.inc.
- *
- * Note: This event is NOT called when client is spawning in the game (the first
- *       time they see the map, before selecting a team).
- *
- * @param client        Client index.
- */
-// public OnPlayerSpawnPost(client)
-// Declared in project_events.inc because of special treatment in OnGameFrame.
-
-/**
- * Player has been damaged.
- *
- * @param victim        Victim client index.
- * @param attacker      Attacker client index. It may be the world.
- * @param health        Remaining health of victim.
- * @param armor         Remaining armor of victim.
- * @param weapon        Weapon class name used to hurt the victim. No "weapon_"
- *                      prefix.
- * @param dmgHealth     Amount of health the victim lost.
- * @param dmgArmor      Amount of armor the victim lost.
- * @param hitgroup      Index of hit group on the victim that was damaged.
- */
-// public OnPlayerHurt(victim, attacker, health, armor, const String:weapon[], dmgHealth, dmgArmor, hitgroup)
-//new ProjectEvent:g_EvPlayerHurt;
-
-/**
- * Player died.
- *
- * @param victim        Client who died.
- * @param attacker      Attacker client index. It may be the world.
- * @param weapon        Weapon class name used to kill the victim. No "weapon_"
- *                      prefix.
- * @param headshot      Whether the victim died of a headshot.
- */
-// public OnPlayerDeath(victim, attacker, const String:weapon[], bool:headshot)
-//new ProjectEvent:g_EvPlayerDeath;
-
-/**
- * Player jumped.
- *
- * @param client        Client index.
- */
-// public OnPlayerJump(client)
-//new ProjectEvent:g_EvPlayerJump;
-
-/**
- * Player has fired a weapon.
- *
- * @param client        Client who fired weapon.
- * @param weapon        Weapon class name. No "weapon_" prefix.
- */
-// public Action:OnPlayerWeaponFire(client, const String:weapon[])
-//new ProjectEvent:g_EvWeaponFire;
-
-//new ProjectEvent:g_EvWeaponEntityFire;
-
-
 /*____________________________________________________________________________*/
 
 /**
@@ -195,7 +76,7 @@ ZRCore_Register()
     ZRCore_CreateCommonEvents();
     
     // Register the OnEventsRegister event to register all events in it.
-    //EventMgr_RegisterEvent(g_moduleZRCore, "Event_OnEventsRegister",              "ZRCore_OnEventsRegister");
+    EventMgr_RegisterEvent(g_moduleZRCore, "Event_OnEventsRegister",            "ZRCore_OnEventsRegister");
 }
 
 /*____________________________________________________________________________*/
@@ -203,12 +84,11 @@ ZRCore_Register()
 /**
  * Register all events here.
  */
-/*public ZRCore_OnEventsRegister()
+public ZRCore_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    // (Currently none. Not ready to migrate yet.)
-    //ZRCore_CreateCommonEvents();
-}*/
+    ZRCore_CreateCommonEvents();
+}
 
 /*____________________________________________________________________________*/
 

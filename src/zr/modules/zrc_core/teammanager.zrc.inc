@@ -79,8 +79,8 @@ public ZRCTM_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZRCTM, "Event_PlayerSpawn",                  "ZRCTM_PlayerSpawn");
     
     // Register custom events.
-    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnClientInfected",          "ZRCTM_OnClientInfected");
-    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnClientHuman",             "ZRCTM_OnClientHuman");
+    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnClientInfected",             "ZRCTM_OnClientInfected");
+    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnClientHuman",                "ZRCTM_OnClientHuman");
 }
 
 /**

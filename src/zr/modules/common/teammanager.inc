@@ -334,6 +334,37 @@ TeamMgr_UpdateClientTeams(bool:silent = true)
 /*____________________________________________________________________________*/
 
 /**
+ * Updates all connected clients' teams to the specified team.
+ *
+ * @param team              New team to set on clients.
+ * @param playingTeamOnly   (Optional) Only update clients who are on a playing
+ *                          team (zombies/humans). Default is true.
+ */
+TeamMgr_SetClientTeams(VTeam:team, bool:playingTeamOnly = true)
+{
+    for (new client = 1; client <= MaxClients; client++)
+    {
+        if (!IsClientInGame(client))
+        {
+            continue;
+        }
+        
+        new VTeam:currentTeam = TeamMgr_GetClientTeam(client);
+        
+        // Skip players not on a playing team if enabled.
+        if (playingTeamOnly && !IGame_IsPlayerTeam(currentTeam))
+        {
+            continue;
+        }
+        
+        // Set new team.
+        TeamMgr_SetClientTeam(client, team);
+    }
+}
+
+/*____________________________________________________________________________*/
+
+/**
  * Spawns a client on a given virtual team.
  * Note: This also sets the client's virtual team to the given team.
  * 
@@ -362,6 +393,8 @@ TeamMgr_SetTeamIndex(VTeam:team, teamIndex)
     TeamMgr_IndexForVTeam[team] = teamIndex;
     TeamMgr_VTeamForIndex[teamIndex] = team;
 }
+
+/*____________________________________________________________________________*/
 
 /**
  * Update the game teams associated with the virtual teams, as set by cvar.

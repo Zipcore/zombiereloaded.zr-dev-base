@@ -21,10 +21,6 @@ public <FuncPrefix>_OnEventsRegister()
     //EventMgr_RegisterEvent(g_module<ModuleVarName>, "Event_OnMyCoreShutdown",         "<FuncPrefix>_OnMyCoreShutdown");
     //EventMgr_RegisterEvent(g_module<ModuleVarName>, "Event_OnMyCoreActivate",         "<FuncPrefix>_OnMyCoreActivate");
     //EventMgr_RegisterEvent(g_module<ModuleVarName>, "Event_OnGameRulesApplied",       "<FuncPrefix>_OnGameRulesApplied");
-    
-    #if defined PROJECT_GAME_CSS
-    
-    #endif
 }
 
 /**

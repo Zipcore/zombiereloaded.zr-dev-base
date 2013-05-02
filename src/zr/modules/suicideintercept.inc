@@ -73,10 +73,6 @@ public SuiciIntcpt_OnEventsRegister()
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleSuiciIntcpt, "Event_OnMyModuleEnable",       "SuiciIntcpt_OnMyModuleEnable");
     EventMgr_RegisterEvent(g_moduleSuiciIntcpt, "Event_OnMyModuleDisable",      "SuiciIntcpt_OnMyModuleDisable");
-    
-    #if defined PROJECT_GAME_CSS
-    
-    #endif
 }
 
 /**

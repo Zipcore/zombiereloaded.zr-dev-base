@@ -59,10 +59,6 @@ public AntiStick_OnEventsRegister()
 {
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleAntiStick, "Hook_ShouldCollide",             "AntiStick_ShouldCollide");
-    
-    #if defined PROJECT_GAME_CSS
-    
-    #endif
 }
 
 /**

@@ -91,10 +91,6 @@ public ZAdmin_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZAdmin, "Event_OnZMenuCreated",              "ZAdmin_OnZMenuCreated");
     EventMgr_RegisterEvent(g_moduleZAdmin, "Event_OnMyModuleEnable",            "ZAdmin_OnMyModuleEnable");
     EventMgr_RegisterEvent(g_moduleZAdmin, "Event_OnMyModuleDisable",           "ZAdmin_OnMyModuleDisable");
-    
-    #if defined PROJECT_GAME_CSS
-    
-    #endif
 }
 
 /**

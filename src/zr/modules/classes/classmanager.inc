@@ -397,11 +397,9 @@ public ClassMgr_OnEventsRegister()
     
     EventMgr_RegisterEvent(g_moduleClassMgr, "Event_OnClassSelected",           "ClassMgr_OnClassSelected");
     
-    #if defined PROJECT_GAME_CSS
-        EventMgr_RegisterEvent(g_moduleClassMgr, "Event_PlayerSpawn",           "ClassMgr_PlayerSpawn");
-        EventMgr_RegisterEvent(g_moduleClassMgr, "Event_PlayerSpawnPost",       "ClassMgr_PlayerSpawnPost");
-        EventMgr_RegisterEvent(g_moduleClassMgr, "Event_PlayerDeath",           "ClassMgr_PlayerDeath");
-    #endif
+    EventMgr_RegisterEvent(g_moduleClassMgr, "Event_PlayerSpawn",           "ClassMgr_PlayerSpawn");
+    EventMgr_RegisterEvent(g_moduleClassMgr, "Event_PlayerSpawnPost",       "ClassMgr_PlayerSpawnPost");
+    EventMgr_RegisterEvent(g_moduleClassMgr, "Event_PlayerDeath",           "ClassMgr_PlayerDeath");
 }
 
 /**

@@ -92,10 +92,6 @@ public SFX_OnEventsRegister()
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleSFX, "Event_OnClientInfected",               "SFX_OnClientInfected");
     EventMgr_RegisterEvent(g_moduleSFX, "Event_OnClientHuman",                  "SFX_OnClientHuman");
-    
-    #if defined PROJECT_GAME_CSS
-    
-    #endif
 }
 
 /**

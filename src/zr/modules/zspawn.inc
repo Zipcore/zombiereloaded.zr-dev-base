@@ -90,14 +90,10 @@ public ZSpawn_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnMapStart",                  "ZSpawn_OnMapStart");
     EventMgr_RegisterEvent(g_moduleZSpawn, "Event_OnClientDisconnect",          "ZSpawn_OnClientDisconnect");
     
-    #if defined PROJECT_GAME_CSS
-    
     EventMgr_RegisterEvent(g_moduleZSpawn, "Event_RoundStart",                  "ZSpawn_RoundStart");
     EventMgr_RegisterEvent(g_moduleZSpawn, "Event_RoundFreezeEnd",              "ZSpawn_RoundFreezeEnd");
     EventMgr_RegisterEvent(g_moduleZSpawn, "Event_RoundEnd",                    "ZSpawn_RoundEnd");
     EventMgr_RegisterEvent(g_moduleZSpawn, "Event_PlayerDeath",                 "ZSpawn_PlayerDeath");
-    
-    #endif
 }
 
 /**
@@ -191,8 +187,6 @@ public ZSpawn_OnClientDisconnect(client)
     AuthCache_AddClient(g_hZSpawnAuthCache, client);
 }
 
-#if defined PROJECT_GAME_CSS
-
 /**
  * Round has started.
  */
@@ -243,8 +237,6 @@ public ZSpawn_PlayerDeath(victim, attacker, const String:weapon[], bool:headshot
     // Add client to cache.
     AuthCache_AddClient(g_hZSpawnAuthCache, victim);
 }
-
-#endif
 
 /**
  * ZSpawn timer callback.

@@ -91,11 +91,7 @@ public Fog_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleFog, "Event_OnMyModuleDisable",              "Fog_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleFog, "Event_OnConfigsExecuted",              "Fog_OnConfigsExecuted");
     
-    #if defined PROJECT_GAME_CSS
-    
     EventMgr_RegisterEvent(g_moduleFog, "Event_RoundStart",                     "Fog_RoundStart");
-    
-    #endif
 }
 
 /**
@@ -234,8 +230,6 @@ public Fog_OnConfigsExecuted()
     Fog_Update();
 }
 
-#if defined PROJECT_GAME_CSS
-
 /**
  * Round has started.
  */
@@ -248,8 +242,6 @@ public Fog_RoundStart()
         g_bFogSettingsChanged = false;
     }
 }
-
-#endif
 
 /**
  * Private stocks.

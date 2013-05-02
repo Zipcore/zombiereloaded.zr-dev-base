@@ -160,7 +160,9 @@ public ZRCTM_RoundStart()
  */
 public ZRCTM_RoundEnd(VTeam:winner)
 {
-    // TODO: Turn everyone into humans, so they can pickup weapons.
+    // Turn everyone into humans, so they can pickup weapons. Only do this for
+    // playing clients.
+    TeamMgr_SetClientTeams(VTeam_Human, true);
     
     ZRCTM_BalanceTeams();
 }
@@ -232,6 +234,7 @@ public ZRCTM_PlayerSpawn(client)
 {
     // TODO: Assign player to a team if not assigned. Decide which team
     //       according to spawn team cvar and if zombies are present.
+    TeamMgr_SetClientTeam(client, VTeam_Human);
     
     // Move client the right team for their virtual team if there are zombies present.
     if (g_bZombiesPresent)

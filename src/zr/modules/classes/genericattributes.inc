@@ -142,8 +142,6 @@ public ClsGeneric_OnEventsRegister()
     //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClientPutInServer",     "ClsGeneric_ClientPutInServer");
     //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClientDisconnect",      "ClsGeneric_OnClientDisconnect");
     
-    #if defined PROJECT_GAME_CSS
-    
     //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_RoundStart",              "ClsGeneric_RoundStart");
     //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_RoundFreezeEnd",          "ClsGeneric_RoundFreezeEnd");
     //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_RoundEnd",                "ClsGeneric_RoundEnd");
@@ -153,8 +151,6 @@ public ClsGeneric_OnEventsRegister()
     //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_PlayerDeath",             "ClsGeneric_PlayerDeath");
     //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_PlayerJump",              "ClsGeneric_PlayerJump");
     //EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_WeaponFire",              "ClsGeneric_WeaponFire");
-    
-    #endif
     
     EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassClear",                "ClsGeneric_OnClassClear");
     EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassAttribLoad",           "ClsGeneric_OnClassAttribLoad");

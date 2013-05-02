@@ -126,8 +126,6 @@ public ModelMgr_OnEventsRegister()
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnClientDisconnect",      "ModelMgr_OnClientDisconnect");
     EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnClientPostAdminCheck",    "ModelMgr_OnClientPostAdminCheck");
     
-    #if defined PROJECT_GAME_CSS
-    
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_RoundStart",              "ModelMgr_RoundStart");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_RoundFreezeEnd",          "ModelMgr_RoundFreezeEnd");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_RoundEnd",                "ModelMgr_RoundEnd");
@@ -137,8 +135,6 @@ public ModelMgr_OnEventsRegister()
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_PlayerDeath",             "ModelMgr_PlayerDeath");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_PlayerJump",              "ModelMgr_PlayerJump");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_WeaponFire",              "ModelMgr_WeaponFire");
-    
-    #endif
 }
 
 /**

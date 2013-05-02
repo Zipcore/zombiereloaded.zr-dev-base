@@ -108,8 +108,6 @@ public Cls<FuncPrefix>_OnEventsRegister()
     //EventMgr_RegisterEvent(g_moduleCls<ModuleVarName>, "Event_OnClientPutInServer",     "Cls<FuncPrefix>_OnClientPutInServer");
     //EventMgr_RegisterEvent(g_moduleCls<ModuleVarName>, "Event_OnClientDisconnect",      "Cls<FuncPrefix>_OnClientDisconnect");
     
-    #if defined PROJECT_GAME_CSS
-    
     //EventMgr_RegisterEvent(g_moduleCls<ModuleVarName>, "Event_RoundStart",              "Cls<FuncPrefix>_RoundStart");
     //EventMgr_RegisterEvent(g_moduleCls<ModuleVarName>, "Event_RoundFreezeEnd",          "Cls<FuncPrefix>_RoundFreezeEnd");
     //EventMgr_RegisterEvent(g_moduleCls<ModuleVarName>, "Event_RoundEnd",                "Cls<FuncPrefix>_RoundEnd");
@@ -119,8 +117,6 @@ public Cls<FuncPrefix>_OnEventsRegister()
     //EventMgr_RegisterEvent(g_moduleCls<ModuleVarName>, "Event_PlayerDeath",             "Cls<FuncPrefix>_PlayerDeath");
     //EventMgr_RegisterEvent(g_moduleCls<ModuleVarName>, "Event_PlayerJump",              "Cls<FuncPrefix>_PlayerJump");
     //EventMgr_RegisterEvent(g_moduleCls<ModuleVarName>, "Event_WeaponFire",              "Cls<FuncPrefix>_WeaponFire");
-    
-    #endif
     
     EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassAttribLoad",           "Cls<FuncPrefix>_OnClassAttribLoad");
     EventMgr_RegisterEvent(g_moduleClsGeneric, "Event_OnClassValidate",             "Cls<FuncPrefix>_OnClassValidate");

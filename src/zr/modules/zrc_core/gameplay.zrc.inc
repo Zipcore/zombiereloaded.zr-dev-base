@@ -76,13 +76,9 @@ public ZRCGPlay_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnMapStart",                "ZRCGPlay_OnMapStart");
     EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_OnClientInfected",          "ZRCGPlay_OnClientInfected");
     
-    #if defined PROJECT_GAME_CSS
-    
     EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_RoundStart",                "ZRCGPlay_RoundStart");
     EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_RoundFreezeEnd",            "ZRCGPlay_RoundFreezeEnd");
     EventMgr_RegisterEvent(g_moduleZRCGPlay, "Event_RoundEnd",                  "ZRCGPlay_RoundEnd");
-    
-    #endif
 }
 
 /**

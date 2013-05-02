@@ -83,10 +83,6 @@ public SndProfs_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleSndProfs, "Event_OnMyModuleEnable",          "SndProfs_OnMyModuleEnable");
     EventMgr_RegisterEvent(g_moduleSndProfs, "Event_OnMyModuleDisable",         "SndProfs_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleSndProfs, "Event_OnMapStart",                "SndProfs_OnMapStart");
-    
-    #if defined PROJECT_GAME_CSS
-    
-    #endif
 }
 
 /**

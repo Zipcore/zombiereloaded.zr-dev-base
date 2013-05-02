@@ -82,15 +82,11 @@ public Napalm_OnEventsRegister()
     EventMgr_RegisterEvent(g_moduleNapalm, "Event_OnClientPutInServer",         "Napalm_OnClientPutInServer");
     EventMgr_RegisterEvent(g_moduleNapalm, "Event_OnClientDisconnect",          "Napalm_OnClientDisconnect");
     
-    #if defined PROJECT_GAME_CSS
-    
     EventMgr_RegisterEvent(g_moduleNapalm, "Event_PlayerSpawn",                 "Napalm_PlayerSpawn");
     EventMgr_RegisterEvent(g_moduleNapalm, "Event_PlayerHurt",                  "Napalm_PlayerHurt");
     EventMgr_RegisterEvent(g_moduleNapalm, "Event_PlayerDeath",                 "Napalm_PlayerDeath");
     EventMgr_RegisterEvent(g_moduleNapalm, "Event_WeaponFire",                  "Napalm_WeaponFire");
     EventMgr_RegisterEvent(g_moduleNapalm, "Hook_OnTakeDamage",                 "Napalm_OnTakeDamage");
-    
-    #endif
 }
 
 /**

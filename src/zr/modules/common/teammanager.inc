@@ -316,9 +316,9 @@ TeamMgr_MoveClientToTeam(client, bool:silent = false)
  * Moves all clients to the matching mod specific team they're bound to.
  *
  * @param silent    (Optional) Don't throw error if team is invalid. Useful when
- *                  cleaning up after a client disconnected. Default is false.
+ *                  cleaning up after a client disconnected. Default is true.
  */
-TeamMgr_UpdateClientTeams(bool:silent = false)
+TeamMgr_UpdateClientTeams(bool:silent = true)
 {
     for (new client = 1; client <= MaxClients; client++)
     {

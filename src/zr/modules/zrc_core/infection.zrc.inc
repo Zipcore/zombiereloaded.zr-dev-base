@@ -266,7 +266,6 @@ public ZRCInfect_RoundFreezeEnd()
     // Buy time over.
     ZRCInfect_RoundFreeze = false;
     
-    PrintToChatAll("Round freeze end, trigger outbreak timer.");
     ZRCInfect_StartOutbreakTimer();
 }
 
@@ -432,6 +431,12 @@ ZRCInfect_StartOutbreakTimer()
  */
 public ZRCInfect_ClientToZombie(client, attacker, bool:mzombie)
 {
+    // Temporary bug trap.
+    if (ZRCInfect_RoundFreeze)
+    {
+        ThrowError("Infect during round freeze. This is a bug, unless an admin did it.");
+    }
+    
     PrintToChatAll("%N infected %N (hp to 1000)", attacker, client);
     SetEntityHealth(client, 1000);
     TeamMgr_SetClientTeam(client, VTeam_Zombie);

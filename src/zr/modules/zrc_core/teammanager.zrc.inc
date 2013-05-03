@@ -251,12 +251,15 @@ static stock ZRCTM_BalanceTeams()
     
     for (new client = 1; client <= MaxClients; client++)
     {
+        // Skip players not connected.
         if (!IsClientInGame(client))
             continue;
         
+        // Skip players not in zombie or human teams.
         if (!TeamMgr_IsClientOnPlayerTeam(client))
             continue;
         
+        // Switch team in mod. The client's virtual team is unchanged.
         if (team1)
             IGame_SwitchTeam(client, VTeam_Zombie);
         else

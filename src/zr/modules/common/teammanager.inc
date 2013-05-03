@@ -397,6 +397,16 @@ TeamMgr_SetTeamIndex(VTeam:team, teamIndex)
 /*____________________________________________________________________________*/
 
 /**
+ * Gets mod specific team index for the virtual team.
+ */
+TeamMgr_GetTeamIndex(VTeam:team)
+{
+    return TeamMgr_IndexForVTeam[team];
+}
+
+/*____________________________________________________________________________*/
+
+/**
  * Update the game teams associated with the virtual teams, as set by cvar.
  *
  * @param zombieTeamCvar    Handle to cvar with mod specific team name that

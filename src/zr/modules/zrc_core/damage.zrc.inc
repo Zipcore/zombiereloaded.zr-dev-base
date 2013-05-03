@@ -113,8 +113,8 @@ public Action:ZRCDmg_TraceAttack(victim, &attacker, &Float:damage, &damagetype)
     
     #if defined PROJECT_GAME_CSS || defined PROJECT_GAME_TF2
     
-    // Block clients on the same team from attacking eachother, if friendly fire
-    // is disabled.
+    // Block clients on the same virtual team from attacking eachother, if
+    // friendly fire is disabled.
     // Ex: Terrorist human will not be able to shoot Counter-Terrorist human.
     if (!GetConVarBool(g_hCvarMPFF))
     {

@@ -85,14 +85,14 @@ CSSAdapter_Register()
 public CSSAdapter_OnEventsRegister()
 {
     // Register all the events needed for this module.
-    EventMgr_RegisterEvent(g_moduleCSSAdapter, "Event_OnMyModuleDisable", "CSSAdapter_OnMyModuleDisable");
-    EventMgr_RegisterEvent(g_moduleCSSAdapter, "Event_OnMyModuleEnable", "CSSAdapter_OnMyModuleEnable");
+    //EventMgr_RegisterEvent(g_moduleCSSAdapter, "Event_OnMyModuleDisable", "CSSAdapter_OnMyModuleDisable");
+    //EventMgr_RegisterEvent(g_moduleCSSAdapter, "Event_OnMyModuleEnable", "CSSAdapter_OnMyModuleEnable");
 }
 
 /*____________________________________________________________________________*/
 
 /**
- * Plugin is loading.
+ * Plugin is loading. Called by zrcore module.
  *
  * Once enabled, this module is supposed to stay enabled.
  */
@@ -377,8 +377,8 @@ public CSSAdapter_RespawnPlayer(client)
  */
 public CSSAdapter_SwitchTeam(client, VTeam:team)
 {
-    // TODO: Convert virtual team to mod specific team index.
-    new teamIndex = _:team; // = TeamMgr_GetTeamIndex(team);
+    // Convert virtual team to CS:S team index.
+    new teamIndex = TeamMgr_GetTeamIndex(team);
     
     // Only switch team if not already on that team.
     if (GetClientTeam(client) != teamIndex)
@@ -400,8 +400,8 @@ public CSSAdapter_SwitchTeam(client, VTeam:team)
  */
 public CSSAdapter_TerminateRound(VTeam:winner, Float:delay)
 {
-    // TODO: Convert winning team to a round end reason for CS:S.
-    new teamIndex = _:winner; // = TeamMgr_GetTeamIndex(winner);
+    // Convert winning team to a round end reason for CS:S.
+    new teamIndex = TeamMgr_GetTeamIndex(winner);
     new CSRoundEndReason:reason = CSSLib_TeamToReason(teamIndex);
     
     CS_TerminateRound(delay, reason);

@@ -404,6 +404,12 @@ public CSSAdapter_TerminateRound(VTeam:winner, Float:delay)
     new teamIndex = TeamMgr_GetTeamIndex(winner);
     new CSRoundEndReason:reason = CSSLib_TeamToReason(teamIndex);
     
+    // Bug trap.
+    if (winner != VTeam_Invalid && reason == CSRoundEnd_GameStart)
+    {
+        ThrowError("[BUG] Invalid round end reason.");
+    }
+    
     CS_TerminateRound(delay, reason);
 }
 

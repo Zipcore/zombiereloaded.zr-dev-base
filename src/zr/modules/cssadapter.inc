@@ -401,13 +401,17 @@ public CSSAdapter_SwitchTeam(client, VTeam:team)
 public CSSAdapter_TerminateRound(VTeam:winner, Float:delay)
 {
     // Convert winning team to a round end reason for CS:S.
-    new teamIndex = TeamMgr_GetTeamIndex(winner);
-    new CSRoundEndReason:reason = CSSLib_TeamToReason(teamIndex);
+    new CSRoundEndReason:reason;
     
-    // Bug trap.
-    if (winner != VTeam_Invalid && reason == CSRoundEnd_GameStart)
+    if (winner == VTeam_Invalid)
     {
-        ThrowError("[BUG] Invalid round end reason.");
+        // No winner. Use GameStart as reason.
+        reason = CSRoundEnd_GameStart;
+    }
+    else
+    {
+        new teamIndex = TeamMgr_GetTeamIndex(winner);
+        reason = CSSLib_TeamToReason(teamIndex);
     }
     
     CS_TerminateRound(delay, reason);

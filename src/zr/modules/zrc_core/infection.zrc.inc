@@ -226,6 +226,12 @@ public ZRCInfect_OnClientDisconnect(client)
     // Infect a new zombie if the last one leaves.
     if (TeamMgr_IsClientZombie(client))
     {
+        // Do nothing during round freeze.
+        if (ZRCInfect_RoundFreeze)
+        {
+            ThrowError("[BUG] Client is zombie during round freeze. This shouldn't happen.");
+        }
+        
         // If there are no more zombies then pick a new one.
         if (TeamMgr_CountTeam(VTeam_Zombie, true) <= 1)
         {

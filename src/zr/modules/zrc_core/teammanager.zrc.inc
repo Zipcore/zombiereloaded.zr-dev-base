@@ -71,6 +71,7 @@ public ZRCTM_OnEventsRegister()
     // Register all the events needed for this module.
     EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnConfigsExecuted",            "ZRCTM_OnConfigsExecuted");
     EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnClientPutInServer",          "ZRCTM_OnClientPutInServer");
+    EventMgr_RegisterEvent(g_moduleZRCTM, "Event_OnEventsReady",                "ZRCTM_OnEventsReady");
     
     EventMgr_RegisterEvent(g_moduleZRCTM, "Event_RoundStart",                   "ZRCTM_RoundStart");
     EventMgr_RegisterEvent(g_moduleZRCTM, "Event_RoundEnd",                     "ZRCTM_RoundEnd");
@@ -93,6 +94,12 @@ ZRCTM_OnPluginStart()
     
     // Create cvars.
     g_hCvarZRCZombieTeam  = Project_CreateConVar("zombie_team", "t", "Define the game team that will be the zombie team.  Opposite team will be the human team.  ['t' = Terrorists | 'ct' = Counter-Terrorists]");
+}
+
+public ZRCTM_OnEventsReady()
+{
+    // Get priority over infection module.
+    EventMgr_GivePriority("Event_PlayerSpawn", g_moduleZRCTM, ZRCInfect_GetIdentifier());
 }
 
 /**

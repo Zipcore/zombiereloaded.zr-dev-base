@@ -91,7 +91,7 @@ public Action:AntiStick_ShouldCollide(entity, collisiongroup, contentsmask, bool
     new bool:shouldCollide = true;
     
     // Unstick if client is colliding with another client.
-    if (Collision_Group_t:collisiongroup != COLLISION_GROUP_PLAYER)
+    if (Collision_Group_t:collisiongroup == COLLISION_GROUP_PLAYER)
     {
         shouldCollide = !AntiStick_IsClientColliding(entity);
     }

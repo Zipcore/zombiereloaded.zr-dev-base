@@ -338,7 +338,7 @@ stock ModuleToggleQuery:ModuleMgr_Enable(Module:module)
  * 
  * @return          True if the module is disabled, false if enabled.
  */
-stock bool:ModuleMgr_IsDisabled(Module:module)
+public bool:ModuleMgr_IsDisabled(Module:module)
 {
     // Read the value in ModuleData_Disabled and return the cell as a bool.
     return bool:ModuleMgr_ReadCell(module, ModuleData_Disabled);
@@ -434,7 +434,7 @@ stock Module:ModuleMgr_FindByString(ModuleData:data, const String:value[], bool:
  * @param module        The module whose data to read.
  * @param moduledata    Output array for all module data.  See enum ModuleData.
  */
-stock ModuleMgr_ReadAll(Module:module, moduledata[ModuleData])
+public ModuleMgr_ReadAll(Module:module, moduledata[ModuleData])
 {
     GetArrayArray(MM_HANDLE_FROM_ID(module), MODULE_DATA, moduledata[0], sizeof(moduledata));
 }
@@ -448,7 +448,7 @@ stock ModuleMgr_ReadAll(Module:module, moduledata[ModuleData])
  * 
  * @return          The value of the desired module data.
  */
-stock ModuleMgr_ReadCell(Module:module, ModuleData:data)
+public ModuleMgr_ReadCell(Module:module, ModuleData:data)
 {
     new moduledata[ModuleData];
     ModuleMgr_ReadAll(module, moduledata);
@@ -466,7 +466,7 @@ stock ModuleMgr_ReadCell(Module:module, ModuleData:data)
  * @param buffer    Output array for the data read.
  * @param numValues The length of the array.
  */
-stock ModuleMgr_ReadArray(Module:module, ModuleData:data, any:buffer[], numValues)
+public ModuleMgr_ReadArray(Module:module, ModuleData:data, any:buffer[], numValues)
 {
     new moduledata[ModuleData];
     ModuleMgr_ReadAll(module, moduledata);
@@ -493,7 +493,7 @@ stock ModuleMgr_ReadArray(Module:module, ModuleData:data, any:buffer[], numValue
  * @param output    Output variable for the data read.
  * @param maxlen    The max length of the output string.
  */
-stock ModuleMgr_ReadString(Module:module, ModuleData:data, String:output[], maxlen)
+public ModuleMgr_ReadString(Module:module, ModuleData:data, String:output[], maxlen)
 {
     new moduledata[ModuleData];
     ModuleMgr_ReadAll(module, moduledata);

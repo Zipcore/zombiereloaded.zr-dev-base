@@ -168,8 +168,8 @@ public ZRCTM_RoundStart()
 public ZRCTM_RoundEnd(VTeam:winner)
 {
     // Turn everyone into humans, so they can pickup weapons. Only do this for
-    // playing clients.
-    TeamMgr_SetClientTeams(VTeam_Human, true);
+    // playing clients. (Already done by infection module.)
+    //TeamMgr_SetClientTeams(VTeam_Human, true);
     
     ZRCTM_BalanceTeams();
 }
@@ -182,8 +182,8 @@ public ZRCTM_RoundEnd(VTeam:winner)
  * @param oldTeam       Old team before changing team.
  * @param disconnect    Team change because player disconnects.
  *
- * @return              Plugin_Handled to block event (and team change).
- *                      Plugin_Continue to allow event.
+ * @return              Plugin_Handled to stop broadcast.
+ *                      Plugin_Continue to allow broadcast.
  */
 public Action:ZRCTM_PlayerTeamPre(client, VTeam:team, VTeam:oldTeam, bool:disconnect)
 {
@@ -208,12 +208,20 @@ public ZRCTM_PlayerTeam(client, VTeam:team, VTeam:oldTeam, bool:disconnect)
 {
     // Update player team in common team manager.
     
-    if (team == VTeam_Zombie)
+    // Check if player is already assigned to a player team.
+    if (TeamMgr_IsClientOnPlayerTeam(client))
     {
-        // Players can't change to the zombie team. The player most likely
-        // changed team to terrorists (or similar on other mods) before the
-        // first zombie spawned. Stay on the human team.
+        // Do nothing. This callback should only handle unassigned players or
+        // spectators.
+        return;
+    }
+    
+    // Player joined a player team.
+    if (IGame_IsPlayerTeam(team))
+    {
+        // Assign player to human team. All new players start as humans.
         TeamMgr_SetClientTeam(client, VTeam_Human);
+        return;
     }
     
     // Other teams are directly mapped (spectator, unassigned).
@@ -240,7 +248,8 @@ public ZRCTM_PlayerTeam(client, VTeam:team, VTeam:oldTeam, bool:disconnect)
 public ZRCTM_PlayerSpawn(client)
 {
     // TODO: Assign player to a team if not assigned. Decide which team
-    //       according to spawn team cvar and if zombies are present.
+    //       according to spawn team cvar and if zombies are present. Will add
+    //       support for spawning late joining players as zombies.
     TeamMgr_SetClientTeam(client, VTeam_Human);
     
     // Move client the right team for their virtual team if there are zombies present.

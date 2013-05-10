@@ -679,7 +679,7 @@ stock EventMgr_ResetFuncData(Module:module)
  * 
  * @return          The function ID of the event forward in the module.
  */
-public Function:EventMgr_ReadFuncValue(Module:module, ProjectEvent:eventid)
+stock Function:EventMgr_ReadFuncValue(Module:module, ProjectEvent:eventid)
 {
     new Function:eventfuncdata[sizeof(g_EMEvents)];
     EventMgr_ReadAllFuncData(module, eventfuncdata);

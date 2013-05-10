@@ -340,7 +340,7 @@ TeamMgr_UpdateClientTeams(bool:silent = true)
  * @param playingTeamOnly   (Optional) Only update clients who are on a playing
  *                          team (zombies/humans). Default is true.
  */
-TeamMgr_SetClientTeams(VTeam:team, bool:playingTeamOnly = true)
+stock TeamMgr_SetClientTeams(VTeam:team, bool:playingTeamOnly = true)
 {
     for (new client = 1; client <= MaxClients; client++)
     {

@@ -392,8 +392,7 @@ public CSSAdapter_SwitchTeam(client, VTeam:team)
 /**
  * Forces round to end.
  *
- * @param winner        The winning team (virtual team).
- *                      TODO: It could be possible to allow VTeam_Invalid to
+ * @param winner        The winning team (virtual team). Use VTeam_Invalid to
  *                      terminate the round without a winner (round draw, etc).
  * @param               (Optional) Delay in seconds before terminating round.
  *                      Default is 3 seconds.

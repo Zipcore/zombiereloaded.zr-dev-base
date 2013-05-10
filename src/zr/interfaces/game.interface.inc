@@ -110,8 +110,8 @@ new ProjectEvent:g_EvRoundEnd;
  * @param oldTeam       Old team before changing team.
  * @param disconnect    Team change because player disconnects.
  *
- * @return              Plugin_Handled to block event (and team change).
- *                      Plugin_Continue to allow event.
+ * @return              Plugin_Handled to block broadcast.
+ *                      Plugin_Continue to allow broadcast.
  */
 // public Action:OnPlayerTeamPre(client, VTeam:team, VTeam:oldTeam, bool:disconnect)
 new ProjectEvent:g_EvPlayerTeamPre;
@@ -471,6 +471,7 @@ stock IGame_TerminateRound(VTeam:winner, Float:delay = 3.0)
     
     Call_StartFunction(GetMyHandle(), g_IGameTerminateRound);
     Call_PushCell(winner);
+    Call_PushCell(delay);
     Call_Finish();
 }
 

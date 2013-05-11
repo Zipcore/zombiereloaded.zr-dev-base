@@ -131,7 +131,7 @@ stock Model_BuildType()
         ObjLib_AddKey(ModelType, "hidden", ObjDataType_Bool, ObjLib_GetBooleanLookupConstraints(BoolType_YesNo));
         
         // auth_mode. Model authorization mode.
-        ObjLib_AddKey(ModelType, "auth_mode", ObjDataType_Cell, Auth_GetModeLookupConstraints());
+        ObjLib_AddKey(ModelType, "auth_mode", ObjDataType_Cell, Model_GetAuthLookupConstraints());
         
         // flags. Flag name list. Separated by comma (,). TODO: Flag list validator.
         ObjLib_AddKey(ModelType, "flags", ObjDataType_String, INVALID_OBJECT);
@@ -361,7 +361,7 @@ stock Model_GetGroups(Model:model, String:buffer[], maxlen)
  */
 public Action:Model_ErrorHandler(ObjectType:typeDescriptor, ObjLibError:errorType, const String:message[], Object:object, Object:data)
 {
-    LogMgr_Print(g_moduleModelMgr, LogType_Error, "Object Error", "[ZR BUG!] Type %d. %s", errorType, message);
+    LogMgr_Print(g_moduleModelMgr, LogType_Error, "Object Error", "[BUG] Type %d. %s", errorType, message);
     
     // Continue if possible. On critical errors the objectlib will abort
     // anyways.
@@ -388,4 +388,34 @@ stock Object:Model_GetTeamLookupConstraints()
     PushArrayCell(teamIDs, ModelTeam_Humans);
     
     return ObjLib_GetLookupConstraints(ObjLookupMethod_Array, teamNames, teamIDs);
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Creates a auth mode lookup constraint object. Must be deleted with
+ * closeHandles flag set when no longer in use.
+ */
+stock Object:Model_GetAuthLookupConstraints()
+{
+    new Handle:authModes = CreateArray(9, 6);
+    new Handle:authIDs = CreateArray(1, 6);
+    
+    // Valid model auth modes.
+    PushArrayString(authModes, "disabled");
+    PushArrayString(authModes, "flag");
+    PushArrayString(authModes, "group");
+    PushArrayString(authModes, "either");
+    PushArrayString(authModes, "both");
+    PushArrayString(authModes, "all");
+    
+    // Matching auth mode IDs.
+    PushArrayCell(authIDs, ModelAuth_Disabled);
+    PushArrayCell(authIDs, ModelAuth_Flag);
+    PushArrayCell(authIDs, ModelAuth_Group);
+    PushArrayCell(authIDs, ModelAuth_Either);
+    PushArrayCell(authIDs, ModelAuth_Both);
+    PushArrayCell(authIDs, ModelAuth_All);
+    
+    return ObjLib_GetLookupConstraints(ObjLookupMethod_Array, authModes, authIDs);
 }

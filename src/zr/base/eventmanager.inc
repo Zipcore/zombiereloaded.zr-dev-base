@@ -432,6 +432,11 @@ stock Function:EventMgr_SetEventForward(Module:module, ProjectEvent:eventid, con
 new Module:g_ForwardToModule;  // The global variable to store the next module to receive the event being forwarded.
 stock Action:EventMgr_Forward(ProjectEvent:eventid, any:eventdata[][], numValues, size, EventDataTypes:eventdatatypes[], Module:modules[] = {INVALID_MODULE})
 {
+    // TODO: This needs to be optimized. This function should not decide whether
+    // to forward or not. It should just get a list and forward to modules in
+    // that list. The list will be updated when events are registered and
+    // modules enabled or disabled.
+    
     #if defined PROFILE_EVENTS
         new Handle:profiler = CreateProfiler();
         StartProfiling(profiler);

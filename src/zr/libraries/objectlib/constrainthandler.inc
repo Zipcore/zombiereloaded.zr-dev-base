@@ -32,46 +32,278 @@
  *
  *          This only applies to handlers that may override values or have user
  *          callbacks.
+ *
+ *          Use ObjLib_IsInCustomHandler and similar to read these values.
  */
-static ObjLib_InCustomHandler = false;
-new ObjLib_InLookupHandler = false;
+static bool:ObjLib_InCustomHandler = false;
+static bool:ObjLib_InLookupHandler = false;
 /**
  * @endsection
  */
+
+/**
+ * Switch for overriding whether constraints are checked. If disabled, values
+ * are stored directly in the object.
+ */
+static bool:ObjLib_ConstraintsEnabled = true;
+
+/**
+ * Switch for overriding how values are stored in container objects (like
+ * collections).
+ *
+ * When disabled, values are stored directly in the container object instead of
+ * using the container's storage handler. This is necessary to be able to set
+ * and modify attributes of the container object.
+ */
+static bool:ObjLib_ContainerStorageEnabled = true;
 
 /*____________________________________________________________________________*/
 
 /**
  * Internal use only!
- * Helper for accessor functions. It will call constraint handlers and set value
- * if valid and not overridden. This code was repeated in a lot of accessors
- * and moved here (except for array and string data types).
+ * Entry point for constraint handler. Accessor functions will use this instead
+ * of storing values themself.
+ *
+ * This function will call appropriate constraint handlers and set values if
+ * valid and not overridden.
+ *
+ * @param object            The object or collection being validated.
+ * @param objectType        The object's type descriptor.
+ * @param index             Key or element index. Use a negative index to append
+ *                          a value to a collection object.
+ * @param values            Values to store. Store single values at index 0.
+ * @param size              Number of values.
+ * @param errorHandler      Error handler to use if a value is invalid.
+ * @param isString          (Optional) Whether the value should be treated as a
+ *                          string. Default is false.
+ *
+ * @return                  Number of cells copied if isString is false.
+ *                          Number of characters copied if isString is true.
+ *                          -1 on constraint violation.
+ *                          -2 if value vas overridden.
  */
-stock ObjLib_ApplyValueConstraints(
+stock ObjLib_ApplyConstraints(
         Object:object,
         ObjectType:typeDescriptor,
         index,
-        any:value,
-        ObjLib_ErrorHandler:errorHandler)
+        const any:values[],
+        size,
+        ObjLib_ErrorHandler:errorHandler,
+        bool:isLookup = false,
+        bool:isString = false)
 {
-    switch (ObjLib_HandleValueConstraints(object, typeDescriptor, index, value, errorHandler))
+    new ObjectConstraintResult:constraintResult;
+    
+    if (ObjLib_ConstraintsEnabled)
     {
-        case ObjConstraintResult_Invalid, ObjConstraintResult_Overridden:
+        // Get constraint object.
+        new Object:constraints = ObjLib_GetConstraints(object, typeDescriptor, index);
+        constraintResult = ObjLib_RunConstraintHandler(constraints, object, typeDescriptor, index, values, size, errorHandler, isLookup);
+    }
+    else
+    {
+        // Constraints are disabled. Mark value as valid.
+        constraintResult = ObjConstraintResult_Valid;
+    }
+    
+    switch (constraintResult)
+    {
+        case ObjConstraintResult_Invalid:
         {
-            return;
+            // Error is already handled by a constraint handler. Forward result.
+            return -1;
         }
         case ObjConstraintResult_Valid:
         {
-            // Set value.
-            new Handle:data = ObjLib_GetObjectData(object);
-            SetArrayCell(data, index, value);
-            ObjLib_SetKeyNull(object, index, false);
+            if (size > 1)
+            {
+                if (isString)
+                {
+                    // Set string.
+                    return ObjLib_ApplyString(object, typeDescriptor, index, values);
+                }
+                else
+                {
+                    // Set array.
+                    return ObjLib_ApplyArray(object, typeDescriptor, index, values, size);
+                }
+            }
+            else
+            {
+                // Set value.
+                ObjLib_ApplyValue(object, typeDescriptor, index, values[0]);
+                return 1;
+            }
+        }
+        case ObjConstraintResult_Overridden:
+        {
+            return -2;
         }
         default:
         {
             ThrowError("[BUG] Unexpected constraint result. This is a bug in objectlib.");
         }
     }
+    
+    // Error, it should never reach this code. Return something unspecified to
+    // satisfy compiler.
+    return -3;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Internal use only!
+ * Sets the value in an object or collection (determined by object type). This
+ * may be expanded to support future types.
+ *
+ * @param object            Object or collection to store value in.
+ * @param typeDescriptor    Object's type descriptor.
+ * @param index             Key or element index. Use a negative index to append
+ *                          a value to a collection object.
+ * @param value             Value to store.
+ *
+ * @return                  Number of cells copied: always 1.
+ */
+stock ObjLib_ApplyValue(
+        Object:object,
+        ObjectType:typeDescriptor,
+        index,
+        any:value)
+{
+
+    // TODO: Move storage code to its own storage handlers in collection.inc and
+    //       object.inc). This function should only be responsible for calling
+    //       the appropriate storage handler.
+    
+    if (ObjLib_IsCollectionType(typeDescriptor) && ObjLib_ContainerStorageEnabled)
+    {
+        // Object is a collection.
+        
+        // Add or insert value in collection.
+        if (index < 0)
+        {
+            // Append to collection.
+            ObjLib_CollectionAddCell(Collection:object, value);
+        }
+        else
+        {
+            // Insert in collection.
+            ObjLib_CollectionInsertCellAt(Collection:object, index, value);
+        }
+    }
+    else
+    {
+        // Object is a general object. Set value.
+        new Handle:data = ObjLib_GetObjectData(object);
+        SetArrayCell(data, index, value);
+        ObjLib_SetKeyNull(object, index, false);
+    }
+    
+    // One cell copied.
+    return 1;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Internal use only!
+ * Sets the array in an object or collection (determined by object type). This
+ * may be expanded to support future types.
+ *
+ * @param object            Object or collection to store value in.
+ * @param typeDescriptor    Object's type descriptor.
+ * @param index             Key or element index. Use a negative index to append
+ *                          a value to a collection object.
+ * @param values            Values to store.
+ * @param size              Number of values.
+ *
+ * @return                  Number of cells copied.
+ */
+stock ObjLib_ApplyArray(
+        Object:object,
+        ObjectType:typeDescriptor,
+        index,
+        const any:values[],
+        size)
+{
+    new count = 0;
+    
+    if (ObjLib_IsCollectionType(typeDescriptor) && ObjLib_ContainerStorageEnabled)
+    {
+        // Object is a collection. Get colletion data type.
+        
+        // Add or insert value in collection.
+        if (index < 0)
+        {
+            // Append to collection.
+            count = ObjLib_CollectionAddArray(Collection:object, values, size);
+        }
+        else
+        {
+            // Insert in collection.
+            count = ObjLib_CollectionInsertArrayAt(Collection:object, index, values, size);
+        }
+    }
+    else
+    {
+        // Object is a general object. Set value.
+        new Handle:data = ObjLib_GetObjectData(object);
+        count = SetArrayArray(data, index, values, size);
+        ObjLib_SetKeyNull(object, index, false);
+    }
+    
+    return count;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Internal use only!
+ * Sets the string in an object or collection (determined by object type). This
+ * may be expanded to support future types.
+ *
+ * @param object            Object or collection to store value in.
+ * @param typeDescriptor    Object's type descriptor.
+ * @param index             Key or element index. Use a negative index to append
+ *                          a value to a collection object.
+ * @param value             String to store.
+ *
+ * @return                  Number of characters copied.
+ */
+stock ObjLib_ApplyString(
+        Object:object,
+        ObjectType:typeDescriptor,
+        index,
+        const String:value[])
+{
+    new count = 0;
+    
+    if (ObjLib_IsCollectionType(typeDescriptor) && ObjLib_ContainerStorageEnabled)
+    {
+        // Object is a collection. Get colletion data type.
+        
+        // Add or insert value in collection.
+        if (index < 0)
+        {
+            // Append to collection.
+            count = ObjLib_CollectionAddString(Collection:object, value);
+        }
+        else
+        {
+            // Insert in collection.
+            count = ObjLib_CollectionInsertStringAt(Collection:object, index, value);
+        }
+    }
+    else
+    {
+        // Object is a general object. Set value.
+        new Handle:data = ObjLib_GetObjectData(object);
+        count = SetArrayString(data, index, value);
+        ObjLib_SetKeyNull(object, index, false);
+    }
+    
+    return count;
 }
 
 /*____________________________________________________________________________*/
@@ -82,106 +314,20 @@ stock ObjLib_ApplyValueConstraints(
  *
  * @return              True if validation passed constraints.
  */
-stock ObjectConstraintResult:ObjLib_HandleValueConstraints(
+stock ObjectConstraintResult:ObjLib_RunConstraintHandler(
+        Object:constraints,
         Object:object,
         ObjectType:typeDescriptor,
         keyIndex,
-        any:value,
-        ObjLib_ErrorHandler:customErrorHandler = INVALID_FUNCTION)
-{
-    // Get constraints object.
-    new Object:constraints = ObjLib_GetTypeConstraintsAt(typeDescriptor, keyIndex);
-    
-    if (constraints == INVALID_OBJECT)
-    {
-        // No constraints.
-        return ObjConstraintResult_Valid;
-    }
-    
-    // Get error handler.
-    new ObjLib_ErrorHandler:errorHandler = ObjLib_GetErrorHandler(typeDescriptor, customErrorHandler);
-    
-    // Delegate work to a handler that matches the data type.
-    new ObjectType:constraintsType = ObjLib_GetTypeDescriptor(constraints);
-    if (constraintsType == ObjLib_CustomConstraints)
-    {
-        new any:valueBuffer[1];
-        valueBuffer[0] = value;
-        
-        return ObjLib_HandleCustomConstraints(object, typeDescriptor, constraints, keyIndex, valueBuffer, sizeof(valueBuffer), errorHandler);
-    }
-    else if (constraintsType == ObjLib_LookupConstraints)
-    {
-        // Check if sub constraints are available.
-        new Object:subConstraints = ObjLib_GetObject(constraints, "subConstraints");
-        if (subConstraints != INVALID_OBJECT)
-        {
-            // Recursive re-entry for handling raw data constraints. (Recursion
-            // is stopped by preventing lookup contraint objects in
-            // subConstraints when building the constraint object.)
-            return ObjLib_HandleValueConstraints(object, typeDescriptor, keyIndex, value, customErrorHandler);
-        }
-        else
-        {
-            // No sub constraints.
-            return ObjConstraintResult_Valid;
-        }
-    }
-    else if (constraintsType == ObjLib_CellConstraints)
-    {
-        return ObjLib_HandleCellConstraints(object, typeDescriptor, constraints, keyIndex, value, errorHandler);
-    }
-    else if (constraintsType == ObjLib_FloatConstraints)
-    {
-        return ObjLib_HandleFloatConstraints(object, typeDescriptor, constraints, keyIndex, value, errorHandler);
-    }
-    else if (constraintsType == ObjLib_HandleConstraints)
-    {
-        return ObjLib_HandleHandleConstraints(object, typeDescriptor, constraints, keyIndex, value, errorHandler);
-    }
-    else if (constraintsType == ObjLib_FunctionConstraints)
-    {
-        return ObjLib_HandleFunctionConstraints(object, typeDescriptor, constraints, keyIndex, value, errorHandler);
-    }
-    else if (constraintsType == ObjLib_ObjectConstraints)
-    {
-        return ObjLib_HandleObjectConstraints(object, typeDescriptor, constraints, keyIndex, value, errorHandler);
-    }
-    else if (constraintsType == ObjLib_ObjectTypeConstraints)
-    {
-        return ObjLib_HandleObjTypeConstraints(object, typeDescriptor, constraints, keyIndex, value, errorHandler);
-    }
-    else
-    {
-        // Invalid constraints object type.
-        ThrowError("[BUG] Invalid constraints object type. They are validated so this is a bug in objectlib.");
-        return ObjConstraintResult_Invalid;
-    }
-}
-
-/*____________________________________________________________________________*/
-
-/**
- * Internal use only!
- * Calls the constraint handler matching the key's data type.
- *
- * @return          True if value passed constraints.
- */
-stock ObjectConstraintResult:ObjLib_HandleArrayConstraints(
-        Object:object,
-        ObjectType:typeDescriptor,
-        keyIndex,
-        const any:value[],
+        const any:values[],
         size,
         ObjLib_ErrorHandler:customErrorHandler = INVALID_FUNCTION,
         bool:isLookup = false)
 {
-    // Get constraints object.
-    new Object:constraints = ObjLib_GetTypeConstraintsAt(typeDescriptor, keyIndex);
-    
+    // Check if no constraints.
     if (constraints == INVALID_OBJECT)
     {
-        // No constraints.
+        // Value is valid, no constraints.
         return ObjConstraintResult_Valid;
     }
     
@@ -192,7 +338,7 @@ stock ObjectConstraintResult:ObjLib_HandleArrayConstraints(
     new ObjectType:constraintsType = ObjLib_GetTypeDescriptor(constraints);
     if (constraintsType == ObjLib_CustomConstraints)
     {
-        return ObjLib_HandleCustomConstraints(object, typeDescriptor, constraints, keyIndex, value, size, errorHandler);
+        return ObjLib_HandleCustomConstraints(object, typeDescriptor, constraints, keyIndex, values, size, errorHandler);
     }
     else if (constraintsType == ObjLib_LookupConstraints)
     {
@@ -200,19 +346,18 @@ stock ObjectConstraintResult:ObjLib_HandleArrayConstraints(
         if (isLookup)
         {
             // Call lookup constraint handler.
-            return ObjLib_HandleLookupConstraints(object, typeDescriptor, constraints, keyIndex, value, errorHandler);
+            return ObjLib_HandleLookupConstraints(object, typeDescriptor, constraints, keyIndex, values, errorHandler);
         }
         else
         {
-            // Not a lookup case, or user is using something else than
-            // SetString. Check if sub constraints are available.
+            // Check if sub constraints are available.
             new Object:subConstraints = ObjLib_GetObject(constraints, "subConstraints");
             if (subConstraints != INVALID_OBJECT)
             {
                 // Recursive re-entry for handling raw data constraints. (Recursion
                 // is stopped by preventing lookup contraint objects in
                 // subConstraints when building the constraint object.)
-                return ObjLib_HandleArrayConstraints(object, typeDescriptor, keyIndex, value, size, customErrorHandler);
+                return ObjLib_RunConstraintHandler(subConstraints, object, typeDescriptor, keyIndex, values, size, customErrorHandler);
             }
             else
             {
@@ -221,13 +366,41 @@ stock ObjectConstraintResult:ObjLib_HandleArrayConstraints(
             }
         }
     }
-    else if (constraintsType == ObjLib_StringConstraints)
+    else if (constraintsType == ObjLib_CellConstraints)
     {
-        return ObjLib_HandleStringConstraints(object, typeDescriptor, constraints, keyIndex, value, errorHandler);
+        return ObjLib_HandleCellConstraints(object, typeDescriptor, constraints, keyIndex, values[0], errorHandler);
+    }
+    else if (constraintsType == ObjLib_FloatConstraints)
+    {
+        return ObjLib_HandleFloatConstraints(object, typeDescriptor, constraints, keyIndex, values[0], errorHandler);
+    }
+    else if (constraintsType == ObjLib_HandleConstraints)
+    {
+        return ObjLib_HandleHandleConstraints(object, typeDescriptor, constraints, keyIndex, values[0], errorHandler);
+    }
+    else if (constraintsType == ObjLib_FunctionConstraints)
+    {
+        return ObjLib_HandleFunctionConstraints(object, typeDescriptor, constraints, keyIndex, values[0], errorHandler);
     }
     else if (constraintsType == ObjLib_ArrayConstraints)
     {
-        return ObjLib_HandleArrayTypeConstr(object, typeDescriptor, constraints, keyIndex, value, size, errorHandler);
+        return ObjLib_HandleArrayConstraints(object, typeDescriptor, constraints, keyIndex, values, size, errorHandler);
+    }
+    else if (constraintsType == ObjLib_CollectionConstraints)
+    {
+        return ObjLib_HandleCollectionConstraints(object, typeDescriptor, constraints, keyIndex, values, size, errorHandler);
+    }
+    else if (constraintsType == ObjLib_StringConstraints)
+    {
+        return ObjLib_HandleStringConstraints(object, typeDescriptor, constraints, keyIndex, values, errorHandler);
+    }
+    else if (constraintsType == ObjLib_ObjectConstraints)
+    {
+        return ObjLib_HandleObjectConstraints(object, typeDescriptor, constraints, keyIndex, values[0], errorHandler);
+    }
+    else if (constraintsType == ObjLib_ObjectTypeConstraints)
+    {
+        return ObjLib_HandleObjTypeConstraints(object, typeDescriptor, constraints, keyIndex, values[0], errorHandler);
     }
     else
     {
@@ -302,11 +475,21 @@ stock ObjectConstraintResult:ObjLib_HandleLookupConstraints(
     }
     ObjLib_InLookupHandler = true;
     
-    // Get raw data type for key.
-    new Handle:dataTypes = ObjLib_GetTypeDataTypes(typeDescriptor);
-    new ObjectDataType:dataType = ObjectDataType:GetArrayCell(dataTypes, keyIndex);
+    // Get raw data type.
+    new ObjectDataType:dataType;
+    if (ObjLib_IsCollectionType(typeDescriptor))
+    {
+        // Get data type of collection.
+        dataType = ObjectDataType:ObjLib_GetCell(object, "dataType");
+    }
+    else
+    {
+        // Get data type of key.
+        new Handle:dataTypes = ObjLib_GetTypeDataTypes(typeDescriptor);
+        dataType = ObjectDataType:GetArrayCell(dataTypes, keyIndex);
+    }
     
-    // Get constraints.
+    // Get constraint parameters.
     new ObjectLookupMethod:method = ObjectLookupMethod:ObjLib_GetCell(constraints, "method");
     new Handle:entries = ObjLib_GetHandle(constraints, "entries");
     new Handle:values = ObjLib_GetHandle(constraints, "values");
@@ -330,12 +513,7 @@ stock ObjectConstraintResult:ObjLib_HandleLookupConstraints(
         }
         case ObjLookupMethod_Callback:
         {
-            // Get key name.
-            decl String:keyName[OBJECT_KEY_NAME_LEN];
-            keyName[0] = 0;
-            GetArrayString(ObjLib_GetTypeKeys(typeDescriptor), keyIndex, keyName, sizeof(keyName));
-            
-            numWritten = ObjLib_HandleCallbackLookup(object, dataType, callback, keyName, lookup, buffer, sizeof(buffer));
+            numWritten = ObjLib_HandleCallbackLookup(object, dataType, callback, keyIndex, lookup, buffer, sizeof(buffer));
         }
     }
     
@@ -352,55 +530,16 @@ stock ObjectConstraintResult:ObjLib_HandleLookupConstraints(
         return ObjConstraintResult_Invalid;
     }
     
-    // Set value (implies subConstraints if available, automatic).
-    switch (dataType)
+    // Set value using public functions to recheck sub constraints if available.
+    if (ObjLib_IsCollectionType(typeDescriptor))
     {
-        case ObjDataType_Any:
-        {
-            ObjLib_SetAnyAt(object, keyIndex, buffer[0], errorHandler);
-        }
-        case ObjDataType_Cell:
-        {
-            ObjLib_SetCellAt(object, keyIndex, buffer[0], errorHandler);
-        }
-        case ObjDataType_Bool:
-        {
-            ObjLib_SetBoolAt(object, keyIndex, buffer[0], errorHandler);
-        }
-        case ObjDataType_Float:
-        {
-            ObjLib_SetFloatAt(object, keyIndex, buffer[0], errorHandler);
-        }
-        case ObjDataType_Handle:
-        {
-            ObjLib_SetHandleAt(object, keyIndex, buffer[0], errorHandler);
-        }
-        case ObjDataType_Function:
-        {
-            ObjLib_SetFunctionAt(object, keyIndex, buffer[0], errorHandler);
-        }
-        case ObjDataType_Array:
-        {
-            ObjLib_SetArrayAt(object, keyIndex, buffer, sizeof(buffer), errorHandler);
-        }
-        case ObjDataType_String:
-        {
-            ObjLib_SetStringAt(object, keyIndex, buffer, errorHandler);
-        }
-        case ObjDataType_Object:
-        {
-            ObjLib_SetObjectAt(object, keyIndex, buffer[0], errorHandler);
-        }
-        case ObjDataType_ObjectType:
-        {
-            ObjLib_SetObjectTypeAt(object, keyIndex, buffer[0], errorHandler);
-        }
-        default:
-        {
-            // Unexpected type.
-            ObjLib_InLookupHandler = false;
-            ThrowError("[BUG] Unexpected data type. This is a bug in objectlib.");
-        }
+        // Collection.
+        ObjLib_CollectionSetValue(Collection:object, dataType, keyIndex, buffer, sizeof(buffer), errorHandler);
+    }
+    else
+    {
+        // General object.
+        ObjLib_SetValue(object, dataType, keyIndex, buffer, sizeof(buffer), errorHandler);
     }
     
     // Value is overridden and stored.
@@ -538,6 +677,8 @@ stock ObjLib_HandleTrieLookup(
  * @param dataType      Data type of replacement values (match the object key's
  *                      data type).
  * @param callback      Lookup callback to use.
+ * @param index         Index of key, or index where collection element is
+ *                      added.
  * @param lookup        Lookup entry to search for.
  * @param buffer        Buffer to store lookup result. Values are stored at the
  *                      first index. Strings and arrays stored as usual.
@@ -552,7 +693,7 @@ stock ObjLib_HandleCallbackLookup(
         Object:object,
         ObjectDataType:dataType,
         ObjLibLookupCallback:callback,
-        const String:keyName[],
+        index,
         const String:lookup[],
         any:buffer[],
         maxlen)
@@ -564,18 +705,18 @@ stock ObjLib_HandleCallbackLookup(
     Callback signatures
     
     Cell:
-    bool:public(Object:object, const String:keyName[], const String:lookup[], &any:replacement)
+    bool:public(Object:object, index, const String:lookup[], &any:replacement)
     
     Array:
-    public(Object:object, const String:keyName[], const String:lookup[], any:replacement[], maxlen)
+    public(Object:object, index, const String:lookup[], any:replacement[], maxlen)
     
     String:
-    public(Object:object, const String:keyName[], const String:lookup[], String:replacement[], maxlen)
+    public(Object:object, index, const String:lookup[], String:replacement[], maxlen)
     */
 
     // Push common parameters.    
     Call_PushCell(object);
-    Call_PushString(keyName);
+    Call_PushCell(index);
     Call_PushString(lookup);
     
     // Push parameters according to the data type (cell, array, string).
@@ -825,7 +966,7 @@ stock ObjectConstraintResult:ObjLib_HandleStringConstraints(
 /*____________________________________________________________________________*/
 
 /** Internal use only! */
-stock ObjectConstraintResult:ObjLib_HandleArrayTypeConstr(
+stock ObjectConstraintResult:ObjLib_HandleArrayConstraints(
         Object:object,
         ObjectType:typeDescriptor,
         Object:constraints,
@@ -851,6 +992,56 @@ stock ObjectConstraintResult:ObjLib_HandleArrayTypeConstr(
     if (upperLimit && size > maxLen)
     {
         ObjLib_HandleConstraintError("maxLen", object, typeDescriptor, keyIndex, errorHandler);
+        return ObjConstraintResult_Invalid;
+    }
+    
+    // Passed validation.
+    return ObjConstraintResult_Valid;
+}
+
+/*____________________________________________________________________________*/
+
+/** Internal use only! */
+stock ObjectConstraintResult:ObjLib_HandleCollectionConstraints(
+        Object:object,
+        ObjectType:typeDescriptor,
+        Object:constraints,
+        keyIndex,
+        const any:value[],
+        size,
+        ObjLib_ErrorHandler:errorHandler)
+{
+    // Get constraints.
+    new ObjectDataType:dataType = ObjectDataType:ObjLib_GetCell(constraints, "dataType");
+    new minBlockSize = ObjLib_GetCell(constraints, "minBlockSize");
+    new Object:elementConstraints = Object:ObjLib_GetObject(constraints, "elementConstraints");
+    
+    // Check if object is a collection.
+    if (!ObjLib_IsCollectionType(typeDescriptor))
+    {
+        ObjLib_HandleConstraintError("objectType", object, typeDescriptor, keyIndex, errorHandler);
+        return ObjConstraintResult_Invalid;
+    }
+    
+    // Validate data type.
+    if (ObjectDataType:ObjLib_GetCell(object, "dataType") != dataType)
+    {
+        ObjLib_HandleConstraintError("dataType", object, typeDescriptor, keyIndex, errorHandler);
+        return ObjConstraintResult_Invalid;
+    }
+    
+    // Validate minimum block size.
+    if (ObjLib_GetCell(object, "blockSize") < minBlockSize)
+    {
+        ObjLib_HandleConstraintError("blockSize", object, typeDescriptor, keyIndex, errorHandler);
+        return ObjConstraintResult_Invalid;
+    }
+    
+    // Validate element constraints.
+    if (elementConstraints != INVALID_OBJECT &&
+        elementConstraints != ObjLib_GetObject(object, "constraints"))
+    {
+        ObjLib_HandleConstraintError("elementConstraints", object, typeDescriptor, keyIndex, errorHandler);
         return ObjConstraintResult_Invalid;
     }
     
@@ -972,5 +1163,102 @@ stock bool:ObjLib_HandleConstraintError(const String:constraintName[], Object:ob
     new Handle:keys = ObjLib_GetTypeKeys(typeDescriptor);
     GetArrayString(keys, keyIndex, keyName, sizeof(keyName));
     
+    // TODO: Add support for collections.
+    
     return ObjLib_HandleError(typeDescriptor, object, ObjLibError_ValidationError, errorHandler, _, _, "Cannot set value in key (\"%s\"). Value violated constraint: %s", keyName, constraintName);
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Internal use only!
+ * Gets the constraint object for a object key or a collection.
+ */
+stock Object:ObjLib_GetConstraints(Object:object, ObjectType:typeDescriptor, keyIndex = 0)
+{
+    if (ObjLib_IsCollectionType(typeDescriptor))
+    {
+        // Object is a collection. Get constraint object.
+        return ObjLib_GetObject(object, "constraints");
+    }
+    else
+    {
+        // Object is a general object. Get constraint object for the specified
+        // key.
+        return ObjLib_GetTypeConstraintsAt(typeDescriptor, keyIndex);
+    }
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Returns whether the constraint handler is currently handling a custom
+ * constraint.
+ */
+stock bool:ObjLib_IsInCustomHandler()
+{
+    return ObjLib_InCustomHandler;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Returns whether the constraint handler is currently handling a lookup
+ * constraint.
+ */
+stock bool:ObjLib_IsInLookupHandler()
+{
+    return ObjLib_InLookupHandler;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Enables the constraint handler. Values will be validated if constraints are
+ * available.
+ */
+stock ObjLib_EnableConstraints()
+{
+    ObjLib_ConstraintsEnabled = true;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Disables the constraint handler. Values will be stored without validation.
+ *
+ * Note: This setting will stay disabled until manually enabled again.
+ *
+ * Warning: Do not disable this unless you know what you're doing.
+ */
+stock ObjLib_DisableConstraints()
+{
+    ObjLib_ConstraintsEnabled = false;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Enables container storage handlers. Values can be stored in container objects
+ * using their own storage handlers as usual.
+ */
+stock ObjLib_EnableContainerStorage()
+{
+    ObjLib_ContainerStorageEnabled = true;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Disables container storage handlers. Values will be stored directly in the
+ * object. This is necessary to modify attributes of the container object
+ * itself.
+ *
+ * Note: This setting will stay disabled until manually enabled again.
+ *
+ * Warning: Do not disable this unless you know what you're doing.
+ */
+stock ObjLib_DisableContainerStorage()
+{
+    ObjLib_ContainerStorageEnabled = false;
 }

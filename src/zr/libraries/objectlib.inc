@@ -74,10 +74,22 @@ enum ObjectType
 /*____________________________________________________________________________*/
 
 /**
+ * Collection tag. Collections are objects, but with its own tag so the compiler
+ * will be able to distinguish them.
+ */
+enum Collection
+{
+    INVALID_COLLECTION = 0
+}
+
+/*____________________________________________________________________________*/
+
+/**
  * Data types that objects can store.
  */
 enum ObjectDataType
 {
+    ObjDataType_Invalid = -1,   /** Unspecified type. Only used by validators. */
     ObjDataType_Any,            /** Does not include arrays/strings. */
     ObjDataType_Cell,
     ObjDataType_Bool,
@@ -186,7 +198,7 @@ enum ObjectTypeData
 enum ObjLibError
 {
     ObjLibError_InvalidKey,         /** Key name or index is invalid. */
-    ObjLibError_InvalidKeyType,     /** Key type mismatch. */
+    ObjLibError_TypeMismatch,       /** Data type does not match the expected type. */
     ObjLibError_NullDataKey,        /** Attempted to read from uninitialized key. */
     ObjLibError_KeyExist,           /** Attempted to create a key with an existing name. */
     ObjLibError_Immutable,          /** Object or Object type is immutable. */
@@ -222,8 +234,10 @@ enum ObjLibError
  *                          * Plugin_Handled - Error is handled and further
  *                          processing should be aborted.
  *                          * Plugin_Continue - Continue processing if possible.
- *                          This is useful to let the parser continue parsing
- *                          remaining keys.
+ *                          This is useful to let the KeyValue parser continue
+ *                          parsing remaining keys.
+ *                          * Other values are treated as if Plugin_Handled was
+ *                          returned, parsing will be aborted.
  */
 functag public Action:ObjLib_ErrorHandler(ObjectType:typeDescriptor, ObjLibError:errorType, const String:message[], Object:object, Object:data);
 
@@ -268,21 +282,23 @@ funcenum ObjLibLookupCallback
      * string into a value.
      *
      * @param object            Object being validated.
-     * @param keyName           Key being validated.
+     * @param index             Index of key, or index where collection element
+     *                          will be added.
      * @param lookup            String value to look up.
      * @param replacement       (Output). Replacement value to store in object.
      *
      * @return                  True if lookup value was valid and successfully
      *                          converted, false otherwise.
      */
-    bool:public(Object:object, const String:keyName[], const String:lookup[], &any:replacement),
+    bool:public(Object:object, index, const String:lookup[], &any:replacement),
     
     /**
      * Lookup callback for array lookup constraint handler. Used to convert a
      * string into an array.
      *
      * @param object            Object being validated.
-     * @param keyName           Key being validated.
+     * @param index             Index of key, or index where collection element
+     *                          will be added.
      * @param lookup            String value to look up.
      * @param replacement       (Output). Replacement array to store in object.
      * @param maxlen            Size of replacement array.
@@ -290,14 +306,15 @@ funcenum ObjLibLookupCallback
      * @return                  Number of cells copied to replacement array if
      *                          value was valid, or -1 if value was invalid.
      */
-    public(Object:object, const String:keyName[], const String:lookup[], any:replacement[], maxlen),
+    public(Object:object, index, const String:lookup[], any:replacement[], maxlen),
     
     /**
      * Lookup callback for string lookup constraint handler. Used to convert a
      * string into another string.
      *
      * @param object            Object being validated.
-     * @param keyName           Key being validated.
+     * @param index             Index of key, or index where collection element
+     *                          will be added.
      * @param lookup            String value to look up.
      * @param replacement       (Output). Replacement string to store in object.
      * @param maxlen            Size of replacement array.
@@ -305,7 +322,7 @@ funcenum ObjLibLookupCallback
      * @return                  Number of characters copied to replacement array
      *                          if value was valid, or -1 if value was invalid.
      */
-    public(Object:object, const String:keyName[], const String:lookup[], String:replacement[], maxlen)
+    public(Object:object, index, const String:lookup[], String:replacement[], maxlen)
 };
 
 /*____________________________________________________________________________*/
@@ -357,10 +374,17 @@ stock Handle:ObjLib_CloneTrie(Handle:trie, Handle:keys, keySize)
 // Object library core modules.
 #include "zr/libraries/objectlib/objecttype"
 #include "zr/libraries/objectlib/object"
+
 #include "zr/libraries/objectlib/constraints"
 #include "zr/libraries/objectlib/constrainthandler"
+
+#include "zr/libraries/objectlib/collection"
+
 #include "zr/libraries/objectlib/errorhandler"
+
+// Accessors.
 #include "zr/libraries/objectlib/accessors"
+#include "zr/libraries/objectlib/collectionaccessors"
 
 // Parser modules.
 #include "zr/libraries/objectlib/kvparser"

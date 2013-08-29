@@ -44,6 +44,23 @@ static Collection:ModelDB_Models = INVALID_COLLECTION;
 /*____________________________________________________________________________*/
 
 /**
+ * Mapping of model IDs to model objects. ADT Trie.
+ */
+static Handle:ModelDB_ModelIDMap = INVALID_HANDLE;
+
+/*____________________________________________________________________________*/
+
+/**
+ * Mapping of model ID to model index. ADT Trie.
+ *
+ * Note: Indexes should only be used temporarily. They may change if the model
+ *       database is reloaded or the map is changed.
+ */
+static Handle:ModelDB_ModelIndexMap = INVALID_HANDLE;
+
+/*____________________________________________________________________________*/
+
+/**
  * Loading results.
  */
 enum ModelDBLoadResult
@@ -71,7 +88,8 @@ ModelDBLoadResult:ModelDB_Load()
         return ModelDBResult_AlreadyLoaded;
     }
     
-    // Get the model config path from the gamerules module.
+    // Get the model config path from the gamerules module. It will figure out
+    // which model config file to use according to map configs and cvars.
     decl String:configPath[PLATFORM_MAX_PATH];
     GameRules_GetConfigPath(MODELMGR_MODELS_FILE, configPath);
     
@@ -95,7 +113,8 @@ ModelDBLoadResult:ModelDB_Load()
     FileToKeyValues(kv, configPath);
     KvRewind(kv);
     
-    // Check if the tree has sub nodes.
+    // Check if the tree has sub nodes. This also moves the kv cursor at the
+    // model collection section, so it's ready to be parsed.
     if (!KvGotoFirstSubKey(kv))
     {
         // No models.
@@ -124,7 +143,8 @@ ModelDBLoadResult:ModelDB_Load()
         return ModelDBResult_FatalError;
     }
     
-    // TODO: Post validation of certain attributes and requirements.
+    // Do post processing of models (additional validation, precaching, etc).
+    ModelDB_PostProcess(ModelDB_Models);
     
     // Cleanup.
     ObjLib_DeleteObject(parseContext);
@@ -136,20 +156,286 @@ ModelDBLoadResult:ModelDB_Load()
 
 /*____________________________________________________________________________*/
 
-ModelDB_Unload()
+stock ModelDB_Unload()
 {
     // TODO: Delete model objects and types. Reset cache if any.
+    
+    ModelDB_DeleteMappings();
+    //ModelDB_DeleteModels();
 }
 
 /*____________________________________________________________________________*/
 
-ModelDB_Reload()
+stock ModelDB_Reload()
 {
     // TODO: Unload and load.
 }
 
 /*____________________________________________________________________________*/
 
+/**
+ * Executes post processing on all enabled models.
+ *
+ * @param modelCollection       Collection of models to do post processing on.
+ */
+ModelDB_PostProcess(Collection:modelCollection)
+{
+    // Loop through models and do post processing for each model.
+    // TODO: Need to expand objectlib with getter functions for collections.
+    new modelCount = 0; //ObjLib_GetCollectionSize(modelCollection);
+    for (new i = 0; i < modelCount; i++)
+    {
+        new Model:model = INVALID_MODEL; //Model:ObjLib_GetObjectElementAt(modelCollection, i);
+        
+        // Only process model if enabled.
+        if (Model_IsEnabled(model))
+        {
+            // Do post processing on model.
+            ModelDB_PostProcessModel(model, i);
+        }
+    }
+    
+    // Check for minimum model requirements (one public zombie model).
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Executes post processing on the specified model.
+ *
+ * @param model         Model to do post processing on.
+ * @param modelIndex    Index value to map model to.
+ */
+ModelDB_PostProcessModel(Model:model, modelIndex)
+{
+    // Add model files to downloads table.
+    new downloadCount = ModelDB_AddToDownloadsTable(model);
+    if (downloadCount == 0)
+    {
+        // No model files were found. Disable model.
+        Model_SetEnabled(model, false);
+        
+        // Get ID.
+        new String:id[MODEL_STRING_LEN];
+        Model_GetId(model, id, sizeof(id));
+        
+        // Log a warning.
+        LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Validation", "Warning: Couldn't find any model files for model with ID \"%s\". Disabling model.", id);
+    }
+    
+    // Precache model.
+    ModelDB_PrecacheModel(model);
+    
+    // Add model to ID and index mappings.
+    ModelDB_AddToMappings(model, modelIndex);
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Adds the model's files to the downloads table. Includes all files with the
+ * same file name (but different extensions) in the specified directory path.
+ *
+ * Note: This function does not add the material files the model is using.
+ *
+ * @param model         Model object.
+ *
+ * @return              Number of files added to downloads table.
+ */
+ModelDB_AddToDownloadsTable(Model:model)
+{
+    new String:buffer[PLATFORM_MAX_PATH];
+    new String:path[PLATFORM_MAX_PATH];
+    new String:fileName[PLATFORM_MAX_PATH];
+    new String:directory[PLATFORM_MAX_PATH];
+    
+    // Get model path.
+    Model_GetPath(model, path, sizeof(path));
+    
+    // Split path and filename. Loop backwards and locate the first directory
+    // separator.
+    // TODO: Move this to a separate helper function.
+    new pathLen = strlen(path);
+    for (new pos = pathLen; pos >= 0; pos--)
+    {
+        // Check for directory separator, supports both Windows and *nix
+        // systems.
+        if (path[pos] == '/' || path[pos] == '\\')
+        {
+            // File name starts after this position.
+            
+            // Extract path up to and inclusive this position. Path separator
+            // will be included at the end. Add one to leave space for null
+            // terminator.
+            strcopy(directory, pos + 1, path);
+            
+            // Extract filename after this position. Add one to leave space for
+            // null terminator.
+            strcopy(fileName, sizeof(fileName), path[pos + 1]);
+            
+            break;
+        }
+    }
+    
+    // Open directory with model files.
+    // TODO: Will this cause an error with the built in zombie model in CS: GO?
+    //       We might need to detect if the model is a stock model or not.
+    new Handle:dir = OpenDirectory(directory);
+    
+    // Check if failed.
+    if (dir == INVALID_HANDLE)
+    {
+        // Get model id so the server admin can identify the model.
+        new String:modelId[MODEL_STRING_LEN];
+        Model_GetId(model, modelId, sizeof(modelId));
+        
+        LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Validation", "Error opening directory \"%s\" for model with id \"%s\".", path, modelId);
+        return 0;
+    }
+    
+    // File counter for the current model.
+    new downloadCount = 0;
+    
+    new FileType:type;
+    new String:file[64];
+    new String:fileShort[64];
+    
+    // Search for model files with the specified name and add them to
+    // downloads table.
+    while (ReadDirEntry(dir, file, sizeof(file), type))
+    {
+        // Skip if entry isn't a file.
+        if (type != FileType_File)
+        {
+            continue;
+        }
+        
+        // Find break point index in the string to get model name. Add one to
+        // make space for null terminator.
+        // TODO: Search backwards, in case a model has multiple dots in its file
+        //       name.
+        new breakpoint = FindCharInString(file, '.') + 1;
+        strcopy(fileShort, breakpoint, file);
+        
+        // If this file doesn't match model name, then skip it.
+        if (!StrEqual(fileName, fileShort, false))
+        {
+            continue;
+        }
+        
+        // Format a full path string.
+        strcopy(buffer, sizeof(buffer), path);
+        Format(buffer, sizeof(buffer), "%s%s", buffer, file);
+        
+        AddFileToDownloadsTable(buffer);
+        downloadCount++;
+    }
+    
+    CloseHandle(dir);
+    return downloadCount;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Precaches the specified model.
+ *
+ * @param model     Model object.
+ *
+ * @return          Model index, or 0 on error.
+ */
+ModelDB_PrecacheModel(Model:model)
+{
+    new String:path[PLATFORM_MAX_PATH];
+    Model_GetPath(model, path, sizeof(path));
+    
+    new modelIndex = PrecacheModel(path);
+    if (modelIndex == 0)
+    {
+        LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Loading", "Failed to precache model: %s", path);
+        return 0;
+    }
+    
+    LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Precaced model %s (index: %d)", path, modelIndex);
+    
+    return modelIndex;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Builds the model maps if not built.
+ */
+ModelDB_BuildMappings()
+{
+    if (ModelDB_ModelIDMap == INVALID_HANDLE)
+    {
+        ModelDB_ModelIDMap = CreateTrie();
+    }
+    if (ModelDB_ModelIndexMap == INVALID_HANDLE)
+    {
+        ModelDB_ModelIndexMap = CreateTrie();
+    }
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Adds the specified model to the maps.
+ *
+ * Note: If a model has a duplicate ID it will be disabled, and a warning will
+ *       be logged.
+ *
+ * @param model         Model to add to maps.
+ * @param modelIndex    Index value to map model to.
+ */
+ModelDB_AddToMappings(Model:model, modelIndex)
+{
+    // Make sure maps are built.
+    ModelDB_BuildMappings();
+    
+    // Get model id.
+    new String:id[MODEL_STRING_LEN];
+    Model_GetId(model, id, sizeof(id));
+    
+    // Add model to index map.
+    SetTrieValue(ModelDB_ModelIndexMap, id, modelIndex);
+    
+    // Check if it already exists in the map.
+    new dummyBuffer;
+    if (GetTrieValue(ModelDB_ModelIDMap, id, dummyBuffer))
+    {
+        // Duplicate ID detected. Disable this model.
+        Model_SetEnabled(model, false);
+        
+        // Log a warning.
+        LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Validation", "Duplicate model ID detected: \"%s\". You have at least two model entries with the same ID. IDs must be unique, so use another ID on the other model(s). Disabled model until this is fixed.", id);
+        
+        // Return early and skip ID mapping of this model.
+        return;
+    }
+    
+    // Add model to ID map.
+    SetTrieValue(ModelDB_ModelIDMap, id, model);
+}
+
+/*____________________________________________________________________________*/
+
+ModelDB_DeleteMappings()
+{
+    // Close and reset handles of mappings.
+    
+    if (ModelDB_ModelIDMap != INVALID_HANDLE)
+    {
+        Util_CloseHandle(ModelDB_ModelIDMap);
+    }
+    if (ModelDB_ModelIndexMap != INVALID_HANDLE)
+    {
+        Util_CloseHandle(ModelDB_ModelIndexMap);
+    }
+}
+
+/*____________________________________________________________________________*/
 
 /**
  * General error callback.
@@ -179,6 +465,7 @@ ModelDB_Reload()
 public Action:ModelDB_ErrorHandler(ObjectType:typeDescriptor, ObjLibError:errorType, const String:message[], Object:object, Object:data)
 {
     // TODO: Handle errors.
+    LogMgr_Print(g_moduleModelMgr, LogType_Error, "Object Error", "[BUG] Type %d. %s", errorType, message);
     
     //enum ObjLibError
     //{
@@ -204,16 +491,6 @@ public Action:ModelDB_ErrorHandler(ObjectType:typeDescriptor, ObjLibError:errorT
  * Maximum number of models.
  */
 #define MODELS_MAX 64
-
-/**
- * Maximum folder depth a model file can be located.
- */
-#define MODELS_PATH_MAX_DEPTH 8
-
-/**
- * Maximum string length of a folder a model file is located under.
- */
-#define MODELS_PATH_DIR_MAX_LENGTH 32
 
 /**
  * Separator for entries in lists (flags and groups).
@@ -283,7 +560,7 @@ new bool:ModelHasAccess[MAXPLAYERS + 1][MODELS_MAX];
 /**
  * Loads models from file.
  */
-stock bool:ModelDB_LoadModels()
+/*stock bool:ModelDB_LoadModels()
 {
     // Get the config path from the gamerules module.
     decl String:configfile[PLATFORM_MAX_PATH];
@@ -324,14 +601,14 @@ stock bool:ModelDB_LoadModels()
     }
     
     // Precache models.
-    ModelDB_PrecacheModels();
+    //ModelDB_PrecacheModels();
     
     // Log loaded-message.
     LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Models loaded: %d", ModelCount);
     
     ModelsLoaded = true;
     return true;
-}
+}*/
 
 /**
  * Loads a single model at the current position in the keyvalue parser.
@@ -340,7 +617,7 @@ stock bool:ModelDB_LoadModels()
  * @param sectionIndex      Current section index.
  * @param sectionName       Current section name.
  */
-stock KvCache:ModelDB_LoadModel(Handle:kvModels, sectionIndex, const String:sectionName[])
+/*stock KvCache:ModelDB_LoadModel(Handle:kvModels, sectionIndex, const String:sectionName[])
 {
     decl String:buffer[MODEL_STRING_LEN];
     decl String:path[PLATFORM_MAX_PATH];
@@ -524,41 +801,7 @@ stock KvCache:ModelDB_LoadModel(Handle:kvModels, sectionIndex, const String:sect
         ModelCount++;
         return KvCache_Continue;
     }
-}
-
-/**
- * Precaches a model. An error message is logged if it failed.
- *
- * @param model     Model index.
- *
- * @return          True if successful, false otherwise.
- */
-ModelDB_PrecacheModel(model)
-{
-    decl String:file[PLATFORM_MAX_PATH];
-    ModelMgr_GetModelFile(model, file, sizeof(file));
-    
-    LogMgr_Print(g_moduleModelMgr, LogType_Debug, "Config Loading", "Precaching model: %s", file);
-    
-    if (PrecacheModel(file) == 0)
-    {
-        LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config Loading", "Failed to precache model: %s", file);
-        return false;
-    }
-    
-    return true;
-}
-
-/**
- * Precaches all loaded models. Error messages are logged on errors.
- */
-ModelDB_PrecacheModels()
-{
-    for (new model = 0; model < ModelCount; model++)
-    {
-        ModelDB_PrecacheModel(model);
-    }
-}
+}*/
 
 /**
  * Returns whether a player has access to a model or not.

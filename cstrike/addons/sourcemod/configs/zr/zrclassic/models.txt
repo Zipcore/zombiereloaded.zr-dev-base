@@ -50,161 +50,161 @@
 // flags                text        List of flag names to authorize. Separated by space (" "). See auth_mode.
 // groups               text        List of groups to authorize. Separated by space (" "). See auth_mode.
 
-"zombiereloaded"
+zombiereloaded
 {
-    "models"
+    models
     {
-        "zh_charple001"
+        zh_charple001
         {
             // General
-            "id"                    "zh_charple001"
-            "enabled"               "yes"
-            "displayname"           "Crispy"
-            "filename"              "zh_charple001"
-            "path"                  "models/player/zh/"
-            "team"                  "zombies"
+            id                      "zh_charple001"
+            enabled                 "yes"
+            displayname             "Crispy"
+            filename                "zh_charple001"
+            path                    "models/player/zh/"
+            team                    "zombies"
             
             // Restrictions
-            "mother_zombies_only"   "no"
-            "admins_only"           "no"
-            "hidden"                "no"
+            mother_zombies_only     "no"
+            admins_only             "no"
+            hidden                  "no"
             
             // Advanced authorization
-            "auth_mode"             "disabled"
-            "flags"                 ""
-            "groups"                ""
+            auth_mode               "disabled"
+            flags                   ""
+            groups                  ""
         }
         
-        "zh_zombie003"
+        zh_zombie003
         {
             // General
-            "id"                    "zh_zombie003"
-            "enabled"               "yes"
-            "displayname"           "Classic zombie (HL2)"
-            "filename"              "zh_zombie003"
-            "path"                  "models/player/zh/"
-            "team"                  "zombies"
+            id                      "zh_zombie003"
+            enabled                 "yes"
+            displayname             "Classic zombie (HL2)"
+            filename                "zh_zombie003"
+            path                    "models/player/zh/"
+            team                    "zombies"
             
             // Restrictions
-            "mother_zombies_only"   "no"
-            "admins_only"           "no"
-            "hidden"                "no"
+            mother_zombies_only     "no"
+            admins_only             "no"
+            hidden                  "no"
             
             // Advanced authorization
-            "auth_mode"             "disabled"
-            "flags"                 ""
-            "groups"                ""
+            auth_mode               "disabled"
+            flags                   ""
+            groups                  ""
         }
         
-        "zh_corpse002"
+        zh_corpse002
         {
             // General
-            "id"                    "zh_corpse002"
-            "enabled"               "yes"
-            "displayname"           "Corpse"
-            "filename"              "zh_corpse002"
-            "path"                  "models/player/zh/"
-            "team"                  "zombies"
+            id                      "zh_corpse002"
+            enabled                 "yes"
+            displayname             "Corpse"
+            filename                "zh_corpse002"
+            path                    "models/player/zh/"
+            team                    "zombies"
             
             // Restrictions
-            "mother_zombies_only"   "no"
-            "admins_only"           "no"
-            "hidden"                "no"
+            mother_zombies_only     "no"
+            admins_only             "no"
+            hidden                  "no"
             
             // Advanced authorization
-            "auth_mode"             "disabled"
-            "flags"                 ""
-            "groups"                ""
+            auth_mode               "disabled"
+            flags                   ""
+            groups                  ""
         }
         
-        "t_guerilla"
+        t_guerilla
         {
             // General
-            "id"                    "t_guerilla"
-            "enabled"               "yes"
-            "displayname"           "Hellknight"
-            "filename"              "t_guerilla"
-            "path"                  "models/player/ics/hellknight_red/"
-            "team"                  "zombies"
+            id                      "t_guerilla"
+            enabled                 "yes"
+            displayname             "Hellknight"
+            filename                "t_guerilla"
+            path                    "models/player/ics/hellknight_red/"
+            team                    "zombies"
             
             // Restrictions
-            "mother_zombies_only"   "no"
-            "admins_only"           "no"
-            "hidden"                "no"
+            mother_zombies_only     "no"
+            admins_only             "no"
+            hidden                  "no"
             
             // Advanced authorization
-            "auth_mode"             "disabled"
-            "flags"                 ""
-            "groups"                ""
+            auth_mode               "disabled"
+            flags                   ""
+            groups                  ""
         }
         
         // Special model examples:
         // -----------------------
         
         // Mixed restriction example. The player must have either a flag or be in a group to use it.
-        //"special_model"
+        //special_model
         //{
         //    // General
-        //    "id"                    "special_model"
-        //    "enabled"               "yes"
-        //    "displayname"           "A special model"
-        //    "filename"              "specialmodel"
-        //    "path"                  "models/player/specialmodel/"
-        //    "team"                  "humans"
+        //    id                      "special_model"
+        //    enabled                 "yes"
+        //    displayname             "A special model"
+        //    filename                "specialmodel"
+        //    path                    "models/player/specialmodel/"
+        //    team                    "humans"
         //    
         //    // Restrictions
-        //    "mother_zombies_only"   "no"
-        //    "admins_only"           "no"
-        //    "hidden"                "no"
+        //    mother_zombies_only     "no"
+        //    admins_only             "no"
+        //    hidden                  "no"
         //    
         //    // Advanced authorization
-        //    "auth_mode"             "either"
-        //    "flags"                 "custom1 kick"
-        //    "groups"                "group1 group2"
+        //    auth_mode               "either"
+        //    flags                   "custom1 kick"
+        //    groups                  "group1 group2"
         //}
         
         // Group restriction example. Only members of the vip or vip2 groups in SourceMod can use this model.
-        //"vip_human"
+        //vip_human
         //{
         //    // General
-        //    "id"                    "vip_human"
-        //    "enabled"               "yes"
-        //    "displayname"           "VIP"
-        //    "filename"              "vipmodel"
-        //    "path"                  "models/player/vip/"
-        //    "team"                  "humans"
+        //    id                      "vip_human"
+        //    enabled                 "yes"
+        //    displayname             "VIP"
+        //    filename                "vipmodel"
+        //    path                    "models/player/vip/"
+        //    team                    "humans"
         //    
         //    // Restrictions
-        //    "mother_zombies_only"   "no"
-        //    "admins_only"           "no"
-        //    "hidden"                "no"
+        //    mother_zombies_only     "no"
+        //    admins_only             "no"
+        //    hidden                  "no"
         //    
         //    // Advanced authorization
-        //    "auth_mode"             "group"
-        //    "flags"                 ""
-        //    "groups"                "vip vip2"
+        //    auth_mode               "group"
+        //    flags                   ""
+        //    groups                  "vip vip2"
         //}
         
         // Flag restriction example. Only players with custom1 or kick flags can use this model.
-        //"human"
+        //human
         //{
         //    // General
-        //    "id"                    "human"
-        //    "enabled"               "yes"
-        //    "displayname"           "Some human"
-        //    "filename"              "mymodel"
-        //    "path"                  "models/player/mymodel/"
-        //    "team"                  "humans"
+        //    id                      "human"
+        //    enabled                 "yes"
+        //    displayname             "Some human"
+        //    filename                "mymodel"
+        //    path                    "models/player/mymodel/"
+        //    team                    "humans"
         //    
         //    // Restrictions
-        //    "mother_zombies_only"   "no"
-        //    "admins_only"           "no"
-        //    "hidden"                "no"
+        //    mother_zombies_only     "no"
+        //    admins_only             "no"
+        //    hidden                  "no"
         //    
         //    // Advanced authorization
-        //    "auth_mode"             "flag"
-        //    "flags"                 "custom1 kick"
-        //    "groups"                ""
+        //    auth_mode               "flag"
+        //    flags                   "custom1 kick"
+        //    groups                  ""
         //}
     }
 }

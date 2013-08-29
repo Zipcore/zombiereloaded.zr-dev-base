@@ -231,7 +231,7 @@ public Action:ZRiotWeps_CanUse(client, weapon)
     GetEdictClassname(weapon, weaponentity, sizeof(weaponentity));
     
     // Knife should never be restricted.
-    // TODO: This should probably be specifyed in a config file, with individual
+    // TODO: This should probably be specified in a config file, with individual
     //       settings for humans and zombies.
     if (StrEqual(weaponentity, "weapon_knife"))
         return Plugin_Continue;

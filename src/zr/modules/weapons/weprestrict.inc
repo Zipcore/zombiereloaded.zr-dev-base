@@ -417,6 +417,8 @@ public Action:WepRestrict_CanUse(client, weapon)
     GetEdictClassname(weapon, weaponentity, sizeof(weaponentity));
     
     // Knife should never be restricted.
+    // TODO: All weapons should be restricted for ghost players, or defined by
+    //       their class restrictions.
     if (StrEqual(weaponentity, "weapon_knife"))
         return Plugin_Continue;
     

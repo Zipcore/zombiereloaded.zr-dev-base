@@ -27,6 +27,179 @@
 
 #include "zr/libraries/authlib"
 
+/*____________________________________________________________________________*/
+
+/**
+ * Whether models are loaded.
+ */
+static bool:ModelDB_Loaded = false;
+
+/*____________________________________________________________________________*/
+
+/**
+ * Main model collection.
+ */
+static Collection:ModelDB_Models = INVALID_COLLECTION;
+
+/*____________________________________________________________________________*/
+
+/**
+ * Loading results.
+ */
+enum ModelDBLoadResult
+{
+    ModelDBResult_Loaded,
+    ModelDBResult_AlreadyLoaded,
+    ModelDBResult_InvalidPath,
+    ModelDBResult_NoModels,
+    ModelDBResult_FatalError
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Loads models from file.
+ *
+ * @return      Loading result.
+ */
+ModelDBLoadResult:ModelDB_Load()
+{
+    if (ModelDB_Loaded)
+    {
+        // Models are already loaded. They must be unloaded before reloading.
+        // TODO: We could support appending models from another file.
+        return ModelDBResult_AlreadyLoaded;
+    }
+    
+    // Get the model config path from the gamerules module.
+    decl String:configPath[PLATFORM_MAX_PATH];
+    GameRules_GetConfigPath(MODELMGR_MODELS_FILE, configPath);
+    
+    // Validate.
+    if (ConfigMgr_ValidateFile(configPath))
+    {
+        ConfigMgr_WriteString(g_moduleModelMgr, ModelCfgIndex, ConfigData_Path, CM_DATA_PATH, configPath);
+    }
+    else
+    {
+        LogMgr_Print(g_moduleModelMgr, LogType_Fatal_Module, "Config Validation", "Invalid config file path defined in gamerules: \"%s\". Disabling module.", configPath);
+        return ModelDBResult_InvalidPath;
+    }
+    
+    // Prepare types if not built.
+    Model_BuildType();
+    Model_BuildMainRootType();
+    
+    // Load and prepare the KeyValue tree.
+    new Handle:kv = CreateKeyValues("zombiereloaded");
+    FileToKeyValues(kv, configPath);
+    KvRewind(kv);
+    
+    // Check if the tree has sub nodes.
+    if (!KvGotoFirstSubKey(kv))
+    {
+        // No models.
+        CloseHandle(kv);
+        return ModelDBResult_NoModels;
+    }
+    
+    // Prepare parser context.
+    new Object:parseContext = ObjLib_GetParseContext(
+            "ModelDB",              // name
+            Model_MainRootType,     // rootType
+            true,                   // ignoreEmptySections
+            _,                      // booleanType (obsolete, will be removed)
+            true,                   // continueOnError
+            INVALID_FUNCTION /*ModelDB_ErrorHandler*/);  // errorHandler - use the one built in objectlib while debugging
+    
+    // Parse the tree root into the main collection. Implies validation.
+    ModelDB_Models = Collection:ObjLib_ParseSection(kv, parseContext);
+    
+    // Validate collection object.
+    if (ModelDB_Models == INVALID_COLLECTION)
+    {
+        // TODO: Fatal error when loading models.
+        ObjLib_DeleteObject(parseContext);
+        CloseHandle(kv);
+        return ModelDBResult_FatalError;
+    }
+    
+    // TODO: Post validation of certain attributes and requirements.
+    
+    // Cleanup.
+    ObjLib_DeleteObject(parseContext);
+    CloseHandle(kv);
+    
+    ModelDB_Loaded = true;
+    return ModelDBResult_Loaded;
+}
+
+/*____________________________________________________________________________*/
+
+ModelDB_Unload()
+{
+    // TODO: Delete model objects and types. Reset cache if any.
+}
+
+/*____________________________________________________________________________*/
+
+ModelDB_Reload()
+{
+    // TODO: Unload and load.
+}
+
+/*____________________________________________________________________________*/
+
+
+/**
+ * General error callback.
+ *
+ * The return value may be used to decide what to do next. In most cases it's
+ * irrelevant and the value is ignored. But the keyvalue parser is using the
+ * return value to abort or continue parsing.
+ *
+ * It would be considered a good habit to return a proper value even if it's
+ * ignored in some cases.
+ *
+ * @param typeDescriptor    Related type descriptor.
+ * @param errorType         Type of error.
+ * @param message           Error message.
+ * @param object            Related object, if available.
+ * @param data              Data bundle with additional data, if available.
+ *
+ * @return                  What to do next.
+ *                          * Plugin_Handled - Error is handled and further
+ *                          processing should be aborted.
+ *                          * Plugin_Continue - Continue processing if possible.
+ *                          This is useful to let the KeyValue parser continue
+ *                          parsing remaining keys.
+ *                          * Other values are treated as if Plugin_Handled was
+ *                          returned, parsing will be aborted.
+ */
+public Action:ModelDB_ErrorHandler(ObjectType:typeDescriptor, ObjLibError:errorType, const String:message[], Object:object, Object:data)
+{
+    // TODO: Handle errors.
+    
+    //enum ObjLibError
+    //{
+    //    ObjLibError_InvalidKey,         /** Key name or index is invalid. */
+    //    ObjLibError_TypeMismatch,       /** Data type does not match the expected type. */
+    //    ObjLibError_NullDataKey,        /** Attempted to read from uninitialized key. */
+    //    ObjLibError_KeyExist,           /** Attempted to create a key with an existing name. */
+    //    ObjLibError_Immutable,          /** Object or Object type is immutable. */
+    //    ObjLibError_ValidationError     /** Data constraint violation. */
+    //}
+    
+    // Continue parsing model attributes to check for other invalid values.
+    return Plugin_Continue;
+}
+
+/*____________________________________________________________________________*/
+
+
+
+// Old code: -------------------------------------------------------------------
+
 /**
  * Maximum number of models.
  */
@@ -110,7 +283,7 @@ new bool:ModelHasAccess[MAXPLAYERS + 1][MODELS_MAX];
 /**
  * Loads models from file.
  */
-bool:ModelDB_LoadModels()
+stock bool:ModelDB_LoadModels()
 {
     // Get the config path from the gamerules module.
     decl String:configfile[PLATFORM_MAX_PATH];
@@ -167,7 +340,7 @@ bool:ModelDB_LoadModels()
  * @param sectionIndex      Current section index.
  * @param sectionName       Current section name.
  */
-public KvCache:ModelDB_LoadModel(Handle:kvModels, sectionIndex, const String:sectionName[])
+stock KvCache:ModelDB_LoadModel(Handle:kvModels, sectionIndex, const String:sectionName[])
 {
     decl String:buffer[MODEL_STRING_LEN];
     decl String:path[PLATFORM_MAX_PATH];
@@ -461,7 +634,7 @@ bool:ModelDB_AreModelsLoaded()
  * @param team  String to convert.
  * @return      Team value, or ModelTeam_Invalid on error.
  */
-ModelTeam:ModelDB_StringToTeam(const String:team[])
+stock ModelTeam:ModelDB_StringToTeam(const String:team[])
 {
     if (StrEqual(team, "zombies", false))
     {

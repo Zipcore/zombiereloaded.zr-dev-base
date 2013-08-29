@@ -47,6 +47,14 @@ stock Module:ModelMgr_GetIdentifier() { return g_moduleModelMgr; }
 #define MODEL_NAME_LEN     64
 #define MODEL_STRING_LEN   255
 
+// Obsolete team enum. Keeping this while migrating to VTeam.
+enum ModelTeam
+{
+    ModelTeam_Invalid = -1,
+    ModelTeam_Zombies,
+    ModelTeam_Humans
+}
+
 /**
  * Config indexes.
  */
@@ -178,7 +186,7 @@ public Action:ModelMgr_OnMyModuleEnable(String:refusalmsg[], maxlen)
  */
 public ModelMgr_OnMapStart()
 {
-    ModelDB_LoadModels();
+    ModelDB_Load();
     ModelDB_LoadCollections();
 }
 
@@ -187,7 +195,7 @@ public ModelMgr_OnMapStart()
  */
 public ModelMgr_OnConfigReload(configindex)
 {
-    ModelDB_LoadModels();
+    ModelDB_Reload();
     ModelDB_LoadCollections();
 }
 

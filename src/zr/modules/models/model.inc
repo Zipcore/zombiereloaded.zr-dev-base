@@ -5,7 +5,7 @@
  *
  *  File:          model.inc
  *  Type:          Module include
- *  Description:   Model data structure and constants.
+ *  Description:   Model data structure definitions and accessors.
  *
  *  Copyright (C) 2009-2013  Greyscale, Richard Helgeby
  *
@@ -28,8 +28,16 @@
 /**
  * Type descriptor for model entries.
  */
-new ObjectType:ModelType = INVALID_OBJECT_TYPE;
-new bool:ModelTypeBuilt = false;
+new ObjectType:Model_Type = INVALID_OBJECT_TYPE;
+new bool:Model_TypeBuilt = false;
+
+/*____________________________________________________________________________*/
+
+/**
+ * Root type of main model collection.
+ */
+new ObjectType:Model_MainRootType = INVALID_OBJECT_TYPE;
+new bool:Model_MainRootTypeBuilt = false;
 
 /*____________________________________________________________________________*/
 
@@ -45,19 +53,6 @@ enum ModelAuthMode
     ModelAuth_Either,       /* Require flag or group. */
     ModelAuth_Both,         /* Require flag and group. */
     ModelAuth_All,          /* Require all flags and all groups. */
-}
-
-/*____________________________________________________________________________*/
-
-/**
- * Avaliable teams for models. It's a mirror of ClassTeam to avoid dependency on
- * the class manager.
- */
-enum ModelTeam
-{
-    ModelTeam_Invalid = -1,
-    ModelTeam_Zombies,
-    ModelTeam_Humans
 }
 
 /*____________________________________________________________________________*/
@@ -81,30 +76,33 @@ enum Model
  */
 stock Model_BuildType()
 {
-    if (!ModelTypeBuilt)
+    if (!Model_TypeBuilt)
     {
         // Max length of key names.
         new keySize = ByteCountToCells(MODEL_KEY_SIZE);
         
         // Create type descriptor.
-        ModelType = ObjLib_CreateType(
+        Model_Type = ObjLib_CreateType(
                 ByteCountToCells(MODEL_STRING_LEN), // blockSize
                 keySize,                            // keySzie
                 Model_ErrorHandler);                // errorHandler
         
         // Add attributes.
         
-        // displayname. User defined name to be displayed in menus. Nonempty string.
-        ObjLib_AddKey(ModelType, "displayname", ObjDataType_String, ObjLib_GetStringConstraints(true));
+        // id. Unique name to identify the model. Nonempty string.
+        ObjLib_AddKey(Model_Type, "id", ObjDataType_String, ObjLib_GetStringConstraints(true));
         
-        // name. Unique name to identify the model. Nonempty string.
-        ObjLib_AddKey(ModelType, "name", ObjDataType_String, ObjLib_GetStringConstraints(true));
+        // enabled. Whether model is available or not.
+        ObjLib_AddKey(Model_Type, "enabled", ObjDataType_Bool, ObjLib_GetBooleanLookupConstraints(BoolType_YesNo));
+        
+        // displayname. User defined name to be displayed in menus. Nonempty string.
+        ObjLib_AddKey(Model_Type, "displayname", ObjDataType_String, ObjLib_GetStringConstraints(true));
         
         // filename. File name of model (no file extension). // TODO: Add custom file validation.
-        ObjLib_AddKey(ModelType, "filename", ObjDataType_String, ObjLib_GetStringConstraints(true));
+        ObjLib_AddKey(Model_Type, "filename", ObjDataType_String, ObjLib_GetStringConstraints(true));
         
         // path. Path to the model files. Nonempty string, path validation, include valve FS.
-        ObjLib_AddKey(ModelType, "path", ObjDataType_String, ObjLib_GetStringConstraints(
+        ObjLib_AddKey(Model_Type, "path", ObjDataType_String, ObjLib_GetStringConstraints(
                 true,               // nonempty
                 true,               // lowerLimit
                 true,               // upperLimit
@@ -118,44 +116,94 @@ stock Model_BuildType()
                 "",                 // whitelistChars
                 ""));               // blacklistChars
         
-        // team. Team the model belongs to.
-        ObjLib_AddKey(ModelType, "team", ObjDataType_Cell, Model_GetTeamLookupConstraints());
+        // team. Team the model belongs to. See VTeam enum.
+        ObjLib_AddKey(Model_Type, "team", ObjDataType_Cell, Model_GetTeamLookupConstraints());
         
         // mother_zombies_only. Only allow mother zombies to use the model.
-        ObjLib_AddKey(ModelType, "mother_zombies_only", ObjDataType_Bool, ObjLib_GetBooleanLookupConstraints(BoolType_YesNo));
+        ObjLib_AddKey(Model_Type, "mother_zombies_only", ObjDataType_Bool, ObjLib_GetBooleanLookupConstraints(BoolType_YesNo));
         
         // admins_only. Only allow admins to use the model.
-        ObjLib_AddKey(ModelType, "admins_only", ObjDataType_Bool, ObjLib_GetBooleanLookupConstraints(BoolType_YesNo));
+        ObjLib_AddKey(Model_Type, "admins_only", ObjDataType_Bool, ObjLib_GetBooleanLookupConstraints(BoolType_YesNo));
         
         // hidden. Exclude model in random selections.
-        ObjLib_AddKey(ModelType, "hidden", ObjDataType_Bool, ObjLib_GetBooleanLookupConstraints(BoolType_YesNo));
+        ObjLib_AddKey(Model_Type, "hidden", ObjDataType_Bool, ObjLib_GetBooleanLookupConstraints(BoolType_YesNo));
         
         // auth_mode. Model authorization mode.
-        ObjLib_AddKey(ModelType, "auth_mode", ObjDataType_Cell, Model_GetAuthLookupConstraints());
+        ObjLib_AddKey(Model_Type, "auth_mode", ObjDataType_Cell, Model_GetAuthLookupConstraints());
         
         // flags. Flag name list. Separated by comma (,). TODO: Flag list validator.
-        ObjLib_AddKey(ModelType, "flags", ObjDataType_String, INVALID_OBJECT);
+        ObjLib_AddKey(Model_Type, "flags", ObjDataType_String, INVALID_OBJECT);
         
         // groups. Group name list. Separated by comma (,). TODO: Group list validator.
-        ObjLib_AddKey(ModelType, "groups", ObjDataType_String, INVALID_OBJECT);
+        ObjLib_AddKey(Model_Type, "groups", ObjDataType_String, INVALID_OBJECT);
         
-        ModelTypeBuilt = true;
+        Model_TypeBuilt = true;
     }
 }
 
 /*____________________________________________________________________________*/
 
 /**
- * Deletes the model data type. Do not call before model data objects are
- * deleted.
+ * Builds the main model collection object.
  */
-stock Model_DestroyType()
+stock Model_BuildMainRootType()
 {
-    if (ModelTypeBuilt)
+    if (!Model_MainRootTypeBuilt)
+    {
+        // Make sure model type is built.
+        Model_BuildType();
+        
+        // Max length of key names.
+        new keySize = ByteCountToCells(MODEL_KEY_SIZE);
+        
+        // Create type descriptor.
+        Model_MainRootType = ObjLib_CreateType(
+                ByteCountToCells(MODEL_STRING_LEN), // blockSize
+                keySize,                            // keySzie
+                Model_ErrorHandler);                // errorHandler
+        
+        // Add attributes.
+        
+        // models. The main collection object.
+        ObjLib_AddKey(Model_MainRootType, "models", ObjDataType_Object, ObjLib_GetObjectConstraints(true, Model_Type));
+        
+        Model_MainRootTypeBuilt = true;
+    }
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Deletes the model data type.
+ * 
+ * Warning: Do not call this before all model data objects are deleted, or there
+ *          will be a memory leak.
+ */
+stock Model_DeleteType()
+{
+    if (Model_TypeBuilt)
     {
         // Delete type and constraint objects attached.
-        ObjLib_DeleteType(ModelType, true, true);
-        ModelTypeBuilt = false;
+        ObjLib_DeleteType(Model_Type, true, true);
+        Model_TypeBuilt = false;
+    }
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Deletes the main root type.
+ *
+ * Warning: Do not call this before all model data objects are deleted, or there
+ *          will be a memory leak.
+ */
+stock Model_DeleteMainRootType()
+{
+    if (Model_MainRootTypeBuilt)
+    {
+        // Delete type and constraint objects attached.
+        ObjLib_DeleteType(Model_MainRootType, true, true);
+        Model_MainRootTypeBuilt = false;
     }
 }
 
@@ -384,8 +432,8 @@ stock Object:Model_GetTeamLookupConstraints()
     PushArrayString(teamNames, "humans");
     
     // Matching team IDs.
-    PushArrayCell(teamIDs, ModelTeam_Zombies);
-    PushArrayCell(teamIDs, ModelTeam_Humans);
+    PushArrayCell(teamIDs, VTeam_Zombie);
+    PushArrayCell(teamIDs, VTeam_Human);
     
     return ObjLib_GetLookupConstraints(ObjLookupMethod_Array, teamNames, teamIDs);
 }

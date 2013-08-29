@@ -57,7 +57,10 @@ enum ModelAuthMode
 
 /*____________________________________________________________________________*/
 
-#define MODEL_KEY_SIZE  20
+/**
+ * Number of bytes reserved for key names in model objects. Set to just enough.
+ */
+#define MODEL_KEY_SIZE  24
 
 /*____________________________________________________________________________*/
 
@@ -95,21 +98,18 @@ stock Model_BuildType()
         // enabled. Whether model is available or not.
         ObjLib_AddKey(Model_Type, "enabled", ObjDataType_Bool, ObjLib_GetBooleanLookupConstraints(BoolType_YesNo));
         
-        // displayname. User defined name to be displayed in menus. Nonempty string.
-        ObjLib_AddKey(Model_Type, "displayname", ObjDataType_String, ObjLib_GetStringConstraints(true));
+        // name. User defined name to be displayed in menus. Nonempty string.
+        ObjLib_AddKey(Model_Type, "name", ObjDataType_String, ObjLib_GetStringConstraints(true));
         
-        // filename. File name of model (no file extension). // TODO: Add custom file validation.
-        ObjLib_AddKey(Model_Type, "filename", ObjDataType_String, ObjLib_GetStringConstraints(true));
-        
-        // path. Path to the model files. Nonempty string, path validation, include valve FS.
+        // path. Path to the model file, relative to game root directory. Nonempty string, file validation, include valve FS.
         ObjLib_AddKey(Model_Type, "path", ObjDataType_String, ObjLib_GetStringConstraints(
                 true,               // nonempty
                 true,               // lowerLimit
                 true,               // upperLimit
                 1,                  // minLen
                 PLATFORM_MAX_PATH,  // maxLen
-                true,               // pathValidation
-                false,              // fileValidation
+                false,              // pathValidation
+                true,               // fileValidation
                 true,               // includeValveFS
                 false,              // whitelist
                 false,              // blacklist
@@ -210,23 +210,35 @@ stock Model_DeleteMainRootType()
 /*____________________________________________________________________________*/
 
 /**
- * Gets model display name.
+ * Gets a model object by its ID.
  *
- * @param model         Model object.
- * @param buffer        (Output) Buffer to store display name in.
- * @param maxlen        Size of buffer.
+ * @param id            Mode ID string.
  *
- * @return              Number of characters copied.
+ * @return              Model object, or INVALID_MODEL if a model with the
+ *                      specified ID was not found.
  */
-stock Model_GetDisplayName(Model:model, String:buffer[], maxlen)
+stock Model:Model_GetById(const String:id[])
 {
-    return ObjLib_GetString(Object:model, "displayname", buffer, maxlen);
+    if (ModelDB_ModelIDMap == INVALID_HANDLE)
+    {
+        // Map doesn't exist.
+        return INVALID_MODEL;
+    }
+    
+    new Model:model = INVALID_MODEL;
+    if (GetTrieValue(ModelDB_ModelIDMap, id, model))
+    {
+        return model;
+    }
+    
+    // Model not found.
+    return INVALID_MODEL;
 }
 
 /*____________________________________________________________________________*/
 
 /**
- * Gets model name.
+ * Gets model ID.
  *
  * @param model         Model object.
  * @param buffer        (Output) Buffer to store name in.
@@ -234,25 +246,52 @@ stock Model_GetDisplayName(Model:model, String:buffer[], maxlen)
  *
  * @return              Number of characters copied.
  */
-stock Model_GetName(Model:model, String:buffer[], maxlen)
+stock Model_GetId(Model:model, String:buffer[], maxlen)
 {
-    return ObjLib_GetString(Object:model, "name", buffer, maxlen);
+    return ObjLib_GetString(Object:model, "id", buffer, maxlen);
 }
 
 /*____________________________________________________________________________*/
 
 /**
- * Gets model file name.
+ * Gets whether model is enabled.
  *
  * @param model         Model object.
- * @param buffer        (Output) Buffer to store file name in.
+ *
+ * @return              True if model is is enabled, false otherwise.
+ */
+stock bool:Model_IsEnabled(Model:model)
+{
+    return ObjLib_GetBool(Object:model, "enabled");
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Sets whether model is enabled.
+ *
+ * @param model         Model object.
+ * @param enabled       Whether the model is enabled.
+ */
+stock Model_SetEnabled(Model:model, bool:enabled)
+{
+    ObjLib_SetBool(Object:model, "enabled", enabled);
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Gets model name (name displayed in menus).
+ *
+ * @param model         Model object.
+ * @param buffer        (Output) Buffer to store display name in.
  * @param maxlen        Size of buffer.
  *
  * @return              Number of characters copied.
  */
-stock Model_GetFileName(Model:model, String:buffer[], maxlen)
+stock Model_GetName(Model:model, String:buffer[], maxlen)
 {
-    return ObjLib_GetString(Object:model, "filename", buffer, maxlen);
+    return ObjLib_GetString(Object:model, "name", buffer, maxlen);
 }
 
 /*____________________________________________________________________________*/

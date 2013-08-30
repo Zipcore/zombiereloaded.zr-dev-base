@@ -888,7 +888,10 @@ ClassAlphaModes:ClsModel_StringToMode(const String:mode[])
  */
 public bool:ClsModel_IsValidModel(const String:model[], &errCode, &errPos)
 {
-    errCode = 0;
+    // Skip validation while refactoring model manager.
+    return true;
+    
+    /*errCode = 0;
     errPos = 0;
     
     // Parse model query.
@@ -901,6 +904,7 @@ public bool:ClsModel_IsValidModel(const String:model[], &errCode, &errPos)
     }
     
     return false;
+    */
 }
 
 /**

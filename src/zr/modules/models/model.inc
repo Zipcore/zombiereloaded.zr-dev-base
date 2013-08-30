@@ -176,8 +176,7 @@ stock Model_BuildMainRootType()
 /**
  * Deletes the model data type.
  * 
- * Warning: Do not call this before all model data objects are deleted, or there
- *          will be a memory leak.
+ * Warning: Do not call this before all model data objects are deleted.
  */
 stock Model_DeleteType()
 {
@@ -194,8 +193,7 @@ stock Model_DeleteType()
 /**
  * Deletes the main root type.
  *
- * Warning: Do not call this before all model data objects are deleted, or there
- *          will be a memory leak.
+ * Warning: Do not call this before all model data objects are deleted.
  */
 stock Model_DeleteMainRootType()
 {

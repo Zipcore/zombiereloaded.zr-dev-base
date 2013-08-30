@@ -156,19 +156,49 @@ ModelDBLoadResult:ModelDB_Load()
 
 /*____________________________________________________________________________*/
 
+/**
+ * Unloads the model database.
+ */
 stock ModelDB_Unload()
 {
-    // TODO: Delete model objects and types. Reset cache if any.
+    // Check if already unloaded.
+    if (!ModelDB_IsLoaded())
+    {
+        return;
+    }
     
     ModelDB_DeleteMappings();
-    //ModelDB_DeleteModels();
+    
+    // Delete main collection and models in it.
+    ModelDB_DeleteMainCollection();
+    
+    // Delete types.
+    Model_DeleteType();
+    Model_DeleteMainRootType();
+    
+    ModelDB_Loaded = false;
 }
 
 /*____________________________________________________________________________*/
 
+/**
+ * Reloads the model database.
+ */
 stock ModelDB_Reload()
 {
-    // TODO: Unload and load.
+    // Unload and load.
+    ModelDB_Unload();
+    ModelDB_Load();
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Returns whether the main model database is loaded and validated.
+ */
+bool:ModelDB_IsLoaded()
+{
+    return ModelDB_Loaded;
 }
 
 /*____________________________________________________________________________*/
@@ -227,6 +257,38 @@ ModelDB_PostProcessModel(Model:model, modelIndex)
     
     // Add model to ID and index mappings.
     ModelDB_AddToMappings(model, modelIndex);
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Deletes all models in the specified collection.
+ *
+ * Note: The collection and its elements are not removed.
+ *
+ * @param modelCollection       Collection of models to delete.
+ */
+ModelDB_DeleteModels(Collection:modelCollection)
+{
+    // Loop through models and do post processing for each model.
+    new modelCount = ObjLib_GetCollectionSize(modelCollection);
+    for (new i = 0; i < modelCount; i++)
+    {
+        new Model:model = Model:ObjLib_GetObjectElementAt(modelCollection, i);
+        
+        ObjLib_DeleteObject(Object:model);
+    }
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Deletes the main model collection and the models in it.
+ */
+ModelDB_DeleteMainCollection()
+{
+    ModelDB_DeleteModels(ModelDB_Models);
+    ObjLib_DeleteCollection(ModelDB_Models);
 }
 
 /*____________________________________________________________________________*/

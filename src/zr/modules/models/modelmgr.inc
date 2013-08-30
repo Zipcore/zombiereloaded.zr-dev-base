@@ -110,7 +110,6 @@ ModelMgr_OnPluginStart()
     ModelMgr_Register();
     
     // Create tries.
-    ModelNameIndex = CreateTrie();
     ModelCollectionNameIndex = CreateTrie();
 }
 
@@ -125,11 +124,11 @@ public ModelMgr_OnEventsRegister()
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnModuleEnable",          "ModelMgr_OnModuleEnable");
     EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnMyModuleEnable",          "ModelMgr_OnMyModuleEnable");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnModuleDisable",         "ModelMgr_OnModuleDisable");
-    //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnMyModuleDisable",       "ModelMgr_OnMyModuleDisable");
+    EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnMyModuleDisable",         "ModelMgr_OnMyModuleDisable");
     EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnMapStart",                "ModelMgr_OnMapStart");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnMapEnd",                "ModelMgr_OnMapEnd");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnAutoConfigsBuffered",   "ModelMgr_OnAutoConfigsBuffered");
-    //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnConfigsExecuted",       "ModelMgr_OnConfigsExecuted");
+    EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnConfigsExecuted",         "ModelMgr_OnConfigsExecuted");
     EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnClientPutInServer",       "ModelMgr_OnClientPutInServer");
     //EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnClientDisconnect",      "ModelMgr_OnClientDisconnect");
     EventMgr_RegisterEvent(g_moduleModelMgr, "Event_OnClientPostAdminCheck",    "ModelMgr_OnClientPostAdminCheck");
@@ -153,7 +152,7 @@ public ModelMgr_OnEventsReady()
 }
 
 /**
- * The module that hooked this event callback has been enabled.
+ * The model manager was enabled.
  * 
  * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
  * @param maxlen        The max length of the string.
@@ -162,14 +161,14 @@ public ModelMgr_OnEventsReady()
  */
 public Action:ModelMgr_OnMyModuleEnable(String:refusalmsg[], maxlen)
 {
-    // Don't let the module load unless the configs cached successfully.
+    // TODO: Don't let the module load unless the configs cached successfully.
     
     // Load models if not already loaded.
-    /*if (!ModelDB_AreModelsLoaded() && !ModelDB_LoadModels())
+    if (!ModelDB_IsLoaded() && ModelDB_Load() != ModelDBResult_Loaded)
     {
         Format(refusalmsg, maxlen, "%T", "ModelMgr models refuse enable", LANG_SERVER);
         return Plugin_Handled;
-    }*/
+    }
     
     // Load model collections if not already loaded.
     if (!ModelDB_AreCollectionsLoaded() && !ModelDB_LoadCollections())
@@ -182,12 +181,34 @@ public Action:ModelMgr_OnMyModuleEnable(String:refusalmsg[], maxlen)
 }
 
 /**
+ * The model manager is being disabled.
+ * 
+ * @param refusalmsg    The string that is printed if Plugin_Handled is returned and it is non-empty.
+ * @param maxlen        The max length of the string.
+ * 
+ * @return              Return Plugin_Handled to stop disable, and Plugin_Continue to allow it.
+ */
+public Action:ModelMgr_OnMyModuleDisable(String:refusalmsg[], maxlen)
+{
+    // Unload.
+    ModelDB_Unload();
+}
+
+/**
  * The map has started.
  */
 public ModelMgr_OnMapStart()
 {
-    ModelDB_Load();
+    //ModelDB_Load();
     ModelDB_LoadCollections();
+}
+
+/**
+ * All convars are set, load the model database.
+ */
+public ModelMgr_OnConfigsExecuted()
+{
+    ModelDB_Load();
 }
 
 /**
@@ -286,6 +307,37 @@ public bool:ModelMgr_HasAccess(client, model)
 }
 
 /**
+ * Returns the total number of models.
+ *
+ * @param enabledOnly   Only count enabled models.
+ *
+ * @return              Number of models.
+ */
+/*public bool:ModelMgr_GetModelCount(bool:enabledOnly = false)
+{
+    new modelCount = ObjLib_GetCollectionSize(ModelDB_Models);
+    
+    if (enabledOnly)
+    {
+        new enabledCount = 0;
+        
+        // Loop through collection and count enabled models.
+        for (new i = 0; i < modelCount; i++)
+        {
+            new Model:model = ObjLib_GetObjectElementAt(ModelDB_Models, i);
+            if (Model_IsEnabled(model))
+            {
+                enabledCount++;
+            }
+        }
+    }
+    else
+    {
+        return modelCount;
+    }
+}*/
+
+/**
  * Returns whether the specified model index is valid or not.
  *
  * @param model     Model index to validate.
@@ -294,27 +346,33 @@ public bool:ModelMgr_HasAccess(client, model)
  */
 public bool:ModelMgr_IsValidIndex(model)
 {
+    //new modelCount = ModelMgr_GetModelCount(false);
     return model >= 0 && (model < ModelCount < MODELS_MAX);
 }
 
 /**
  * Gets the index of a model.
  *
- * @param modelName     Name that identifies the model.
+ * @param modelID       ID that identifies the model.
  *
  * @return              Model index if found, -1 otherwise.
  */
-public ModelMgr_GetModelIndex(const String:modelName[])
+public ModelMgr_GetModelIndex(const String:modelID[])
 {
+    // Disabled while refactoring.
+    return -1;
+    
+    /*
     new model = -1;
     
     // Lookup the model name in the trie index.
-    if (!GetTrieValue(ModelNameIndex, modelName, model))
+    if (!GetTrieValue(ModelDB_ModelIndexMap, modelID, model))
     {
         return -1;
     }
     
     return model;
+    */
 }
 
 /**

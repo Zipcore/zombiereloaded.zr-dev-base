@@ -131,7 +131,7 @@ ModelDBLoadResult:ModelDB_Load()
             true,                   // continueOnError
             INVALID_FUNCTION /*ModelDB_ErrorHandler*/);  // errorHandler - use the one built in objectlib while debugging
     
-    // Parse the tree root into the main collection. Implies validation.
+    // Parse the "models" section into the main collection. Implies validation.
     ModelDB_Models = Collection:ObjLib_ParseSection(kv, parseContext);
     
     // Validate collection object.
@@ -450,7 +450,7 @@ ModelDB_DeleteMappings()
  * @param errorType         Type of error.
  * @param message           Error message.
  * @param object            Related object, if available.
- * @param data              Data bundle with additional data, if available.
+ * @param parseContext      Parser context.
  *
  * @return                  What to do next.
  *                          * Plugin_Handled - Error is handled and further
@@ -461,20 +461,50 @@ ModelDB_DeleteMappings()
  *                          * Other values are treated as if Plugin_Handled was
  *                          returned, parsing will be aborted.
  */
-public Action:ModelDB_ErrorHandler(ObjectType:typeDescriptor, ObjLibError:errorType, const String:message[], Object:object, Object:data)
+public Action:ModelDB_ErrorHandler(ObjectType:typeDescriptor, ObjLibError:errorType, const String:message[], Object:object, Object:parseContext)
 {
-    // TODO: Handle errors.
-    LogMgr_Print(g_moduleModelMgr, LogType_Error, "Object Error", "[BUG] Type %d. %s", errorType, message);
+    // Build path to current location.
+    new String:path[PLATFORM_MAX_PATH];
+    ObjLib_KvBuildPath(parseContext, path, sizeof(path));
     
-    //enum ObjLibError
-    //{
-    //    ObjLibError_InvalidKey,         /** Key name or index is invalid. */
-    //    ObjLibError_TypeMismatch,       /** Data type does not match the expected type. */
-    //    ObjLibError_NullDataKey,        /** Attempted to read from uninitialized key. */
-    //    ObjLibError_KeyExist,           /** Attempted to create a key with an existing name. */
-    //    ObjLibError_Immutable,          /** Object or Object type is immutable. */
-    //    ObjLibError_ValidationError     /** Data constraint violation. */
-    //}
+    switch (errorType)
+    {
+        case ObjLibError_InvalidKey:
+        {
+            LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config validation", "%s See the manual for valid key names.", message);
+        }
+        case ObjLibError_TypeMismatch:
+        {
+            // Bug. Should not happen in this module.
+            ThrowError("[BUG] This is a bug in Zombie:Reloaded.");
+        }
+        case ObjLibError_NullDataKey:
+        {
+            // Bug. Should not happen in this module.
+            ThrowError("[BUG] This is a bug in Zombie:Reloaded.");
+        }
+        case ObjLibError_KeyExist:
+        {
+            // Bug. ModelDB doesn't create keys, unless the object is mutable,
+            // which is also a bug.
+            ThrowError("[BUG] This is a bug in Zombie:Reloaded.");
+        }
+        case ObjLibError_Immutable:
+        {
+            // Bug. Attempted to modify a type descriptor, ModelDB doesn't do
+            // this.
+            ThrowError("[BUG] This is a bug in Zombie:Reloaded.");
+        }
+        case ObjLibError_ValidationError:
+        {
+            LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config validation", "%s See the manual for valid values.", message);
+        }
+        default:
+        {
+            // Bug. Unexpected error type.
+            ThrowError("[BUG] Unexpected error type: %d This is a bug in Zombie:Reloaded.", errorType);
+        }
+    }
     
     // Continue parsing model attributes to check for other invalid values.
     return Plugin_Continue;

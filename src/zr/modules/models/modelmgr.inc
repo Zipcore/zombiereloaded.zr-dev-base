@@ -165,11 +165,11 @@ public Action:ModelMgr_OnMyModuleEnable(String:refusalmsg[], maxlen)
     // Don't let the module load unless the configs cached successfully.
     
     // Load models if not already loaded.
-    if (!ModelDB_AreModelsLoaded() && !ModelDB_LoadModels())
+    /*if (!ModelDB_AreModelsLoaded() && !ModelDB_LoadModels())
     {
         Format(refusalmsg, maxlen, "%T", "ModelMgr models refuse enable", LANG_SERVER);
         return Plugin_Handled;
-    }
+    }*/
     
     // Load model collections if not already loaded.
     if (!ModelDB_AreCollectionsLoaded() && !ModelDB_LoadCollections())

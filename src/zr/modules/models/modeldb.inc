@@ -181,11 +181,10 @@ stock ModelDB_Reload()
 ModelDB_PostProcess(Collection:modelCollection)
 {
     // Loop through models and do post processing for each model.
-    // TODO: Need to expand objectlib with getter functions for collections.
-    new modelCount = 0; //ObjLib_GetCollectionSize(modelCollection);
+    new modelCount = ObjLib_GetCollectionSize(modelCollection);
     for (new i = 0; i < modelCount; i++)
     {
-        new Model:model = INVALID_MODEL; //Model:ObjLib_GetObjectElementAt(modelCollection, i);
+        new Model:model = Model:ObjLib_GetObjectElementAt(modelCollection, i);
         
         // Only process model if enabled.
         if (Model_IsEnabled(model))

@@ -25,13 +25,99 @@
  * ============================================================================
  */
 
-ModelCmd_RegCommands()
+static ModelDB_InspectorBuilt = false;
+
+/*____________________________________________________________________________*/
+
+/**
+ * Builds the model database administration commands.
+ */
+ModelDB_BuildCommands()
+{
+    if (ModelDB_InspectorBuilt)
+    {
+        return;
+    }
+    
+    // Prepare the object inspector, if not ready.
+    ObjLib_BuildInspector();
+    
+    // Admin commands.
+    Project_RegConsoleCmd("model_help", ModelCmd_Help, "Prints a list of model inspector commands.");
+    Project_RegConsoleCmd("model_list", ModelCmd_ListObjects, "Prints a list of models.");
+    
+    ModelDB_InspectorBuilt = true;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Prints a list of model objects loaded.
+ *
+ * @param client        Command sender.
+ * @param argc          Number of arguments.
+ */
+public Action:ModelCmd_Help(client, argc)
+{
+    // TODO: Need a function to insert command prefix.
+    Project_ReplyToCommand(client, "Model inspector commands:");
+    Project_ReplyToCommand(client, "object_help             - List of commands in object inspector. Use the object inspector to inspect model objects.");
+    Project_ReplyToCommand(client, "<cmdprefix>_model_help  - Prints this list.");
+    Project_ReplyToCommand(client, "<cmdprefix>_model_list  - Prints a list of models.");
+    return Plugin_Handled;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Prints a list of model objects loaded.
+ *
+ * @param client        Command sender.
+ * @param argc          Number of arguments.
+ */
+public Action:ModelCmd_ListObjects(client, argc)
+{
+    // Check if client has access.
+    if (!AccessMgr_HasAccess(client, g_moduleModelMgr))
+    {
+        TransMgr_PrintText(client, MsgFormat_Plugin, MsgType_Reply, INVALID_MODULE, false, "No access to command");
+        return Plugin_Handled;
+    }
+    
+    new Collection:models = ModelDB_GetCollection();
+    new modelCount = ObjLib_GetCollectionSize(models);
+    
+    new String:id[MODEL_STRING_LEN];
+    
+    // Loop through each model in the main collection.
+    for (new i = 0; i < modelCount; i++)
+    {
+        new Model:model = Model:ObjLib_GetObjectElementAt(models, i);
+        
+        Model_GetId(model, id, sizeof(id));
+        
+        // Print object reference and model ID.
+        ReplyToCommand(client, "0x%X\t%s", model, id);
+    }
+    
+    ReplyToCommand(client, "\n%d models.", modelCount);
+    
+    return Plugin_Handled;
+}
+
+/*____________________________________________________________________________*/
+
+
+
+// Old code: -------------------------------------------------------------------
+
+stock ModelCmd_RegCommands()
 {
     Project_RegConsoleCmd("models_list", ModelCmd_List, "Lists all models. Usage: <prefix>_models_list [<client target> <query>]");
     Project_RegConsoleCmd("models_dump", ModelCmd_Dump, "Dumps model data to the console. Usage: <prefix>_models_dump <model|index>");
 }
 
-public Action:ModelCmd_List(client, argc)
+stock Action:ModelCmd_List(client, argc)
 {
     // Check if the module is disabled.
     if (ModuleMgr_IsDisabled(g_moduleModelMgr))
@@ -133,7 +219,7 @@ public Action:ModelCmd_List(client, argc)
 
 }
 
-public Action:ModelCmd_Dump(client, argc)
+stock Action:ModelCmd_Dump(client, argc)
 {
     // Check if the module is disabled.
     if (ModuleMgr_IsDisabled(g_moduleModelMgr))
@@ -156,7 +242,7 @@ public Action:ModelCmd_Dump(client, argc)
  * @param list      Optional. List of model indexes. If not specified it will
  *                  print all models.
  */
-ModelCmd_PrintList(client, Handle:list = INVALID_HANDLE)
+stock ModelCmd_PrintList(client, Handle:list = INVALID_HANDLE)
 {
     static const String:fmt[] = "%-12d %-12s %s";
     static const String:fmtHeader[] = "%-12s %-12s %s\n--------------------------------------------------";

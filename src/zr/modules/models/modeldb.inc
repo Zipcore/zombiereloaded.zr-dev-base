@@ -104,23 +104,20 @@ ModelDBLoadResult:ModelDB_Load()
         return ModelDBResult_InvalidPath;
     }
     
+    // Append sourcemod path.
+    new String:fullPath[PLATFORM_MAX_PATH];
+    BuildPath(Path_SM, fullPath, sizeof(fullPath), configPath);
+    
+    PrintToServer("Loading models from file: %s", fullPath);
+    
     // Prepare types if not built.
     Model_BuildType();
     Model_BuildMainRootType();
     
     // Load and prepare the KeyValue tree.
     new Handle:kv = CreateKeyValues("zombiereloaded");
-    FileToKeyValues(kv, configPath);
+    FileToKeyValues(kv, fullPath);
     KvRewind(kv);
-    
-    // Check if the tree has sub nodes. This also moves the kv cursor at the
-    // model collection section, so it's ready to be parsed.
-    if (!KvGotoFirstSubKey(kv))
-    {
-        // No models.
-        CloseHandle(kv);
-        return ModelDBResult_NoModels;
-    }
     
     // Prepare parser context.
     new Object:parseContext = ObjLib_GetParseContext(
@@ -129,17 +126,32 @@ ModelDBLoadResult:ModelDB_Load()
             true,                   // ignoreEmptySections
             _,                      // booleanType (obsolete, will be removed)
             true,                   // continueOnError
-            INVALID_FUNCTION /*ModelDB_ErrorHandler*/);  // errorHandler - use the one built in objectlib while debugging
+            ModelDB_ErrorHandler);  // errorHandler
     
-    // Parse the "models" section into the main collection. Implies validation.
-    ModelDB_Models = Collection:ObjLib_ParseSection(kv, parseContext);
+    // Parse models. Implies validation. Using list mode until object mode is
+    // ready.
+    new Handle:list = ObjLib_ParseInListMode(kv, parseContext);
+    
+    // The collection object is stored in the list. 
+    if (GetArraySize(list) == 0)
+    {
+        // No models found.
+        ObjLib_DeleteObject(parseContext);
+        CloseHandle(kv);
+        CloseHandle(list);
+        return ModelDBResult_NoModels;
+    }
+    
+    // Extract model collection from the list.
+    ModelDB_Models = Collection:GetArrayCell(list, 0);
     
     // Validate collection object.
     if (ModelDB_Models == INVALID_COLLECTION)
     {
-        // TODO: Fatal error when loading models.
+        // Falal error. Error when parsing model collection sub section.
         ObjLib_DeleteObject(parseContext);
         CloseHandle(kv);
+        CloseHandle(list);
         return ModelDBResult_FatalError;
     }
     
@@ -149,6 +161,7 @@ ModelDBLoadResult:ModelDB_Load()
     // Cleanup.
     ObjLib_DeleteObject(parseContext);
     CloseHandle(kv);
+    CloseHandle(list);
     
     ModelDB_Loaded = true;
     return ModelDBResult_Loaded;
@@ -199,6 +212,16 @@ stock ModelDB_Reload()
 bool:ModelDB_IsLoaded()
 {
     return ModelDB_Loaded;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Returns the main model collection object.
+ */
+Collection:ModelDB_GetCollection()
+{
+    return ModelDB_Models;
 }
 
 /*____________________________________________________________________________*/
@@ -524,14 +547,14 @@ ModelDB_DeleteMappings()
 public Action:ModelDB_ErrorHandler(ObjectType:typeDescriptor, ObjLibError:errorType, const String:message[], Object:object, Object:parseContext)
 {
     // Build path to current location.
-    new String:path[PLATFORM_MAX_PATH];
-    ObjLib_KvBuildPath(parseContext, path, sizeof(path));
+    /*new String:path[PLATFORM_MAX_PATH];
+    ObjLib_KvBuildPath(parseContext, path, sizeof(path));*/
     
     switch (errorType)
     {
         case ObjLibError_InvalidKey:
         {
-            LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config validation", "%s See the manual for valid key names.", message);
+            LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config validation", "%s  See the manual for valid key names.", message);
         }
         case ObjLibError_TypeMismatch:
         {
@@ -557,12 +580,12 @@ public Action:ModelDB_ErrorHandler(ObjectType:typeDescriptor, ObjLibError:errorT
         }
         case ObjLibError_ValidationError:
         {
-            LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config validation", "%s See the manual for valid values.", message);
+            LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config validation", "%s  See the manual for valid values.", message);
         }
         default:
         {
             // Bug. Unexpected error type.
-            ThrowError("[BUG] Unexpected error type: %d This is a bug in Zombie:Reloaded.", errorType);
+            ThrowError("[BUG] Unexpected error type: %d  This is a bug in Zombie:Reloaded.", errorType);
         }
     }
     

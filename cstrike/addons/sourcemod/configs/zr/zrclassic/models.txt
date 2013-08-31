@@ -43,7 +43,7 @@
 
 zombiereloaded
 {
-    models
+    Models
     {
         zh_charple001
         {
@@ -111,7 +111,7 @@ zombiereloaded
             id                      "t_guerilla"
             enabled                 "yes"
             name                    "Hellknight"
-            path                    "models/player/ics/hellknight_red/zh_corpse002.mdl"
+            path                    "models/player/ics/hellknight_red/t_guerilla.mdl"
             team                    "zombies"
             
             // Restrictions

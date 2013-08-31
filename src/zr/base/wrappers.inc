@@ -99,3 +99,35 @@ stock Project_RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:de
     
     RegConsoleCmd(project_cmdname, callback, fmtdescription, flags);
 }
+
+/**
+ * Copies the string into the buffer and resolves prefix tags.
+ *
+ * "<cmdprefix>" is resolved into the value of PROJECT_CMD_PREFIX
+ * "<cvarprefix>" is resolved into the value of PROJECT_CVAR_PREFIX
+ *
+ * @param string        String to resolve.
+ * @param maxlen        Size of string.
+ *
+ * @return              Number of characters copied.
+ */
+stock Project_PrefixString(String:string[], maxlen)
+{
+    ReplaceString(string, maxlen, "<cmdprefix>", PROJECT_CMD_PREFIX, true);
+    ReplaceString(string, maxlen, "<cvarprefix>", PROJECT_CVAR_PREFIX, true);
+}
+
+stock Project_ReplyToCommand(client, const String:format[], any:...)
+{
+    decl String:formatted[1024];
+    formatted[0] = 0;
+    
+    // Resolve formatting.
+    VFormat(formatted, sizeof(formatted), format, 3);
+    
+    // Resolve prefix tags.
+    Project_PrefixString(formatted, sizeof(formatted));
+    
+    ReplyToCommand(client, formatted);
+}
+

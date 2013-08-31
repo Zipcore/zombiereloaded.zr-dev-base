@@ -162,10 +162,16 @@ stock Model_BuildMainRootType()
                 keySize,                            // keySzie
                 Model_ErrorHandler);                // errorHandler
         
+        // Create collection constraints.
+        new Object:constraints = ObjLib_GetCollectionConstraints(
+                ObjDataType_Object,                             // dataType
+                1,                                              // minBlockSize
+                ObjLib_GetObjectConstraints(true, Model_Type)); // elementConstraints
+        
         // Add attributes.
         
         // models. The main collection object.
-        ObjLib_AddKey(Model_MainRootType, "models", ObjDataType_Object, ObjLib_GetObjectConstraints(true, Model_Type));
+        ObjLib_AddKey(Model_MainRootType, "Models", ObjDataType_Object, constraints);
         
         Model_MainRootTypeBuilt = true;
     }

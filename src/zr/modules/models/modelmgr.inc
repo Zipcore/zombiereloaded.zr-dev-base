@@ -98,7 +98,7 @@ ModelMgr_Register()
     ConfigMgr_Register(g_moduleModelMgr, "ModelMgr_OnConfigReload", "", ModelCollectionCfgIndex);
     
     // Register commands.
-    ModelCmd_RegCommands();
+    ModelDB_BuildCommands();
 }
 
 /**

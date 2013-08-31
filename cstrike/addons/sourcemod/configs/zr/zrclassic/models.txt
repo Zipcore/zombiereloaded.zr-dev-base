@@ -19,14 +19,6 @@
 // The model section name is ignored, but it's a good habit to use a meaningful
 // and simple name so it's easier to navigate this file.
 //
-// MINIMUM REQUIREMENTS
-// There must be at least one model with these requirements:
-//
-// * team:                  zombies
-// * mother_zombies_only:   no
-// * hidden:                no
-// * auth_mode:             disabled
-//
 // Attribute:           Values:     Description:
 // ----------------------------------------------------------------------------
 // id                   text        User defined name to identify the model. Case sensitive.

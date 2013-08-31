@@ -223,8 +223,6 @@ ModelDB_PostProcess(Collection:modelCollection)
             ModelDB_PostProcessModel(model, i);
         }
     }
-    
-    // Check for minimum model requirements (one public zombie model).
 }
 
 /*____________________________________________________________________________*/

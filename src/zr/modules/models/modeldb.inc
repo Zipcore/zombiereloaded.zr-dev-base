@@ -124,7 +124,6 @@ ModelDBLoadResult:ModelDB_Load()
             "ModelDB",              // name
             Model_MainRootType,     // rootType
             true,                   // ignoreEmptySections
-            _,                      // booleanType (obsolete, will be removed)
             true,                   // continueOnError
             ModelDB_ErrorHandler);  // errorHandler
     

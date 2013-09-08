@@ -544,7 +544,7 @@ stock Array_ADTFloatToString(Handle:array, String:buffer[], maxlen, bool:list = 
  */
 stock Array_ADTToString(Handle:array, String:buffer[], maxlen, bool:list = false)
 {
-    decl String:valuebuffer[16];
+    decl String:valuebuffer[512];
     valuebuffer[0] = 0;
     
     // Make sure buffer is empty.
@@ -769,4 +769,39 @@ stock bool:Array_PeekString(Handle:stackArray, String:value[], maxlen)
     
     // Get last string.
     return GetArrayString(stackArray, len - 1, value, maxlen);
+}
+
+/**
+ * Imported from SMLIB 0.9.7. Renamed prefix to Array to avoid conflicts.
+ * http://www.sourcemodplugins.org/smlib/
+ *
+ * Converts the whole String to lower case.
+ * Only works with alphabetical characters (not ÖÄÜ) because Sourcemod suxx !
+ * The Output String can be the same as the Input String.
+ *
+ * @param input				Input String.
+ * @param output			Output String.
+ * @param size				Max Size of the Output string
+ * @noreturn
+ */
+stock Array_ToLower(const String:input[], String:output[], size)
+{
+	size--;
+
+	new x=0;
+	while (input[x] != '\0' || x < size)
+	{
+		if (IsCharUpper(input[x]))
+		{
+			output[x] = CharToLower(input[x]);
+		}
+		else
+		{
+			output[x] = input[x];
+		}
+		
+		x++;
+	}
+	
+	output[x] = '\0';
 }

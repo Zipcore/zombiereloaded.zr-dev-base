@@ -39,8 +39,8 @@ ModelDB_BuildCommands()
         return;
     }
     
-    // Prepare the object inspector, if not ready.
-    ObjLib_BuildInspector();
+    // Prepare the global object inspector, if not ready.
+    ObjLib_BuildInspector(PROJECT_CMD_PREFIX);
     
     // Admin commands.
     Project_RegConsoleCmd("model_help", ModelCmd_Help, "Prints a list of model inspector commands.");
@@ -61,7 +61,7 @@ public Action:ModelCmd_Help(client, argc)
 {
     // TODO: Need a function to insert command prefix.
     Project_ReplyToCommand(client, "Model inspector commands:");
-    Project_ReplyToCommand(client, "object_help             - List of commands in object inspector. Use the object inspector to inspect model objects.");
+    Project_ReplyToCommand(client, "<cmdprefix>_object_help - List of commands in object inspector. Use the object inspector to inspect model objects.");
     Project_ReplyToCommand(client, "<cmdprefix>_model_help  - Prints this list.");
     Project_ReplyToCommand(client, "<cmdprefix>_model_list  - Prints a list of models.");
     return Plugin_Handled;

@@ -40,39 +40,32 @@
  */
 stock bool:ObjLib_KvUnexpectedKeyError(Object:object, ObjectType:typeDescriptor, ObjLib_ErrorHandler:errorHandler, Object:parseContext, const String:keyName[])
 {
+    // Get path to current location in keyvalue tree.
+    decl String:path[PLATFORM_MAX_PATH];
+    ObjLib_KvBuildPath(parseContext, path, sizeof(path));
+    
     new Action:result = Plugin_Handled;
     if (ObjLib_HandleError(typeDescriptor,                      // typeDescriptor
                            object,                              // object
-                           ObjLibError_InvalidKey,              // errorType
+                           ObjLibError_KvUnexpectedKey,         // errorType
                            errorHandler,                        // customHandler
                            result,                              // result
                            parseContext,                        // data
-                           "Unexpected key \"%s\". It does not exist in the type descriptor. Key names are case sensitive.",   // format
+                           "Unexpected key \"%s/%s\". It does not exist in the type descriptor. Key names must be in lower case in the type descriptor.",   // format
+                           path,
                            keyName))
     {
-        // Error was handled in customHandler. Update parser state.
-        if (result == Plugin_Continue)
-        {
-            // Continue parsing.
-            ObjLib_SetCell(parseContext, "parseState", ObjLibState_Running);
-        }
-        else
-        {
-            // Abort parsing.
-            ObjLib_SetCell(parseContext, "parseState", ObjLibState_Aborted);
-        }
+        // Error was handled in customHandler. Update parser state, skip this
+        // key if continuing.
+        ObjLib_KvUpdateParserState(result, parseContext);
         
-        // Return to parse loop. The parse state will tell if parser
-        // should abort or continue.
+        // Return to parse loop. The parse state will tell if parser should
+        // abort or continue.
         return true;
     }
-    else
-    {
-        // Error not handled. This code is actually not reachable
-        // because the error handler doesn't return when calling
-        // ThrowError.
-        return false;
-    }
+    
+    // Not reachable due to call to ThrowError.
+    return false;
 }
 
 /*____________________________________________________________________________*/
@@ -92,45 +85,38 @@ stock bool:ObjLib_KvUnexpectedKeyError(Object:object, ObjectType:typeDescriptor,
  */
 stock bool:ObjLib_KvUnexpectedSectionError(Object:object, ObjectType:typeDescriptor, ObjLib_ErrorHandler:errorHandler, Object:parseContext, const String:sectionName[])
 {
+    // Get path to current location in keyvalue tree.
+    decl String:path[PLATFORM_MAX_PATH];
+    ObjLib_KvBuildPath(parseContext, path, sizeof(path));
+    
     new Action:result = Plugin_Handled;
     if (ObjLib_HandleError(typeDescriptor,                      // typeDescriptor
                            object,                              // object
-                           ObjLibError_ValidationError,         // errorType
+                           ObjLibError_KvUnexpectedSection,     // errorType
                            errorHandler,                        // customHandler
                            result,                              // result
                            parseContext,                        // data
-                           "Unexpected section \"%s\". It does not exist in the type descriptor. Section names are case sensitive.",   // format
+                           "Unexpected section \"%s/%s\". It does not exist in the type descriptor. Section names must be in lower case in the type descriptor.",   // format
+                           path,
                            sectionName))
     {
-        // Error was handled in customHandler. Update parser state.
-        if (result == Plugin_Continue)
-        {
-            // Skip this section, continue parsing.
-            ObjLib_SetCell(parseContext, "parseState", ObjLibState_SkipSection);
-        }
-        else
-        {
-            // Abort parsing.
-            ObjLib_SetCell(parseContext, "parseState", ObjLibState_Aborted);
-        }
+        // Error was handled in customHandler. Update parser state, skip section
+        // if continuing.
+        ObjLib_KvUpdateParserState(result, parseContext, ObjLibState_SkipSection);
         
-        // Return to parse loop. The parse state will tell if parser
-        // should abort or continue.
+        // Return to parse loop. The parse state will tell if parser should
+        // abort or continue.
         return true;
     }
-    else
-    {
-        // Error not handled. This code is actually not reachable
-        // because the error handler doesn't return when calling
-        // ThrowError.
-        return false;
-    }
+    
+    // Not reachable due to call to ThrowError.
+    return false;
 }
 
 /*____________________________________________________________________________*/
 
 /**
- * Triggers an unexpected section error.
+ * Triggers an invalid section error.
  *
  * @param object            Current object.
  * @param typeDescriptor    Type descriptor for object.
@@ -142,41 +128,34 @@ stock bool:ObjLib_KvUnexpectedSectionError(Object:object, ObjectType:typeDescrip
  * @return                  True if error was handled. If not handled this
  *                          function does not return at all.
  */
-stock bool:ObjLib_KvSectionNotObjectError(Object:object, ObjectType:typeDescriptor, ObjLib_ErrorHandler:errorHandler, Object:parseContext, const String:sectionName[])
+stock bool:ObjLib_KvInvalidSectionError(Object:object, ObjectType:typeDescriptor, ObjLib_ErrorHandler:errorHandler, Object:parseContext, const String:sectionName[])
 {
+    // Get path to current location in keyvalue tree.
+    decl String:path[PLATFORM_MAX_PATH];
+    ObjLib_KvBuildPath(parseContext, path, sizeof(path));
+    
     new Action:result = Plugin_Handled;
     if (ObjLib_HandleError(typeDescriptor,                      // typeDescriptor
                            object,                              // object
-                           ObjLibError_ValidationError,         // errorType
+                           ObjLibError_KvInvalidSection,        // errorType
                            errorHandler,                        // customHandler
                            result,                              // result
                            parseContext,                        // data
-                           "Expected \"%s\" to be a key value pair, but it's a sub section (object).",   // format
+                           "Invalid section at \"%s/%s\". It's supposed to be a key value pair.",   // format
+                           path,
                            sectionName))
     {
-        // Error was handled in customHandler. Update parser state.
-        if (result == Plugin_Continue)
-        {
-            // Skip this section, continue parsing.
-            ObjLib_SetCell(parseContext, "parseState", ObjLibState_SkipSection);
-        }
-        else
-        {
-            // Abort parsing.
-            ObjLib_SetCell(parseContext, "parseState", ObjLibState_Aborted);
-        }
+        // Error was handled in customHandler. Update parser state, skip section
+        // if continuing.
+        ObjLib_KvUpdateParserState(result, parseContext, ObjLibState_SkipSection);
         
         // Return to parse loop. The parse state will tell if parser
         // should abort or continue.
         return true;
     }
-    else
-    {
-        // Error not handled. This code is actually not reachable
-        // because the error handler doesn't return when calling
-        // ThrowError.
-        return false;
-    }
+    
+    // Not reachable due to call to ThrowError.
+    return false;
 }
 
 /*____________________________________________________________________________*/
@@ -197,40 +176,32 @@ stock bool:ObjLib_KvSectionNotObjectError(Object:object, ObjectType:typeDescript
  */
 stock bool:ObjLib_KvConstraintTypeMismatch(Object:object, ObjectType:typeDescriptor, ObjLib_ErrorHandler:errorHandler, Object:parseContext, const String:keyName[], ObjectType:constraintType)
 {
+    // Get path to current location in keyvalue tree.
+    decl String:path[PLATFORM_MAX_PATH];
+    ObjLib_KvBuildPath(parseContext, path, sizeof(path));
+    
     new Action:result = Plugin_Handled;
     if (ObjLib_HandleError(typeDescriptor,                      // typeDescriptor
                            object,                              // object
-                           ObjLibError_TypeMismatch,            // errorType
+                           ObjLibError_KvInvalidConstraint,     // errorType
                            errorHandler,                        // customHandler
                            result,                              // result
                            parseContext,                        // data
-                           "Invalid constraint type for key \"%s\": %x. It's unknown or does not match the key data type.",   // format
+                           "Invalid constraint type for key \"%s/%s\": %x. It's unknown or does not match the key data type.",   // format
+                           path,
                            keyName,
                            constraintType))
     {
         // Error was handled in customHandler. Update parser state.
-        if (result == Plugin_Continue)
-        {
-            // Continue parsing.
-            ObjLib_SetCell(parseContext, "parseState", ObjLibState_Running);
-        }
-        else
-        {
-            // Abort parsing.
-            ObjLib_SetCell(parseContext, "parseState", ObjLibState_Aborted);
-        }
+        ObjLib_KvUpdateParserState(result, parseContext);
         
         // Return to parse loop. The parse state will tell if parser
         // should abort or continue.
         return true;
     }
-    else
-    {
-        // Error not handled. This code is actually not reachable
-        // because the error handler doesn't return when calling
-        // ThrowError.
-        return false;
-    }
+    
+    // Not reachable due to call to ThrowError.
+    return false;
 }
 
 /*____________________________________________________________________________*/
@@ -252,6 +223,10 @@ stock bool:ObjLib_KvConstraintTypeMismatch(Object:object, ObjectType:typeDescrip
  */
 stock bool:ObjLib_KvTypeMismatchError(Object:object, ObjectType:typeDescriptor, ObjLib_ErrorHandler:errorHandler, Object:parseContext, const String:keyName[], ObjectDataType:expectedType, ObjectDataType:actualType)
 {
+    // Get path to current location in keyvalue tree.
+    decl String:path[PLATFORM_MAX_PATH];
+    ObjLib_KvBuildPath(parseContext, path, sizeof(path));
+    
     // Convert data types to strings.
     new String:expectedTypeString[32];
     new String:actualTypeString[32];
@@ -261,46 +236,86 @@ stock bool:ObjLib_KvTypeMismatchError(Object:object, ObjectType:typeDescriptor, 
     new Action:result = Plugin_Handled;
     if (ObjLib_HandleError(typeDescriptor,                      // typeDescriptor
                            object,                              // object
-                           ObjLibError_TypeMismatch,            // errorType
+                           ObjLibError_KvTypeMismatch,          // errorType
                            errorHandler,                        // customHandler
                            result,                              // result
                            parseContext,                        // data
-                           "Type mismatch (key: \"%s\"). Expected type: %s. Actual type: %s",   // format
+                           "Key type mismatch: \"%s/%s\". Expected %s, but %s was used.",   // format
+                           path,
                            keyName,
                            expectedTypeString,
                            actualTypeString))
     {
         // Error was handled in customHandler. Update parser state.
-        if (result == Plugin_Continue)
-        {
-            // Continue parsing.
-            ObjLib_SetCell(parseContext, "parseState", ObjLibState_Running);
-        }
-        else
-        {
-            // Abort parsing.
-            ObjLib_SetCell(parseContext, "parseState", ObjLibState_Aborted);
-        }
+        ObjLib_KvUpdateParserState(result, parseContext);
         
         // Return to parse loop. The parse state will tell if parser
         // should abort or continue.
         return true;
     }
-    else
+    
+    // Not reachable due to call to ThrowError.
+    return false;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Triggers a collection element type mismatch error.
+ *
+ * @param object            Current object.
+ * @param typeDescriptor    Type descriptor for object.
+ * @param errorHandler      Error handler to use on errors.
+ * @param parseContext      Object with parser settings.
+ *                          (Type: ObjLib_KvParamsType)
+ * @param expectedType      Expected data type.
+ * @param actualType        Actual data type.
+ *
+ * @return                  True if error was handled. If not handled this
+ *                          function does not return at all.
+ */
+stock bool:ObjLib_KvCollectionTypeMismatchError(Collection:object, ObjectType:typeDescriptor, ObjLib_ErrorHandler:errorHandler, Object:parseContext, const String:elementName[], ObjectDataType:expectedType, ObjectDataType:actualType)
+{
+    // Get path to current location in keyvalue tree.
+    decl String:path[PLATFORM_MAX_PATH];
+    ObjLib_KvBuildPath(parseContext, path, sizeof(path));
+    
+    // Convert data types to strings.
+    new String:expectedTypeString[32];
+    new String:actualTypeString[32];
+    ObjLib_DataTypeToString(expectedType, expectedTypeString, sizeof(expectedTypeString));
+    ObjLib_DataTypeToString(actualType, actualTypeString, sizeof(actualTypeString));
+    
+    new Action:result = Plugin_Handled;
+    if (ObjLib_HandleError(typeDescriptor,                      // typeDescriptor
+                           Object:object,                       // object
+                           ObjLibError_KvCollectionTypeMismatch,// errorType
+                           errorHandler,                        // customHandler
+                           result,                              // result
+                           parseContext,                        // data
+                           "Collection element type mismatch at \"%s/%s\". Expected %s, but %s was used.",   // format
+                           path,
+                           elementName,
+                           expectedTypeString,
+                           actualTypeString))
     {
-        // Error not handled. This code is actually not reachable
-        // because the error handler doesn't return when calling
-        // ThrowError.
-        return false;
+        // Error was handled in customHandler. Update parser state, skip section
+        // if continuing.
+        ObjLib_KvUpdateParserState(result, parseContext, ObjLibState_SkipSection);
+        
+        // Return to parse loop. The parse state will tell if parser
+        // should abort or continue.
+        return true;
     }
+    
+    // Not reachable due to call to ThrowError.
+    return false;
 }
 
 /*____________________________________________________________________________*/
 
 /**
  * Fallback error handler in case no error handler is provided to parser.
- *
- * Does general cleanup to prevent memory leaks.
  *
  * @param typeDescriptor    Related type descriptor.
  * @param errorType         Type of error.
@@ -336,7 +351,7 @@ public Action:ObjLib_KvErrorHandler(ObjectType:typeDescriptor, ObjLibError:error
     }
     
     // Log general parse error.
-    LogError("[%s] Error parsing element in %s: %s", name, path, message);
+    LogError("[%s] Error parsing element at \"%s\": %s", name, path, message);
     
     // Remove parse context from temp storage.
     TempParseContext = INVALID_OBJECT;
@@ -358,23 +373,23 @@ public Action:ObjLib_KvErrorHandler(ObjectType:typeDescriptor, ObjLibError:error
 /**
  * Builds a path to the current parser location.
  *
- * @param parseParam        Object with parser settings.
+ * @param parseContext      Parser context object.
  * @param buffer            Destination string buffer.
  * @param maxlen            Size of buffer.
  *
  * @return                  Number of bytes written (including null terminator).
  */
-stock ObjLib_KvBuildPath(Object:parseParams, String:buffer[], maxlen)
+stock ObjLib_KvBuildPath(Object:parseContext, String:buffer[], maxlen)
 {
-    new Handle:nameStack = ObjLib_GetHandle(parseParams, "nameStack");
+    new Handle:nameStack = ObjLib_GetHandle(parseContext, "nameStack");
     new len = GetArraySize(nameStack);
     new count = 0;
     
     decl String:nameElement[OBJECT_KEY_NAME_LEN];
     nameElement[0] = 0;
     
-    // Initialize root path.
-    count = strcopy(buffer, maxlen, "/");
+    // Initialize buffer.
+    buffer[0] = 0;
     
     // Check if no elements.
     if (len == 0)
@@ -426,7 +441,6 @@ stock ObjLib_ErrorHandler:ObjLib_KvGetErrorHandler(Object:parseContext)
 
 /*____________________________________________________________________________*/
 
-
 /**
  * Returns the parse context or parse context in temp storage.
  */
@@ -456,5 +470,34 @@ stock Object:ObjLib_KvGetStoredParseContext(Object:parseContext)
             ThrowError("[BUG] Missing parse context in temp storage. This is a bug in objectlib.");
             return INVALID_OBJECT;
         }
+    }
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Internal use only!.
+ * Updates parser state according to an error handler result.
+ *
+ * @param result            Result value from error handler.
+ * @param parseContext      Object with parser settings.
+ *                          (Type: ObjLib_KvParamsType)
+ * @param continueState     (Optional) Parser state to set if continuing
+ *                          parsing. Default is ObjLibSate_Running.
+ * @param abortState        (Optional) Parser state to set if aborting parsing.
+ *                          Default is ObjLibState_Aborted.
+ */
+stock ObjLib_KvUpdateParserState(Action:result, Object:parseContext, ObjLibParseState:continueState = ObjLibState_Running, ObjLibParseState:abortState = ObjLibState_Aborted)
+{
+    // Error was handled in customHandler. Update parser state.
+    if (result == Plugin_Continue)
+    {
+        // Continue parsing.
+        ObjLib_SetCell(parseContext, "parseState", continueState);
+    }
+    else
+    {
+        // Abort parsing.
+        ObjLib_SetCell(parseContext, "parseState", abortState);
     }
 }

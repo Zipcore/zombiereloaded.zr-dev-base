@@ -171,7 +171,7 @@ stock Model_BuildMainRootType()
         // Add attributes.
         
         // models. The main collection object.
-        ObjLib_AddKey(Model_MainRootType, "Models", ObjDataType_Object, constraints);
+        ObjLib_AddKey(Model_MainRootType, "models", ObjDataType_Object, constraints);
         
         Model_MainRootTypeBuilt = true;
     }

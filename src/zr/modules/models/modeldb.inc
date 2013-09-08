@@ -558,26 +558,29 @@ public Action:ModelDB_ErrorHandler(ObjectType:typeDescriptor, ObjLibError:errorT
         case ObjLibError_TypeMismatch:
         {
             // Bug. Should not happen in this module.
-            ThrowError("[BUG] This is a bug in Zombie:Reloaded.");
+            ThrowError("[BUG] Key type mismatch. This is a bug in Zombie:Reloaded.");
         }
         case ObjLibError_NullDataKey:
         {
             // Bug. Should not happen in this module.
-            ThrowError("[BUG] This is a bug in Zombie:Reloaded.");
+            ThrowError("[BUG] Attempted to read null key. This is a bug in Zombie:Reloaded.");
         }
         case ObjLibError_KeyExist:
         {
             // Bug. ModelDB doesn't create keys, unless the object is mutable,
             // which is also a bug.
-            ThrowError("[BUG] This is a bug in Zombie:Reloaded.");
+            ThrowError("[BUG] Attempted to create key that already exists. This is a bug in Zombie:Reloaded.");
         }
         case ObjLibError_Immutable:
         {
             // Bug. Attempted to modify a type descriptor, ModelDB doesn't do
             // this.
-            ThrowError("[BUG] This is a bug in Zombie:Reloaded.");
+            ThrowError("[BUG] Object is immutable. This is a bug in Zombie:Reloaded.");
         }
-        case ObjLibError_ValidationError:
+        case ObjLibError_ValidationError, ObjLibError_KvUnexpectedKey,
+             ObjLibError_KvUnexpectedSection, ObjLibError_KvInvalidSection,
+             ObjLibError_KvInvalidConstraint, ObjLibError_KvTypeMismatch,
+             ObjLibError_KvCollectionTypeMismatch:
         {
             LogMgr_Print(g_moduleModelMgr, LogType_Error, "Config validation", "%s  See the manual for valid values.", message);
         }

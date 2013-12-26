@@ -7,7 +7,7 @@
  *  Type:          Module include
  *  Description:   Model filtering tools for the model db.
  *
- *  Copyright (C) 2009-2011  Greyscale, Richard Helgeby
+ *  Copyright (C) 2009-2014  Greyscale, Richard Helgeby
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,110 +37,102 @@
 #define MODEL_FILTER_PUBLIC         (1<<5)  /** Only public models (no restrictions). */
 #define MODEL_FILTER_ADMIN          (1<<6)  /** Only admin models. */
 #define MODEL_FILTER_MOTHER_ZOMB    (1<<7)  /** Only mother zombie models. */
+
+#define MODEL_FILTER_MAX            ((1<<9) - 1)    /** Max value, all flags enabled. */
 /**
  * @endsection
  */
 
+/*____________________________________________________________________________*/
+
 /**
- * Gets one or more models from a filtered list.
+ * Gets all models according to the specified filter.
  *
- * @param client    Client that will use the model. Used for authorization.
+ * @param filters   Filtering flags. See MODEL_FILTER_* constants.
+ *                  MODEL_FILTER_RANDOM is ignored.
+ * @param client    Optional. Client to use for authorization. Default is -1.
  *                  The server will always get access.
- * @param filters   Filtering flags. The "random" filter will pick a single
- *                  model that match the filters.
- * @param models    Optional. Custom list of model indexes. If not specified it
- *                  will use the entire model database.
- * @param asList    Optional. Return all accessible models in a list.
- *                  Defaults to false.
- * @param list      Optional. List to put models in.
+ * @param models    Optional. Custom list of source model objects. If not
+ *                  specified the model database will be used as source.
  *
- * @return          Model index if asList is false, or number of models added
- *                  to list if asList is true.
+ * @return          Handle to result list. Must be closed when no longer used.
  */
-ModelDB_GetModel(client, filters, Handle:models = INVALID_HANDLE, bool:asList = false, Handle:list)
+public Handle:ModelDB_GetModels(filters, client /*= -1*/, Handle:models /*= INVALID_HANDLE*/)
 {
-    new bool:customList = (models != INVALID_HANDLE);
-    new model = -1;
+    ModelDB_ValidateFilter(filters);
+    
+    // Get source list.
+    new Handle:modelList = ModelDB_GetSourceList(models);
+    new modelCount = GetArraySize(modelList);
+    
+    new Handle:resultList = CreateArray();
     
     // Check if there are no models.
-    new count;
-    count = customList ? GetArraySize(models) : ModelCount;
-    if (count == 0)
+    if (modelCount == 0)
     {
-        return asList ? 0 : -1;
-    }
-    
-    // Prepare temp array for second pass, or use the list if specified.
-    new filterCount = 0;
-    new Handle:filtered;
-    if (asList && filters & MODEL_FILTER_RANDOM)
-    {
-        // Using a list, but a random filter is enabled. This still requires a
-        // temp array.
-        filtered = CreateArray();
-    }
-    else
-    {
-        filtered = asList ? list : CreateArray();
+        // No models. Just return an empty list.
+        return resultList;
     }
     
     // Loop through each model and test filters.
-    for (new i = 0; i < count; i++)
+    for (new i = 0; i < modelCount; i++)
     {
-        model = customList ? GetArrayCell(models, i) : i; 
+        new Model:model = GetArrayCell(modelList, i); 
         if (ModelDB_FilterTest(client, filters, model))
         {
-            // All filters passed, add model.
-            PushArrayCell(filtered, model);
-            filterCount++;
+            // Model passed filter.
+            PushArrayCell(resultList, model);
         }
     }
     
-    // Check if no model passed the filter.
-    if (filterCount == 0)
+    return resultList;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Gets a model according to the specified filter.
+ *
+ * @param filters   Filtering flags. See MODEL_FILTER_* constants.
+ *                  MODEL_FILTER_RANDOM is ignored.
+ * @param client    Optional. Client to use for authorization. Default is -1.
+ *                  The server will always get access.
+ * @param models    Optional. Custom list of source model objects. If not
+ *                  specified the model database will be used as source.
+ *
+ * @return          Model object if found, otherwise INVALID_MODEL.
+ */
+public Model:ModelDB_GetModel(filters, client /*= -1*/, Handle:models /*= INVALID_HANDLE*/)
+{
+    new Handle:resultList = Handle:ModelDB_GetModels(filters, client, models);
+    new modelCount = GetArraySize(resultList);
+    
+    new Model:model = INVALID_MODEL;
+    
+    // Check if there are no models.
+    if (modelCount == 0)
     {
-        // No models found according to the filter.
-        
-        if (!asList || filters & MODEL_FILTER_RANDOM)
-        {
-            // Temp array exist when not using a list, or when a random filter
-            // is enabled.
-            CloseHandle(filtered);
-        }
-        
-        return asList ? 0 : -1;
+        CloseHandle(resultList);
+        return INVALID_MODEL;
     }
     
-    // Pick random model if enabled.
     if (filters & MODEL_FILTER_RANDOM)
     {
-        // Get random model.
-        new randIndex = Math_GetRandomInt(0, filterCount - 1);
-        model = GetArrayCell(filtered, randIndex); 
-        CloseHandle(filtered);      // Temp array, NOT the list.
-        
-        if (asList)
-        {
-            PushArrayCell(list, model);
-            return 1;
-        }
-        else
-        {
-            return model;
-        }
+        // Pick random model.
+        new randIndex = Math_GetRandomInt(0, modelCount - 1);
+        model = Model:GetArrayCell(resultList, randIndex);
     }
-    
-    // If using a list, return number of models added.
-    if (asList)
+    else
     {
-        return filterCount;
+        // Pick first model.
+        model = Model:GetArrayCell(resultList, 0);
     }
     
-    // Not using a list. Pick first model.
-    model = GetArrayCell(filtered, 0);
-    CloseHandle(filtered);
+    CloseHandle(resultList);
     return model;
 }
+
+/*____________________________________________________________________________*/
 
 /**
  * Returns whether the specified model passes a filter.
@@ -148,27 +140,18 @@ ModelDB_GetModel(client, filters, Handle:models = INVALID_HANDLE, bool:asList = 
  * @param client    Client that will use the model. Used for authorization.
  *                  The server will always get access.
  * @param filters   Filtering flags.
- * @param model     Model index to test.
+ * @param model     Model to test.
  *
  * @return          True if passed, false otherwise.
  */
-public bool:ModelDB_FilterTest(client, filters, model)
+public bool:ModelDB_FilterTest(client, filters, Model:model)
 {
     // Cache relevant attributes for readability.
-    new ModelTeam:team = ModelData[model][Model_Team];
-    new bool:motherZombiesOnly = ModelData[model][Model_MotherZombiesOnly];
-    new bool:adminsOnly = ModelData[model][Model_AdminsOnly];
-    new bool:isHidden = ModelData[model][Model_IsHidden];
-    new ModelAuthMode:authMode = ModelData[model][Model_AuthMode];
-    
-    // Authorization. Check if not ignored, and not authorized.
-    if (client != 0     // Server always get access (for listings in console).
-        && filters &~ MODEL_FILTER_IGNORE_AUTH
-        && !ModelDB_IsPlayerAuthorized(client, model))
-    {
-        // Not authorized.
-        return false;
-    }
+    new VTeam:team = Model_GetTeam(model);
+    new bool:motherZombiesOnly = Model_GetMotherZombiesOnly(model);
+    new bool:adminsOnly = Model_GetAdminsOnly(model);
+    new bool:isHidden = Model_IsHidden(model);
+    new ModelAuthMode:authMode = Model_GetAuthMode(model);
     
     // Team filters.
     if (!(filters & MODEL_FILTER_BOTH_TEAMS))
@@ -177,7 +160,7 @@ public bool:ModelDB_FilterTest(client, filters, model)
         
         // Zombie team.
         if (filters & MODEL_FILTER_ZOMBIE
-            && team != ModelTeam_Zombies)
+            && team != VTeam_Zombie)
         {
             // Not a zombie model.
             return false;
@@ -185,7 +168,7 @@ public bool:ModelDB_FilterTest(client, filters, model)
         
         // Human team.
         if (filters & MODEL_FILTER_HUMAN
-            && team != ModelTeam_Humans)
+            && team != VTeam_Human)
         {
             // Not a human model.
             return false;
@@ -204,7 +187,7 @@ public bool:ModelDB_FilterTest(client, filters, model)
     if (filters & MODEL_FILTER_ADMIN
         && !adminsOnly)
     {
-        // Not a admin model.
+        // Not an admin model.
         return false;
     }
     
@@ -216,9 +199,85 @@ public bool:ModelDB_FilterTest(client, filters, model)
         return false;
     }
     
+    // Authorization. Check if not ignored, and not authorized. Server always
+    // get access (for listings in console).
+    if (client >= 0
+        && client != SERVER_INDEX
+        && filters &~ MODEL_FILTER_IGNORE_AUTH
+        && !ModelDB_HasAccess(client, model))
+    {
+        // Not authorized.
+        return false;
+    }
+    
     return true;
 }
 
+/*____________________________________________________________________________*/
+
+/**
+ * Gets the specified list or main model collection.
+ */
+Handle:ModelDB_GetSourceList(Handle:models = INVALID_HANDLE)
+{
+    if (models != INVALID_HANDLE)
+    {
+        return models;
+    }
+    else
+    {
+        return ModelDB_GetCollectionElements();
+    }
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Throws an error if the specified model filter has invalid values.
+ */
+ModelDB_ValidateFilter(modelFilter)
+{
+    if (modelFilter < 0)
+    {
+        ThrowError("Filter value out of bounds: %d. Too low, must be zero or positive.", modelFilter);
+    }
+    
+    if (modelFilter > MODEL_FILTER_MAX)
+    {
+        ThrowError("Filter value out of bounds: %d. Too high, maximum is %d.", modelFilter, MODEL_FILTER_MAX);
+    }
+    
+    new bool:auth = (modelFilter & MODEL_FILTER_IGNORE_AUTH) == 0;
+    new bool:zombie = (modelFilter & MODEL_FILTER_ZOMBIE) > 0;
+    new bool:human = (modelFilter & MODEL_FILTER_HUMAN) > 0;
+    new bool:bothTeams = (modelFilter & MODEL_FILTER_BOTH_TEAMS) > 0;
+    new bool:publicModel = (modelFilter & MODEL_FILTER_PUBLIC) > 0;
+    new bool:adminModel = (modelFilter & MODEL_FILTER_ADMIN) > 0;
+    new bool:motherZombie = (modelFilter & MODEL_FILTER_MOTHER_ZOMB) > 0;
+    
+    new bool:singleTeam = false;
+    if (zombie || human)
+    {
+        singleTeam = true;
+    }
+    
+    if (zombie && human)
+    {
+        ThrowError("Conflicting flags: MODEL_FILTER_ZOMBIE and MODEL_FILTER_HUMAN.");
+    }
+    
+    if (bothTeams && (singleTeam || motherZombie))
+    {
+        ThrowError("Conflicting flags: MODEL_FILTER_BOTH_TEAMS cannot be enabled when a team-specific flag is enabled.");
+    }
+    
+    if (auth && adminModel && publicModel)
+    {
+        ThrowError("Conflicting flags: MODEL_FILTER_ADMIN and MODEL_FILTER_PUBLIC when authorization is enabled.");
+    }
+}
+
+/*____________________________________________________________________________*/
 
 /****************************
  *   Conversion functions   *

@@ -7,7 +7,7 @@
  *  Type:          Module include
  *  Description:   Model database.
  *
- *  Copyright (C) 2009-2011  Greyscale, Richard Helgeby
+ *  Copyright (C) 2009-2014  Greyscale, Richard Helgeby
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -147,7 +147,7 @@ ModelDBLoadResult:ModelDB_Load()
     // Validate collection object.
     if (ModelDB_Models == INVALID_COLLECTION)
     {
-        // Falal error. Error when parsing model collection sub section.
+        // Fatal error. Error when parsing model collection sub section.
         ObjLib_DeleteObject(parseContext);
         CloseHandle(kv);
         CloseHandle(list);
@@ -221,6 +221,29 @@ bool:ModelDB_IsLoaded()
 Collection:ModelDB_GetCollection()
 {
     return ModelDB_Models;
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Gets the model collection elements.
+ *
+ * @return      ADT array with model objects.
+ */
+Handle:ModelDB_GetCollectionElements()
+{
+    return ObjLib_CollectionGetElements(ModelDB_Models);
+}
+
+/*____________________________________________________________________________*/
+
+/**
+ * Returns number of model objects in the main model collection.
+ */
+ModelDB_Size()
+{
+    new Handle:elements = ModelDB_GetCollectionElements();
+    return GetArraySize(elements);
 }
 
 /*____________________________________________________________________________*/
@@ -519,6 +542,23 @@ ModelDB_DeleteMappings()
 /*____________________________________________________________________________*/
 
 /**
+ * Returns whether a client has access to the specified model.
+ *
+ * @param client    Client index.
+ * @param model     Model to test.
+ *
+ * @return          True if client has access, false otherwise.
+ */
+bool:ModelDB_HasAccess(client, Model:model)
+{
+    // TODO: Implement autorization cache. Update when loading models and when
+    //       a client is connected.
+    return true;
+}
+
+/*____________________________________________________________________________*/
+
+/**
  * General error callback.
  *
  * The return value may be used to decide what to do next. In most cases it's
@@ -620,55 +660,55 @@ public Action:ModelDB_ErrorHandler(ObjectType:typeDescriptor, ObjLibError:errorT
 /**
  * Model settings structure.
  */
-enum ModelAttributes
-{
-    // General
-    String:Model_DisplayName[MODEL_NAME_LEN],   /** User defined name to be displayed in menus. */
-    String:Model_Name[MODEL_NAME_LEN],          /** Unique name to identify the model. */
-    String:Model_FileName[MODEL_NAME_LEN],      /** File name of model (no file extension). */
-    String:Model_Path[PLATFORM_MAX_PATH],       /** Path to model files. */
-    ModelTeam:Model_Team,                       /** Which team the model belongs to. */
-    
-    // Restrictions
-    bool:Model_MotherZombiesOnly,               /** Only allow mother zombies to use the model. */
-    bool:Model_AdminsOnly,                      /** Only allow admins to use the model. */
-    bool:Model_IsHidden,                        /** Exclude model from random selections. */
-    
-    // Advanced authorization
-    ModelAuthMode:Model_AuthMode,               /** Model authorization mode. */
-    String:Model_Flags[MODEL_STRING_LEN],       /** Flag name whitelist. Separated by comma (,). */
-    String:Model_Groups[MODEL_STRING_LEN]       /** Group name whitelist. Separated by comma (,). */
-}
+//enum ModelAttributes
+//{
+//    // General
+//    String:Model_DisplayName[MODEL_NAME_LEN],   /** User defined name to be displayed in menus. */
+//    String:Model_Name[MODEL_NAME_LEN],          /** Unique name to identify the model. */
+//    String:Model_FileName[MODEL_NAME_LEN],      /** File name of model (no file extension). */
+//    String:Model_Path[PLATFORM_MAX_PATH],       /** Path to model files. */
+//    ModelTeam:Model_Team,                       /** Which team the model belongs to. */
+//    
+//    // Restrictions
+//    bool:Model_MotherZombiesOnly,               /** Only allow mother zombies to use the model. */
+//    bool:Model_AdminsOnly,                      /** Only allow admins to use the model. */
+//    bool:Model_IsHidden,                        /** Exclude model from random selections. */
+//    
+//    // Advanced authorization
+//    ModelAuthMode:Model_AuthMode,               /** Model authorization mode. */
+//    String:Model_Flags[MODEL_STRING_LEN],       /** Flag name whitelist. Separated by comma (,). */
+//    String:Model_Groups[MODEL_STRING_LEN]       /** Group name whitelist. Separated by comma (,). */
+//}
 
 /**
  * Parsed model data.
  */
-new ModelData[MODELS_MAX][ModelAttributes];
+//new ModelData[MODELS_MAX][ModelAttributes];
 
 /**
  * Stores whether models are sucessfully loaded or not.
  */
-new bool:ModelsLoaded;
+//new bool:ModelsLoaded;
 
 /**
  * Number of valid models.
  */
-new ModelCount;
+//new ModelCount;
 
 /**
  * Number of models that failed validation. Used during loading.
  */
-new ModelFailedCount;
+//new ModelFailedCount;
 
 /**
  * Handle to trie for fast name based lookup.
  */
-new Handle:ModelNameIndex;
+//new Handle:ModelNameIndex;
 
 /**
  * Cache that tells whether a player has access to a certain model.
  */
-new bool:ModelHasAccess[MAXPLAYERS + 1][MODELS_MAX];
+//new bool:ModelHasAccess[MAXPLAYERS + 1][MODELS_MAX];
 
 
 /**
@@ -928,7 +968,7 @@ new bool:ModelHasAccess[MAXPLAYERS + 1][MODELS_MAX];
  *
  * @return          True if the player has access, false otherwise.
  */
-bool:ModelDB_IsPlayerAuthorized(client, model)
+/*bool:ModelDB_IsPlayerAuthorized(client, model)
 {
     decl String:flagList[MODEL_STRING_LEN];
     decl String:groupList[MODEL_STRING_LEN];
@@ -940,27 +980,27 @@ bool:ModelDB_IsPlayerAuthorized(client, model)
     
     switch (authMode)
     {
-        case ModelAuth_Disabled:    /* No authorization. */
+        case ModelAuth_Disabled:    // No authorization.
         {
             return true;
         }
-        case ModelAuth_Flag:        /* Require flag. */
+        case ModelAuth_Flag:        // Require flag.
         {
             return Auth_ClientHasFlags(client, flagList, MODEL_ENTRY_SEPARATOR);
         }
-        case ModelAuth_Group:       /* Require group. */
+        case ModelAuth_Group:       // Require group.
         {
             return Auth_IsClientInGroups(client, groupList, MODEL_ENTRY_SEPARATOR);
         }
-        case ModelAuth_Either:      /* Require flag or group. */
+        case ModelAuth_Either:      // Require flag or group.
         {
             return Auth_IsClientAuthorized(client, groupList, flagList, MODEL_ENTRY_SEPARATOR, Auth_Either);
         }
-        case ModelAuth_Both:        /* Require flag and group. */
+        case ModelAuth_Both:        // Require flag and group.
         {
             return Auth_IsClientAuthorized(client, groupList, flagList, MODEL_ENTRY_SEPARATOR, Auth_Both);
         }
-        case ModelAuth_All:         /* Require all flags and all groups. */
+        case ModelAuth_All:         // Require all flags and all groups.
         {
             return Auth_IsClientAuthorized(client, groupList, flagList, MODEL_ENTRY_SEPARATOR, Auth_All);
         }
@@ -968,17 +1008,17 @@ bool:ModelDB_IsPlayerAuthorized(client, model)
     
     // Invalid auth mode (should never happen because model is validated).
     return false;
-}
+}*/
 
 /**
  * Returns whether models are currently successfully loaded.
  *
  * @return      True if loaded, false otherwise.
  */
-bool:ModelDB_AreModelsLoaded()
+/*bool:ModelDB_AreModelsLoaded()
 {
     return ModelsLoaded;
-}
+}*/
 
 
 /***************************

@@ -67,9 +67,9 @@ new ModelCollectionCfgIndex;
 // Module components.
 #include "zr/modules/models/model"
 #include "zr/modules/models/modeldb"
-#include "zr/modules/models/modelcollections"
+//#include "zr/modules/models/modelcollections"
 #include "zr/modules/models/modelfilter"
-#include "zr/modules/models/modelparser"
+//#include "zr/modules/models/modelparser"
 #include "zr/modules/models/modelcommands"
 
 
@@ -110,7 +110,7 @@ ModelMgr_OnPluginStart()
     ModelMgr_Register();
     
     // Create tries.
-    ModelCollectionNameIndex = CreateTrie();
+    //ModelCollectionNameIndex = CreateTrie();
 }
 
 /**
@@ -171,11 +171,11 @@ public Action:ModelMgr_OnMyModuleEnable(String:refusalmsg[], maxlen)
     }
     
     // Load model collections if not already loaded.
-    if (!ModelDB_AreCollectionsLoaded() && !ModelDB_LoadCollections())
+    /*if (!ModelDB_AreCollectionsLoaded() && !ModelDB_LoadCollections())
     {
         Format(refusalmsg, maxlen, "%T", "ModelMgr model collections refuse enable", LANG_SERVER);
         return Plugin_Handled;
-    }
+    }*/
     
     return Plugin_Continue;
 }
@@ -200,7 +200,7 @@ public Action:ModelMgr_OnMyModuleDisable(String:refusalmsg[], maxlen)
 public ModelMgr_OnMapStart()
 {
     //ModelDB_Load();
-    ModelDB_LoadCollections();
+    //ModelDB_LoadCollections();
 }
 
 /**
@@ -217,14 +217,14 @@ public ModelMgr_OnConfigsExecuted()
 public ModelMgr_OnConfigReload(configindex)
 {
     ModelDB_Reload();
-    ModelDB_LoadCollections();
+    //ModelDB_LoadCollections();
 }
 
 public ModelMgr_OnClientPutInServer(client)
 {
     // Clear model access cache for this player in case something tries to
     // authorize a model before the cache is updated.
-    ModelMgr_ClearPlayerAccess(client);
+    //ModelMgr_ClearPlayerAccess(client);
 }
 
 /**
@@ -235,7 +235,7 @@ public ModelMgr_OnClientPutInServer(client)
 public ModelMgr_OnClientPostAdminCheck(client)
 {
     // Update model access cache for this player.
-    ModelMgr_UpdatePlayerAccess(client);
+    //ModelMgr_UpdatePlayerAccess(client);
 }
 
 
@@ -246,16 +246,16 @@ public ModelMgr_OnClientPostAdminCheck(client)
 /**
  * Gets the number of valid models loaded.
  */
-public ModelMgr_GetModelCount()
+/*public ModelMgr_GetModelCount()
 {
     return ModelCount;
-}
+}*/
 
 /**
  * Updates the entire model access cache for every connected player.
  * Useful when reloading a config.
  */
-public ModelMgr_UpdateAccessCache()
+/*public ModelMgr_UpdateAccessCache()
 {
     for (new client = 1; client < MaxClients + 1; client++)
     {
@@ -264,34 +264,34 @@ public ModelMgr_UpdateAccessCache()
             ModelMgr_UpdatePlayerAccess(client);
         }
     }
-}
+}*/
 
 /**
  * Updates the model access cache for a player.
  *
  * @param client    Player to cache.
  */
-public ModelMgr_UpdatePlayerAccess(client)
+/*public ModelMgr_UpdatePlayerAccess(client)
 {
     // Loop through every model and update authorized-flags.
     for (new model = 0; model < ModelCount; model++)
     {
         ModelHasAccess[client][model] = ModelDB_IsPlayerAuthorized(client, model);
     }
-}
+}*/
 
 /**
  * Removes access to all models for a player.
  *
  * @param client    Player to clear.
  */
-public ModelMgr_ClearPlayerAccess(client)
+/*public ModelMgr_ClearPlayerAccess(client)
 {
     for (new model = 0; model < ModelCount; model++)
     {
         ModelHasAccess[client][model] = false;
     }
-}
+}*/
 
 /**
  * Returns whether a player has access to a model. Reads a cached value.
@@ -301,10 +301,10 @@ public ModelMgr_ClearPlayerAccess(client)
  *
  * @return          True if the player has acces, false otherwise.
  */
-public bool:ModelMgr_HasAccess(client, model)
+/*public bool:ModelMgr_HasAccess(client, model)
 {
     return ModelHasAccess[client][model];
-}
+}*/
 
 /**
  * Returns the total number of models.
@@ -344,11 +344,11 @@ public bool:ModelMgr_HasAccess(client, model)
  *
  * @return          True if valid, false otherwise.
  */
-public bool:ModelMgr_IsValidIndex(model)
+/*public bool:ModelMgr_IsValidIndex(model)
 {
     //new modelCount = ModelMgr_GetModelCount(false);
     return model >= 0 && (model < ModelCount < MODELS_MAX);
-}
+}*/
 
 /**
  * Gets the index of a model.
@@ -357,12 +357,11 @@ public bool:ModelMgr_IsValidIndex(model)
  *
  * @return              Model index if found, -1 otherwise.
  */
-public ModelMgr_GetModelIndex(const String:modelID[])
+/*public ModelMgr_GetModelIndex(const String:modelID[])
 {
     // Disabled while refactoring.
     return -1;
     
-    /*
     new model = -1;
     
     // Lookup the model name in the trie index.
@@ -372,8 +371,7 @@ public ModelMgr_GetModelIndex(const String:modelID[])
     }
     
     return model;
-    */
-}
+}*/
 
 /**
  * Gets the index of a model collection.
@@ -382,7 +380,7 @@ public ModelMgr_GetModelIndex(const String:modelID[])
  *
  * @return                  Model collection index if found, -1 otherwise.
  */
-public ModelMgr_GetCollectionIndex(const String:collectionName[])
+/*public ModelMgr_GetCollectionIndex(const String:collectionName[])
 {
     new collection = -1;
     
@@ -393,7 +391,7 @@ public ModelMgr_GetCollectionIndex(const String:collectionName[])
     }
     
     return collection;
-}
+}*/
 
 /*
  * Gets the full model file path for the specified model.
@@ -404,7 +402,7 @@ public ModelMgr_GetCollectionIndex(const String:collectionName[])
  *
  * @return          Number of cells written.
  */
-public ModelMgr_GetModelFile(model, String:file[], maxlen)
+/*public ModelMgr_GetModelFile(model, String:file[], maxlen)
 {
     new count;
     
@@ -424,7 +422,7 @@ public ModelMgr_GetModelFile(model, String:file[], maxlen)
     count += StrCat(file, maxlen, ".mdl");
     
     return count;
-}
+}*/
 
 /**
  * Parses a model query string for a client.
@@ -438,11 +436,11 @@ public ModelMgr_GetModelFile(model, String:file[], maxlen)
  *                  If in list mode: Number of models added to the list.
  *                  Otherwise model index if found, or -1 if no models found.
  */
-public ModelMgr_ParseQuery(client, const String:query[], ModelParserMode:mode, Handle:list)
+/*public ModelMgr_ParseQuery(client, const String:query[], ModelParserMode:mode, Handle:list)
 {
     // Wrap internal parser.
     return ModelDB_ParseQuery(client, query, mode, list);
-}
+}*/
 
 /**
  * Returns whether the specified word is reserved.
@@ -472,10 +470,10 @@ public bool:ModelMgr_IsReservedWord(const String:word[])
     }
     
     // Parser modes.
-    if (ModelDB_StringToParserMode(word) != ModelParser_Invalid)
+    /*if (ModelDB_StringToParserMode(word) != ModelParser_Invalid)
     {
         return true;
-    }
+    }*/
     
     return false;
 }

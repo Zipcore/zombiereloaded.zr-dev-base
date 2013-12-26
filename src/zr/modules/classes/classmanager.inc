@@ -328,7 +328,7 @@ new Handle:g_ClassMenuMain;
 
 // Game-specific attribute modules.
 #if defined PROJECT_GAME_CSS
-    #include "zr/modules/classes/model"
+    //#include "zr/modules/classes/model"
 #endif
 
 
@@ -564,7 +564,7 @@ ClassMgr_OnPluginStart()
     // Game dependent attribute modules. Some modules should work for multiple
     // games, but CS:S is the only game we build for at the momemt.
     #if defined PROJECT_GAME_CSS
-        ClsModel_OnPluginStart();
+        //ClsModel_OnPluginStart();
     #endif
 }
 

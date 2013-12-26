@@ -7,7 +7,7 @@
  *  Type:          Module include
  *  Description:   Model data structure definitions and accessors.
  *
- *  Copyright (C) 2009-2013  Greyscale, Richard Helgeby
+ *  Copyright (C) 2009-2014  Greyscale, Richard Helgeby
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -323,9 +323,9 @@ stock Model_GetPath(Model:model, String:buffer[], maxlen)
  *
  * @return              Model team.
  */
-stock ModelTeam:Model_GetTeam(Model:model)
+stock VTeam:Model_GetTeam(Model:model)
 {
-    return ModelTeam:ObjLib_GetCell(Object:model, "team");
+    return VTeam:ObjLib_GetCell(Object:model, "team");
 }
 
 /*____________________________________________________________________________*/
@@ -366,11 +366,10 @@ stock bool:Model_GetAdminsOnly(Model:model)
  *
  * @return              True if model is hidden, false otherwise.
  */
-// TODO: Enable when migrating to new data storage.
-/*stock bool:Model_IsHidden(Model:model)
+stock bool:Model_IsHidden(Model:model)
 {
     return ObjLib_GetBool(Object:model, "hidden");
-}*/
+}
 
 /*____________________________________________________________________________*/
 
@@ -381,9 +380,9 @@ stock bool:Model_GetAdminsOnly(Model:model)
  *
  * @return              Model auth mode.
  */
-stock Auth_Modes:Model_GetAuthMode(Model:model)
+stock ModelAuthMode:Model_GetAuthMode(Model:model)
 {
-    return Auth_Modes:ObjLib_GetCell(Object:model, "auth_mode");
+    return ModelAuthMode:ObjLib_GetCell(Object:model, "auth_mode");
 }
 
 /*____________________________________________________________________________*/

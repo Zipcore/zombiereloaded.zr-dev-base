@@ -65,7 +65,7 @@ enum ClassAlphaModes
  */
 enum ClassModelAttributes
 {
-    String:ClassAttrib_Model[MODEL_MAX_QUERY_LEN],  /** Model query string. This will result in a model index that's used in CurrentModel below. */
+    String:ClassAttrib_Model[255],                  /** Model query string. This will result in a model index that's used in CurrentModel below. */
     ClassAttrib_CurrentModel,                       /** Current model index. May be negative. If so, the query will be executed again. */
     ClassAlphaModes:ClassAttrib_AlphaFadeMode,      /** Alpha blending mode. */
     bool:ClassAttrib_AlphaInvert,                   /** Invert alpha blending (transparent when close, and opaque on distance). */

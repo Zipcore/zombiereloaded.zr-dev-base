@@ -111,13 +111,13 @@ public Action:ModelCmd_ListObjects(client, argc)
 
 // Old code: -------------------------------------------------------------------
 
-stock ModelCmd_RegCommands()
+/*stock ModelCmd_RegCommands()
 {
     Project_RegConsoleCmd("models_list", ModelCmd_List, "Lists all models. Usage: <prefix>_models_list [<client target> <query>]");
     Project_RegConsoleCmd("models_dump", ModelCmd_Dump, "Dumps model data to the console. Usage: <prefix>_models_dump <model|index>");
-}
+}*/
 
-stock Action:ModelCmd_List(client, argc)
+/*stock Action:ModelCmd_List(client, argc)
 {
     // Check if the module is disabled.
     if (ModuleMgr_IsDisabled(g_moduleModelMgr))
@@ -128,10 +128,10 @@ stock Action:ModelCmd_List(client, argc)
     SetGlobalTransTarget(client);
     
     // TODO: Check if client has access to this command.
-    /*if (...)
+    if (...)
     {
         
-    }*/
+    }
     
     // Check if listing all models.
     if (argc == 0)
@@ -217,9 +217,9 @@ stock Action:ModelCmd_List(client, argc)
     
     return Plugin_Handled;
 
-}
+}*/
 
-stock Action:ModelCmd_Dump(client, argc)
+/*stock Action:ModelCmd_Dump(client, argc)
 {
     // Check if the module is disabled.
     if (ModuleMgr_IsDisabled(g_moduleModelMgr))
@@ -228,7 +228,7 @@ stock Action:ModelCmd_Dump(client, argc)
     }
     
     return Plugin_Handled;
-}
+}*/
 
 
 /***************
@@ -242,7 +242,7 @@ stock Action:ModelCmd_Dump(client, argc)
  * @param list      Optional. List of model indexes. If not specified it will
  *                  print all models.
  */
-stock ModelCmd_PrintList(client, Handle:list = INVALID_HANDLE)
+/*stock ModelCmd_PrintList(client, Handle:list = INVALID_HANDLE)
 {
     static const String:fmt[] = "%-12d %-12s %s";
     static const String:fmtHeader[] = "%-12s %-12s %s\n--------------------------------------------------";
@@ -290,4 +290,4 @@ stock ModelCmd_PrintList(client, Handle:list = INVALID_HANDLE)
             ReplyToCommand(client, fmt, model, teamHumans, ModelData[model][Model_Name]);
         }
     }
-}
+}*/
